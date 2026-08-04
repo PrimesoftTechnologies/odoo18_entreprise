@@ -97,6 +97,11 @@ class PurchaseRequest(models.Model):
         ],
         index=True,
     )
+    contact = fields.Many2one(
+        comodel_name="hr.employee",
+        string="Contact",
+        tracking=True,
+    )
     description = fields.Text()
     company_id = fields.Many2one(
         comodel_name="res.company",
