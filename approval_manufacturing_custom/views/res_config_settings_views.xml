@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+
+    <record id="res_config_settings_view_form_mrp_approval"
+            model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.mrp.approval</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id"
+               ref="mrp.res_config_settings_view_form"/>
+        <field name="arch"
+               type="xml">
+            <xpath expr="//app[@name='mrp']"
+                   position="inside">
+
+                <block title="Manufacturing Custom Workflows"
+                       name="mrp_custom_workflow_block">
+
+                    <div class="text-muted mb-3">
+
+                        <strong>Kumbuka:</strong>
+
+                        Lazima uwashe zote mbili kwa pamoja
+                        au uzime zote mbili.
+                        Huwezi kuwasha moja tu.
+
+                    </div>
+
+
+                    <!-- ========================================= -->
+                    <!-- APPROVAL                                  -->
+                    <!-- ========================================= -->
+
+                    <setting id="mrp_approval_flow_setting"
+                             help="Enable Wait for Approval and Approved steps for Manufacturing Orders">
+
+                        <field name="use_approval_flow"/>
+
+                        <div class="content-group">
+
+                            <div class="mt16">
+
+                                <label for="use_approval_flow"
+                                       string="Approval Flow"/>
+
+                            </div>
+
+                        </div>
+
+                    </setting>
+
+
+                    <!-- ========================================= -->
+                    <!-- INSPECTION                                -->
+                    <!-- ========================================= -->
+
+                    <setting id="mrp_inspection_flow_setting"
+                             help="Enable Inspection step for Manufacturing Orders">
+
+                        <field name="use_inspection_flow"/>
+
+                        <div class="content-group">
+
+                            <div class="mt16">
+
+                                <label for="use_inspection_flow"
+                                       string="Inspection Flow"/>
+
+                            </div>
+
+                        </div>
+
+                    </setting>
+
+                </block>
+
+            </xpath>
+
+        </field>
+
+    </record>
+
+</odoo>

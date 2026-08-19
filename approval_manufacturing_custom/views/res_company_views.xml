@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+
+    <record id="view_company_form_inherit_mrp_approval"
+            model="ir.ui.view">
+
+        <field name="name">res.company.form.inherit.mrp.approval</field>
+
+        <field name="model">res.company</field>
+
+        <field name="inherit_id" ref="base.view_company_form"/>
+
+        <field name="arch" type="xml">
+
+            <xpath expr="//notebook/page[@name='general_info']"
+                   position="after">
+
+                <page string="Manufacturing Approval"
+                      name="manufacturing_workflows">
+
+                    <group>
+
+                        <group string="Manufacturing Flow Settings per Company">
+
+                            <!-- ================================= -->
+                            <!-- APPROVAL FLOW                      -->
+                            <!-- ================================= -->
+
+                            <field name="use_approval_flow"/>
+
+                            <field name="manufacturing_approver_ids"
+                                   widget="many2many_tags"
+                                   options="{'no_create': True}"
+                                   invisible="not use_approval_flow"/>
+
+
+                            <!-- ================================= -->
+                            <!-- INSPECTION FLOW                    -->
+                            <!-- ================================= -->
+
+                            <field name="use_inspection_flow"/>
+
+                            <field name="manufacturing_inspector_ids"
+                                   widget="many2many_tags"
+                                   options="{'no_create': True}"
+                                   invisible="not use_inspection_flow"/>
+
+                        </group>
+
+                    </group>
+
+                </page>
+
+            </xpath>
+
+        </field>
+
+    </record>
+
+</odoo>
