@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-inherit="point_of_sale.OrderWidget" t-inherit-mode="extension">
+        <xpath expr="//div[contains(@class, 'order-summary')]" position="before">
+            <!-- Tunatumia class ya d-print-none ili isichapishwe wala kuonekana kwenye risiti -->
+            <div class="employee-selector p-2 d-print-none">
+                <button type="button"
+                        class="button btn btn-light w-100"
+                        t-on-click="selectEmployee">
+                    <i class="fa fa-user me-2"/>
+                    <span>Selected Employee</span>
+                </button>
+            </div>
+        </xpath>
+    </t>
+
+</templates>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
+        <xpath expr="//div[contains(@class,'product-name')]" position="after">
+            <!-- Jina linaonekana kwenye skrini ya POS, lakini linajificha kwenye risiti kwa sababu ya d-print-none -->
+            <div class="text-muted small employee-line d-print-none text-primary fw-bold mt-1">
+                <t t-if="line.employee_name">
+                    <i class="fa fa-user me-1"/>
+                    <span>Employee: </span>
+                    <t t-esc="line.employee_name"/>
+                </t>
+            </div>
+        </xpath>
+    </t>
+
+</templates>
