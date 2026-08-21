@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_move_form_inherit_approval" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.approval</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_approve_invoice" 
+                        string="Approve &amp; Post" 
+                        type="object" 
+                        class="oe_highlight" 
+                        invisible="state != 'eto_approve' or not is_approver"/>
+            </xpath>
+            
+            <xpath expr="//field[@name='state']" position="replace">
+                <field name="state" widget="statusbar" statusbar_visible="draft,posted"/>
+            </xpath>
+            
+            <xpath expr="//field[@name='invoice_date']" position="after">
+                <field name="approved_by_id" invisible="not approved_by_id" readonly="1"/>
+                <field name="approved_date" invisible="not approved_date" readonly="1"/>
+            </xpath>
+            
+            <xpath expr="//form" position="attributes">
+                <attribute name="readonly">state == 'eto_approve' and not is_approver</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

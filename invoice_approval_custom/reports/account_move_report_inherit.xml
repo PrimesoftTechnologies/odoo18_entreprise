@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_invoice_document_inherit_approval" inherit_id="account.report_invoice_document">
+        <xpath expr="//div[@id='informations']" position="after">
+            <!-- Eneo la Approved By linaonekana tu kama ankara imeidhinishwa -->
+            <t t-if="o.approved_by_id">
+                <div class="row mt-4 mb-4" style="page-break-inside: avoid;">
+                    <div class="col-12">
+                        <div style="border: 2px solid #714B67; border-radius: 6px; padding: 10px 15px; background-color: #F8F5F7;">
+                            <table style="width: 100%; font-size: 13px; color: #333333;">
+                                <tr>
+                                    <td style="width: 55%; vertical-align: middle;">
+                                        <span style="font-weight: bold; color: #714B67; font-size: 13px;">
+                                            <i class="fa fa-check-circle"/> INVOICE APPROVED &amp; POSTED
+                                        </span><br/>
+                                        <span style="font-size: 11px; color: #555555;">Authorized by designated official</span>
+                                    </td>
+                                    <td style="width: 45%; text-align: right; vertical-align: middle;">
+                                        <strong>Approver:</strong> <span t-field="o.approved_by_id.name"/><br/>
+                                        <strong>Date:</strong> <span t-field="o.approved_date"/><br/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>
