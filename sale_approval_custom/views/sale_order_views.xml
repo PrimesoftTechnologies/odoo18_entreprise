@@ -270,7 +270,7 @@
             <xpath expr="//header//button[@name='action_confirm'][1]"
                    position="attributes">
                 <attribute name="invisible">
-                    approval_enabled and approval_stage != 'approved'
+                    approval_enabled and approval_stage != 'approved' or state == 'sale'
                 </attribute>
             </xpath>
 
