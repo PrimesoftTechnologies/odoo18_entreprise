@@ -67,7 +67,7 @@
         <field name="arch" type="xml">
             <form string="Reason for Rejection">
                 <group>
-                    <field name="reject_reason" required="1" placeholder="Andika sababu ya kukataa hapa..."/>
+                    <field name="reject_reason" required="1" placeholder="Reasons for Rejection..."/>
                 </group>
                 <footer>
                     <button string="Confirm Reject" type="object" name="action_confirm_reject" class="btn-primary"/>
