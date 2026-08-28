@@ -75,7 +75,7 @@
                         string="Approve"
                         class="btn-primary"
                         groups="van_management_system.group_van_supervisor,van_management_system.group_van_manager"
-                        invisible="state != 'submitted' or requested_by == uid"
+                        invisible="state != 'submitted'"
                     />
 
                     <button

@@ -427,8 +427,6 @@ class VanRetirementRoute(models.Model):
         for record in self:
             if record.state != "submitted":
                 raise UserError(_("Only Submitted retirement routes can be approved."))
-            if record.requested_by == self.env.user:
-                raise UserError(_("You cannot approve your own retirement route request!"))
 
             record.write({
                 "state": "approved",
