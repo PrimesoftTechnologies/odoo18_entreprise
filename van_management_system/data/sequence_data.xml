@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_van_stock_transfer" model="ir.sequence">
+        <field name="name">Van Stock Transfer</field>
+        <field name="code">van.stock.transfer</field>
+        <field name="prefix">VAN/%(year)s/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>

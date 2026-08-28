@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==========================================================
+         MAIN APPLICATION
+         ========================================================== -->
+
+    <menuitem
+        id="menu_van_management_root"
+        name="Van Distribution"
+        sequence="20"
+        web_icon="van_management_system,static/description/icon.png"
+        groups="van_management_system.group_van_salesman,van_management_system.group_van_supervisor,van_management_system.group_van_manager"
+    />
+
+
+    <!-- ==========================================================
+         DASHBOARD
+         ========================================================== -->
+
+    <menuitem
+        id="menu_van_dashboard"
+        name="Dashboard"
+        parent="menu_van_management_root"
+        sequence="1"
+        groups="van_management_system.group_van_salesman,van_management_system.group_van_supervisor,van_management_system.group_van_manager"
+    />
+
+
+    <!-- ==========================================================
+         ALL OPERATIONS (Stock Loading, Sales Routes, Retirement Route)
+         ========================================================== -->
+
+    <menuitem
+        id="menu_van_management_operations"
+        name="All Operations"
+        parent="menu_van_management_root"
+        sequence="10"
+        groups="van_management_system.group_van_salesman,van_management_system.group_van_supervisor,van_management_system.group_van_manager"
+    />
+
+    <!-- Stock Loading -->
+    <menuitem
+        id="menu_van_load"
+        name="Stock Loading"
+        parent="menu_van_management_operations"
+        action="action_van_load_transfer"
+        sequence="10"
+        groups="van_management_system.group_van_salesman,van_management_system.group_van_supervisor,van_management_system.group_van_manager"
+    />
+
+    <!-- Sales Routes -->
+    <menuitem
+        id="menu_van_routes"
+        name="Sales Routes"
+        parent="menu_van_management_operations"
+        action="action_van_route"
+        sequence="20"
+        groups="van_management_system.group_van_salesman,van_management_system.group_van_supervisor,van_management_system.group_van_manager"
+    />
+
+    <!-- Retirement Route -->
+    <menuitem
+        id="menu_van_retirement_route"
+        name="Retirement Route"
+        parent="menu_van_management_operations"
+        action="action_van_retirement_route"
+        sequence="30"
+        groups="van_management_system.group_van_salesman,van_management_system.group_van_supervisor,van_management_system.group_van_manager"
+    />
+
+
+    <!-- ==========================================================
+         POINT OF SALE (POS Sessions, POS Configuration)
+         ========================================================== -->
+
+    <menuitem
+        id="menu_van_pos_operations"
+        name="Point of Sale"
+        parent="menu_van_management_root"
+        sequence="20"
+        groups="van_management_system.group_van_salesman,van_management_system.group_van_supervisor,van_management_system.group_van_manager"
+    />
+
+    <!-- POS Sessions -->
+    <menuitem
+        id="menu_van_pos_sessions"
+        name="POS Sessions"
+        parent="menu_van_pos_operations"
+        action="point_of_sale.action_pos_session"
+        sequence="20"
+        groups="van_management_system.group_van_salesman,van_management_system.group_van_supervisor,van_management_system.group_van_manager"
+    />
+
+    <!-- POS Configuration -->
+    <menuitem
+        id="menu_van_pos_config"
+        name="Dashboard"
+        parent="menu_van_pos_operations"
+        action="point_of_sale.action_pos_config_kanban"
+        sequence="10"
+        groups="van_management_system.group_van_salesman,van_management_system.group_van_supervisor,van_management_system.group_van_manager"
+    />
+
+
+    <!-- ==========================================================
+         REPORTS (Completed Routes & Incomplete Routes)
+         ========================================================== -->
+
+    <!-- Window Action ya Completed Routes -->
+    <record id="action_van_completed_routes_report" model="ir.actions.act_window">
+        <field name="name">Completed Routes</field>
+        <field name="res_model">van.route</field>
+        <field name="view_mode">list,form,graph,pivot</field>
+        <field name="domain">[('state', '=', 'completed')]</field>
+        <field name="context">{'create': False, 'edit': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No completed routes found!</p>
+        </field>
+    </record>
+
+    <!-- Window Action ya Incomplete / In Progress Routes -->
+    <record id="action_van_incomplete_routes_report" model="ir.actions.act_window">
+        <field name="name">Incomplete Routes</field>
+        <field name="res_model">van.route</field>
+        <field name="view_mode">list,form,graph,pivot</field>
+        <field name="domain">[('state', '!=', 'completed')]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No incomplete routes found!</p>
+        </field>
+    </record>
+
+    <!-- Menu Kuu ya Reports -->
+    <menuitem
+        id="menu_van_reports_root"
+        name="Reports"
+        parent="menu_van_management_root"
+        sequence="40"
+        groups="van_management_system.group_van_supervisor,van_management_system.group_van_manager"
+    />
+
+    <!-- Sub-menu: Completed Routes -->
+    <menuitem
+        id="menu_van_completed_routes"
+        name="Completed Routes"
+        parent="menu_van_reports_root"
+        action="action_van_completed_routes_report"
+        sequence="10"
+        groups="van_management_system.group_van_supervisor,van_management_system.group_van_manager"
+    />
+
+    <!-- Sub-menu: Incomplete Routes -->
+    <menuitem
+        id="menu_van_incomplete_routes"
+        name="Incomplete Routes"
+        parent="menu_van_reports_root"
+        action="action_van_incomplete_routes_report"
+        sequence="20"
+        groups="van_management_system.group_van_supervisor,van_management_system.group_van_manager"
+    />
+
+
+    <!-- ==========================================================
+         CONFIGURATION (Fleet, Operation Types)
+         ========================================================== -->
+
+    <!-- Window Action ya kufungua Operation Types -->
+    <record id="action_van_operation_types" model="ir.actions.act_window">
+        <field name="name">Operation Types</field>
+        <field name="res_model">stock.picking.type</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Define a new operation type</p>
+        </field>
+    </record>
+
+    <menuitem
+        id="menu_van_management_configuration"
+        name="Configuration"
+        parent="menu_van_management_root"
+        sequence="90"
+        groups="van_management_system.group_van_manager"
+    />
+
+    <!-- Fleet Config (Ndani ya Configuration) -->
+    <menuitem
+        id="menu_van_config_fleet"
+        name="Fleet"
+        parent="menu_van_management_configuration"
+        action="fleet.fleet_vehicle_action"
+        sequence="10"
+        groups="van_management_system.group_van_manager"
+    />
+
+    <!-- Operation Types (Ndani ya Configuration) -->
+    <menuitem
+        id="menu_van_config_operation_types"
+        name="Operation Types"
+        parent="menu_van_management_configuration"
+        action="action_van_operation_types"
+        sequence="20"
+        groups="van_management_system.group_van_manager"
+    />
+
+</odoo>

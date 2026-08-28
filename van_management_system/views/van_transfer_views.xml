@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ====================================================== -->
+    <!-- TREE -->
+    <!-- ====================================================== -->
+
+    <record id="view_van_stock_transfer_tree" model="ir.ui.view">
+
+        <field name="name">van.stock.transfer.tree</field>
+        <field name="model">van.stock.transfer</field>
+
+        <field name="arch" type="xml">
+
+            <list
+                decoration-muted="state == 'draft'"
+                decoration-success="state == 'done'"
+                decoration-warning="state == 'waiting_approval'"
+                decoration-danger="state in ('rejected', 'cancelled')"
+            >
+
+                <field name="name"/>
+                <field name="transfer_type"/>
+                <field name="van_id"/>
+                <field name="salesman_id"/>
+                <field name="requested_by"/>
+                <field name="approved_by"/>
+                <field name="state" widget="badge" decoration-muted="state == 'draft'" decoration-warning="state == 'waiting_approval'" decoration-success="state == 'done'" decoration-danger="state in ('rejected', 'cancelled')"/>
+                <field name="create_date"/>
+
+            </list>
+
+        </field>
+
+    </record>
+
+
+    <!-- ====================================================== -->
+    <!-- FORM -->
+    <!-- ====================================================== -->
+
+    <record id="view_van_stock_transfer_form" model="ir.ui.view">
+
+        <field name="name">van.stock.transfer.form</field>
+        <field name="model">van.stock.transfer</field>
+
+        <field name="arch" type="xml">
+
+            <form string="Stock Transfer">
+
+                <!-- ================================================== -->
+                <!-- HEADER -->
+                <!-- ================================================== -->
+
+                <header>
+
+                    <!-- SUBMIT FOR APPROVAL (Salesman) -->
+                    <button
+                        name="action_submit"
+                        type="object"
+                        string="Submit for Approval"
+                        class="btn-primary"
+                        invisible="state not in ('draft', 'rejected') or requested_by != uid"
+                    />
+
+                    <!-- CANCEL / SET TO DRAFT -->
+                    <button
+                        name="action_cancel"
+                        type="object"
+                        string="Set to Draft"
+                        class="btn-secondary"
+                        invisible="state not in ('waiting_approval', 'rejected') or requested_by != uid"
+                    />
+
+                    <!-- APPROVE (Manager / Supervisor) -->
+                    <button
+                        name="action_approve"
+                        type="object"
+                        string="Approve"
+                        class="btn-primary"
+                        groups="van_management_system.group_van_supervisor,van_management_system.group_van_manager"
+                        invisible="state != 'waiting_approval' or requested_by == uid"
+                    />
+
+                    <!-- REJECT (Manager / Supervisor) -->
+                    <button
+                        name="action_reject"
+                        type="object"
+                        string="Reject"
+                        class="btn-secondary"
+                        groups="van_management_system.group_van_supervisor,van_management_system.group_van_manager"
+                        invisible="state != 'waiting_approval' or requested_by == uid"
+                    />
+
+                    <!-- START ROUTE (Salesman) - Ikitumika inatoweka haijirudii -->
+                    <button
+                        name="action_start_route"
+                        type="object"
+                        string="Start Route"
+                        class="btn-primary"
+                        invisible="state != 'approved' or requested_by != uid or route_start_location"
+                    />
+
+                    <!-- Kitufe cha Complete Route kilikuwa hapa, KIMEONDOLEWA KABISA ili kisiharibu mtiririko wako -->
+
+                    <!-- STATUSBAR -->
+                    <field
+                        name="state"
+                        widget="statusbar"
+                        statusbar_visible="draft,waiting_approval,approved,done"
+                    />
+
+                </header>
+
+
+                <!-- ================================================== -->
+                <!-- SHEET -->
+                <!-- ================================================== -->
+
+                <sheet>
+
+                    <!-- SMART BUTTONS -->
+                    <div class="oe_button_box" name="button_box">
+                        <!-- Route Smart Button -->
+                        <button
+                            type="object"
+                            name="action_view_route_order"
+                            class="oe_stat_button"
+                            invisible="route_count == 0"
+                            icon="fa-shopping-cart"
+                            string="Route"
+                        >
+                            <field
+                                name="route_count"
+                                widget="statinfo"
+                                string="Route"
+                            />
+                        </button>
+
+                        <!-- Inventory Transfer Smart Button with Count -->
+                        <button
+                            type="object"
+                            name="action_open_picking"
+                            class="oe_stat_button"
+                            invisible="not picking_id"
+                            icon="fa-truck"
+                        >
+                            <field
+                                name="picking_count"
+                                widget="statinfo"
+                                string="Inventory Transfer"
+                            />
+                        </button>
+                    </div>
+
+                    <!-- TITLE -->
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+
+                    <!-- REJECTION REASON BANNER -->
+                    <group invisible="not rejection_reason">
+                        <field name="rejection_reason" readonly="1" decoration-danger="1"/>
+                    </group>
+
+                    <!-- BASIC INFORMATION -->
+                    <group>
+                        <group>
+                            <field
+                                name="van_id"
+                                readonly="state != 'draft'"
+                            />
+                            <field
+                                name="salesman_id"
+                                readonly="1"
+                            />
+                            <field
+                                name="supervisor_id"
+                                readonly="1"
+                            />
+                        </group>
+                        <group>
+                            <field
+                                name="company_id"
+                                readonly="1"
+                            />
+                            <!-- SOURCE LOCATION -->
+                            <field
+                                name="source_location_id"
+                                readonly="state != 'draft' or transfer_type == 'unload'"
+                                force_save="1"
+                                options="{'no_create': True}"
+                            />
+                            <!-- DESTINATION LOCATION -->
+                            <field
+                                name="destination_location_id"
+                                readonly="state != 'draft' or transfer_type == 'load'"
+                                force_save="1"
+                                options="{'no_create': True}"
+                            />
+                        </group>
+                    </group>
+
+
+                    <!-- ================================================== -->
+                    <!-- NOTEBOOK -->
+                    <!-- ================================================== -->
+
+                    <notebook>
+
+                        <!-- PRODUCTS -->
+                        <page string="Products">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field
+                                        name="product_id"
+                                        readonly="parent.state not in ('draft', 'rejected')"
+                                    />
+                                    <field
+                                        name="quantity"
+                                        string="Quantity"
+                                        readonly="parent.state not in ('draft', 'rejected')"
+                                    />
+                                    <field
+                                        name="on_hand"
+                                        string="On Hand"
+                                        readonly="1"
+                                    />
+                                    <field
+                                        name="product_uom_id"
+                                        string="Unit of Measure"
+                                        readonly="1"
+                                    />
+                                    <!-- APPROVED QUANTITY -->
+                                    <field
+                                        name="approved_quantity"
+                                        string="Approved Quantity"
+                                        readonly="parent.state != 'waiting_approval'"
+                                        column_invisible="parent.state in ('draft', 'rejected') or (parent.state == 'waiting_approval' and parent.requested_by == uid)"
+                                    />
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- NOTES -->
+                        <page string="Notes">
+                            <field name="note"/>
+                        </page>
+
+                    </notebook>
+
+                </sheet>
+
+                <!-- CHATTER -->
+                <chatter/>
+
+            </form>
+
+        </field>
+
+    </record>
+
+
+    <!-- ====================================================== -->
+    <!-- START ROUTE WIZARD FORM -->
+    <!-- ====================================================== -->
+
+    <record id="view_van_route_start_wizard_form" model="ir.ui.view">
+        <field name="name">van.route.start.wizard.form</field>
+        <field name="model">van.route.start.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Start Route Details">
+                <group>
+                    <field name="transfer_id" invisible="1"/>
+                    <field name="route_start_location" placeholder="e.g. MWENGE"/>
+                    <field name="route_start_date"/>
+                </group>
+                <footer>
+                    <button name="action_confirm_start_route" string="Confirm &amp; Start Route" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+
+    <!-- ====================================================== -->
+    <!-- REJECT WIZARD FORM -->
+    <!-- ====================================================== -->
+
+    <record id="view_van_stock_reject_wizard_form" model="ir.ui.view">
+        <field name="name">van.stock.reject.wizard.form</field>
+        <field name="model">van.stock.reject.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Reason for Rejection">
+                <group>
+                    <field name="transfer_id" invisible="1"/>
+                    <field name="reason" placeholder="Reasons for rejection..."/>
+                </group>
+                <footer>
+                    <button name="action_confirm_reject" string="Confirm Reject" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+
+    <!-- ====================================================== -->
+    <!-- ACTIONS -->
+    <!-- ====================================================== -->
+
+    <record
+        id="action_van_stock_transfer"
+        model="ir.actions.act_window"
+    >
+        <field name="name">Van Stock Transfers</field>
+        <field name="res_model">van.stock.transfer</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record
+        id="action_van_load_transfer"
+        model="ir.actions.act_window"
+    >
+        <field name="name">Stock Loading</field>
+        <field name="res_model">van.stock.transfer</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('transfer_type', '=', 'load')]</field>
+        <field name="context">{'default_transfer_type': 'load'}</field>
+    </record>
+
+    <record
+        id="action_van_unload_transfer"
+        model="ir.actions.act_window"
+    >
+        <field name="name">Unload to Warehouse</field>
+        <field name="res_model">van.stock.transfer</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('transfer_type', '=', 'unload')]</field>
+        <field name="context">{'default_transfer_type': 'unload'}</field>
+    </record>
+
+    <record
+        id="action_van_sales_route"
+        model="ir.actions.act_window"
+    >
+        <field name="name">Sales Route</field>
+        <field name="res_model">van.route</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

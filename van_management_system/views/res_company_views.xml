@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ====================================================== -->
+    <!-- COMPANY FORM -->
+    <!-- VAN TRANSFER APPROVERS -->
+    <!-- ====================================================== -->
+
+    <record id="view_company_form_van_transfer_approval" model="ir.ui.view">
+
+        <field name="name">
+            res.company.form.van.transfer.approval
+        </field>
+
+        <field name="model">res.company</field>
+
+        <field name="inherit_id" ref="base.view_company_form"/>
+
+        <field name="arch" type="xml">
+
+            <!--
+                Add Van Transfer Approval section
+                inside the existing General Information area
+            -->
+
+            <xpath expr="//form/sheet" position="inside">
+
+                <group string="Van Transfer Approval">
+
+                    <field
+                        name="van_transfer_approver_ids"
+                        widget="many2many_tags"
+                        options="{'no_create': False}"
+                        placeholder="Select users who can approve Van Transfers..."
+                    />
+
+                </group>
+
+            </xpath>
+
+        </field>
+
+    </record>
+
+</odoo>

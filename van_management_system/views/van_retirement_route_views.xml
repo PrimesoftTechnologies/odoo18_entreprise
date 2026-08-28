@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==========================================================
+         TREE
+         ========================================================== -->
+
+    <record id="view_van_retirement_route_tree" model="ir.ui.view">
+
+        <field name="name">van.retirement.route.tree</field>
+        <field name="model">van.retirement.route</field>
+
+        <field name="arch" type="xml">
+
+            <list
+                decoration-success="state == 'done'"
+                decoration-warning="state == 'submitted'"
+                decoration-danger="state == 'cancelled'"
+            >
+
+                <field name="name"/>
+                <field name="pos_session_ref" string="POS Session"/>
+                <field name="route_id"/>
+                <field name="route_name" string="Route Name"/>
+                <field name="route_date" readonly="1"/>
+                <field name="van_id"/>
+                <field name="salesman_id"/>
+
+                <field name="total_expected_sales" sum="Total Expected"/>
+                <field name="total_actual_sales" sum="Total Actual"/>
+                <field name="sales_variance" sum="Total Variance"/>
+
+                <field name="route_state" widget="badge" decoration-info="route_state == 'in_progress'" decoration-success="route_state == 'completed'" decoration-muted="route_state == 'draft'"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'" decoration-warning="state == 'submitted'" decoration-danger="state == 'cancelled'" decoration-info="state == 'approved'"/>
+                <field name="company_id"/>
+
+            </list>
+
+        </field>
+
+    </record>
+
+
+    <!-- ==========================================================
+         FORM
+         ========================================================== -->
+
+    <record id="view_van_retirement_route_form" model="ir.ui.view">
+
+        <field name="name">van.retirement.route.form</field>
+        <field name="model">van.retirement.route</field>
+
+        <field name="arch" type="xml">
+
+            <form string="Retirement Route">
+
+                <!-- ==================================================
+                     HEADER
+                     ================================================== -->
+
+                <header>
+
+                    <button
+                        name="action_submit"
+                        type="object"
+                        string="Submit"
+                        class="btn-primary"
+                        invisible="state != 'draft'"
+                    />
+
+                    <!-- APPROVE: Ataonekana tu na Supervisor/Manager NA ASIWE ndiye aliyetuma -->
+                    <button
+                        name="action_approve"
+                        type="object"
+                        string="Approve"
+                        class="btn-primary"
+                        groups="van_management_system.group_van_supervisor,van_management_system.group_van_manager"
+                        invisible="state != 'submitted' or requested_by == uid"
+                    />
+
+                    <button
+                        name="action_done"
+                        type="object"
+                        string="Complete"
+                        class="btn-primary"
+                        invisible="state != 'approved'"
+                    />
+
+                    <button
+                        name="action_reset_to_draft"
+                        type="object"
+                        string="Reset to Draft"
+                        class="btn-secondary"
+                        invisible="state != 'cancelled'"
+                    />
+
+                    <field
+                        name="state"
+                        widget="statusbar"
+                        statusbar_visible="draft,submitted,approved,done"
+                    />
+
+                </header>
+
+
+                <!-- ==================================================
+                     SHEET
+                     ================================================== -->
+
+                <sheet>
+
+                    <!-- SMART BUTTON YA STOCK RETURN -->
+                    <div class="oe_button_box" name="button_box">
+                        <button 
+                            name="action_view_stock_picking" 
+                            type="object" 
+                            class="oe_stat_button" 
+                            icon="fa-truck"
+                            invisible="picking_count == 0"
+                        >
+                            <field name="picking_count" widget="statinfo" string="Stock Return"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <span class="o_form_label">Route Retirement Reference</span>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <!-- ==================================================
+                         GENERAL INFORMATION (CLEAN 2-COLUMN LAYOUT)
+                         ================================================== -->
+
+                    <group>
+                        <group string="Route Details">
+                            <field
+                                name="route_id"
+                                readonly="1"
+                                options="{'no_open': True, 'no_create': True}"
+                            />
+                            <field name="route_name" string="Route Name" readonly="1"/>
+                            <field name="route_date" readonly="1"/>
+                            <field name="van_id" readonly="1"/>
+                            <field name="pos_session_ref" readonly="1"/>
+                        </group>
+
+                        <group string="Responsibility &amp; Status">
+                            <field name="salesman_id" readonly="1"/>
+                            <field name="supervisor_id" readonly="1"/>
+                            <field name="company_id" readonly="1" groups="base.group_multi_company"/>
+                            <field name="route_state" widget="badge" decoration-info="route_state == 'in_progress'" decoration-success="route_state == 'completed'"/>
+                        </group>
+                    </group>
+
+
+                    <!-- ==================================================
+                         SALES SUMMARY (MODERN DASHBOARD CARDS LAYOUT)
+                         ================================================== -->
+
+                    <separator string="Financial &amp; Sales Summary"/>
+                    
+                    <div class="row text-center bg-light p-3 mb-4 border rounded" style="margin: 0px 4px;">
+                        <div class="col-md-4 border-end">
+                            <span class="text-muted d-block fw-bold">TOTAL EXPECTED SALES</span>
+                            <h3 class="text-primary mb-0">
+                                <field name="total_expected_sales" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            </h3>
+                        </div>
+                        <div class="col-md-4 border-end">
+                            <span class="text-muted d-block fw-bold">TOTAL ACTUAL SALES</span>
+                            <h3 class="text-success mb-0">
+                                <field name="total_actual_sales" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            </h3>
+                        </div>
+                        <div class="col-md-4">
+                            <span class="text-muted d-block fw-bold">SALES VARIANCE</span>
+                            <h3 class="text-danger mb-0">
+                                <field name="sales_variance" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            </h3>
+                        </div>
+                    </div>
+
+                    <!-- Payment Methods Breakdown Box -->
+                    <div class="alert alert-warning mb-4" role="alert" style="background-color: #fff8e1; border-color: #ffe082; color: #5d4037;">
+                        <strong class="d-block mb-1"><i class="fa fa-credit-card me-2"/>Payment Methods Breakdown:</strong>
+                        <field name="payment_method_summary" widget="text" nolabel="1" readonly="1" style="background: transparent; border: none; font-weight: 500; width: 100%; resize: none;"/>
+                    </div>
+
+
+                    <!-- ==================================================
+                         NOTEBOOK
+                         ================================================== -->
+
+                    <notebook>
+
+                        <page string="Product Lines &amp; Quantities" name="products_page">
+                            <field
+                                name="product_line_ids"
+                                readonly="state in ('done', 'cancelled')"
+                            >
+                                <list
+                                    editable="bottom"
+                                    create="0"
+                                    delete="0"
+                                >
+                                    <field name="product_id" required="1" readonly="1"/>
+                                    <field name="expected_quantity" string="Expected Qty" readonly="1" sum="Total Expected Qty"/>
+                                    <field name="actual_quantity" string="Actual Qty" readonly="parent.state in ('done', 'cancelled')" sum="Total Actual Qty"/>
+                                    <field name="product_uom_id" string="UoM" readonly="1"/>
+                                    <field name="sales_price" readonly="1"/>
+                                    <field name="expected_revenue" string="Expected Revenue" readonly="1" sum="Total Expected Rev"/>
+                                    <field name="actual_revenue" string="Actual Revenue" readonly="1" sum="Total Actual Rev"/>
+                                    <field name="quantity_variance" string="Qty Variance" readonly="1" sum="Total Qty Var"/>
+                                    <field name="revenue_variance" string="Revenue Variance" readonly="1" sum="Total Rev Var"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Notes &amp; Remarks" name="notes_page">
+                            <field name="note" readonly="state == 'done'" placeholder="Weka maelezo ya ziada hapa kama yapo..."/>
+                        </page>
+
+                    </notebook>
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+
+        </field>
+
+    </record>
+
+    <!-- KUFANYA OPERATION TYPE, SOURCE NA DESTINATION LOCATION ZIWE READ-ONLY KWENYE STOCK PICKING -->
+    <record id="view_picking_form_inherit_van_return" model="ir.ui.view">
+        <field name="name">stock.picking.form.inherit.van.return</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='picking_type_id']" position="attributes">
+                <attribute name="readonly">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='location_id']" position="attributes">
+                <attribute name="readonly">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='location_dest_id']" position="attributes">
+                <attribute name="readonly">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+
+    <!-- ==========================================================
+         ACTION
+         ========================================================== -->
+
+    <record
+        id="action_van_retirement_route"
+        model="ir.actions.act_window"
+    >
+        <field name="name">Retirement Routes</field>
+        <field name="res_model">van.retirement.route</field>
+        <field name="view_mode">list,form,kanban</field>
+        <field name="view_id" ref="view_van_retirement_route_tree"/>
+        <field name="context">{}</field>
+    </record>
+
+</odoo>

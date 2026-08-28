@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- FORM VIEW YA VAN ROUTE -->
+    <record id="view_van_route_form" model="ir.ui.view">
+        <field name="name">van.route.form</field>
+        <field name="model">van.route</field>
+        <field name="arch" type="xml">
+            <form string="Sales Route" create="false">
+                <header>
+                    <!-- Button ya Kuanza Route: Inaonekana ikiwa DRAFT tu, ikishakuwa in_progress haionekani tena -->
+                    <button
+                        name="action_start"
+                        type="object"
+                        string="Start Route"
+                        class="btn-primary"
+                        invisible="state != 'draft'"
+                    />
+                    
+                    <!-- Button ya Kuanza POS Session yenye Play icon: Inaonekana ikiwa IN_PROGRESS na BADO hakuna POS Session iliyojazwa (ikibonyezwa inatoweka) -->
+                    <button
+                        name="action_start_pos_session"
+                        type="object"
+                        string="Start Session"
+                        class="btn-primary"
+                        icon="fa-play"
+                        invisible="state != 'in_progress' or pos_session_id"
+                    />
+
+                    <!-- Button ya Kukamilisha Route: Inaonekana ikiwa IN_PROGRESS tu, ikishakuwa completed haionekani tena -->
+                    <button
+                        name="action_complete"
+                        type="object"
+                        string="Complete Route"
+                        class="btn-secondary"
+                        invisible="state != 'in_progress'"
+                    />
+
+                    <!-- CANCEL ROUTE BUTTON IMEFICHWA KABISA HAPA -->
+                    <button
+                        name="action_cancel"
+                        type="object"
+                        string="Cancel Route"
+                        invisible="1"
+                    />
+                    <field
+                        name="state"
+                        widget="statusbar"
+                        statusbar_visible="draft,in_progress,completed"
+                    />
+                </header>
+
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="van_id" readonly="1"/>
+                            <field name="salesman_id" readonly="1"/>
+                            <field name="supervisor_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="route_date" readonly="1"/>
+                            <field name="start_location" readonly="1"/>
+                            <field name="end_location" readonly="1"/>
+                            <field name="internal_transfer_id" readonly="1"/>
+                            <!-- Uwanja wa kuona POS Config na POS Session iliyofunguliwa -->
+                            <field name="pos_config_id" readonly="1"/>
+                            <field name="pos_session_id" readonly="1" invisible="not pos_session_id"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Products">
+                            <field name="product_line_ids">
+                                <list editable="bottom" create="false" delete="false">
+                                    <field name="product_id" readonly="1"/>
+                                    <field name="quantity" readonly="1"/>
+                                    <!-- Approved Quantity imewekewa sharti isionekane Salesman ikiwa bado Draft -->
+                                    <field name="approved_quantity" readonly="1" invisible="parent.state == 'draft'"/>
+                                    <!-- Sales Price sasa inaweza ku-editwa ikiwa route ipo In Progress -->
+                                    <field name="sales_price" readonly="parent.state != 'in_progress'"/>
+                                    <field name="expected_revenue" readonly="1" invisible="parent.state == 'draft'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes">
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- LIST VIEW YA VAN ROUTE -->
+    <record id="view_van_route_list" model="ir.ui.view">
+        <field name="name">van.route.list</field>
+        <field name="model">van.route</field>
+        <field name="arch" type="xml">
+            <list string="Sales Routes" create="false" delete="false">
+                <field name="name"/>
+                <field name="route_date"/>
+                <field name="van_id"/>
+                <field name="salesman_id"/>
+                <field name="start_location"/>
+                <field name="total_expected_revenue" sum="Total Expected"/>
+                <field name="state" widget="badge" decoration-success="state == 'completed'" decoration-info="state == 'in_progress'" decoration-muted="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ACTION YA SALES ROUTE -->
+    <record id="action_van_route" model="ir.actions.act_window">
+        <field name="name">Sales Routes</field>
+        <field name="res_model">van.route</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

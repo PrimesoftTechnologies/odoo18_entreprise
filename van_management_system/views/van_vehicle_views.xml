@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ========================================================= -->
+    <!-- FLEET VEHICLE - VAN DISTRIBUTION                          -->
+    <!-- ========================================================= -->
+
+    <record id="view_fleet_vehicle_form_van_management" model="ir.ui.view">
+
+        <field name="name">fleet.vehicle.form.van.management</field>
+
+        <field name="model">fleet.vehicle</field>
+
+        <field name="inherit_id" ref="fleet.fleet_vehicle_view_form"/>
+
+        <field name="arch" type="xml">
+
+            <!-- ================================================= -->
+            <!-- VAN DISTRIBUTION TAB                              -->
+            <!-- ================================================= -->
+
+            <xpath expr="//notebook" position="inside">
+
+                <page
+                    string="Van Distribution"
+                    name="page_van_distribution"
+                >
+
+                    <group>
+
+                        <!-- ===================================== -->
+                        <!-- VAN INFORMATION                       -->
+                        <!-- ===================================== -->
+
+                        <group string="Van Information">
+
+                            <field name="is_van"/>
+
+                            <field
+                                name="van_code"
+                                invisible="not is_van"
+                            />
+
+                            <!-- Hapa ndipo Van Stock Location ilipoongezwa -->
+                            <field
+                                name="van_location_id"
+                                invisible="not is_van"
+                                options="{'no_create': True}"
+                            />
+
+                            <field
+                                name="van_active"
+                                invisible="not is_van"
+                            />
+
+                        </group>
+
+
+                        <!-- ===================================== -->
+                        <!-- ASSIGNMENT                            -->
+                        <!-- ===================================== -->
+
+                        <group string="Van Assignment">
+
+                            <field
+                                name="van_salesman_id"
+                                invisible="not is_van"
+                            />
+
+                            <field
+                                name="van_supervisor_id"
+                                invisible="not is_van"
+                            />
+
+                        </group>
+
+                    </group>
+
+
+                    <!-- ========================================= -->
+                    <!-- POS                                       -->
+                    <!-- ========================================= -->
+
+                    <group string="Van POS">
+
+                        <field
+                            name="van_pos_config_id"
+                            readonly="1"
+                            invisible="not is_van"
+                        />
+
+                        <button
+                            name="action_view_van_pos"
+                            type="object"
+                            string="Open Van POS"
+                            class="btn-primary"
+                            invisible="not van_pos_config_id"
+                        />
+
+                    </group>
+
+
+                    <!-- ========================================= -->
+                    <!-- TRANSFERS                                 -->
+                    <!-- ========================================= -->
+
+                    <group string="Van Operations">
+
+                        <button
+                            name="action_view_van_transfers"
+                            type="object"
+                            string="View Stock Transfers"
+                            class="btn-secondary"
+                            invisible="not is_van"
+                        />
+
+                    </group>
+
+
+                    <!-- ========================================= -->
+                    <!-- NOTES                                     -->
+                    <!-- ========================================= -->
+
+                    <group string="Notes">
+
+                        <field
+                            name="van_notes"
+                            nolabel="1"
+                            placeholder="Write notes about this van..."
+                            invisible="not is_van"
+                        />
+
+                    </group>
+
+                </page>
+
+            </xpath>
+
+        </field>
+
+    </record>
+
+
+    <!-- ========================================================= -->
+    <!-- VEHICLE LIST                                              -->
+    <!-- ========================================================= -->
+
+    <record id="view_fleet_vehicle_tree_van_management" model="ir.ui.view">
+
+        <field name="name">fleet.vehicle.tree.van.management</field>
+
+        <field name="model">fleet.vehicle</field>
+
+        <field name="inherit_id" ref="fleet.fleet_vehicle_view_tree"/>
+
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='model_id']" position="after">
+
+                <field
+                    name="is_van"
+                    optional="hide"
+                />
+
+                <field
+                    name="van_code"
+                    optional="hide"
+                />
+
+                <field
+                    name="van_location_id"
+                    optional="hide"
+                />
+
+                <field
+                    name="van_salesman_id"
+                    optional="hide"
+                />
+
+                <field
+                    name="van_supervisor_id"
+                    optional="hide"
+                />
+
+            </xpath>
+
+        </field>
+
+    </record>
+
+</odoo>

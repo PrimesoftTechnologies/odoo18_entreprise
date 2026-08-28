@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_van_route_complete_wizard_form" model="ir.ui.view">
+        <field name="name">van.route.complete.wizard.form</field>
+        <field name="model">van.route.complete.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Complete Route &amp; Retirement">
+                <sheet>
+                    <group>
+                        <field name="route_id" invisible="1"/>
+                        <!-- Uwanja huu wa salesman_id lazima uwepo hapa na uwe invisible ili domain ya Python ifanye kazi -->
+                        <field name="salesman_id" invisible="1"/>
+                        
+                        <field name="route_reference" readonly="1"/>
+                        <field name="end_location" placeholder="Enter End Location here..."/>
+                        
+                        <!-- Drop-down Menu sasa italeta POS Sessions za huyo Salesman pekee -->
+                        <field name="pos_session_id" options="{'no_create': True, 'no_open': True}" placeholder="Select POS Session (e.g. POS/00010)..."/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_confirm_complete_route" string="Confirm" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

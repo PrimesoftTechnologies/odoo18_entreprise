@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==========================================================
+         VAN SETTINGS
+         Model: van.configuration
+         ========================================================== -->
+
+    <record id="view_van_configuration_settings_form" model="ir.ui.view">
+        <field name="name">van.configuration.settings.form</field>
+        <field name="model">van.configuration</field>
+        <field name="arch" type="xml">
+
+            <form string="Van Settings">
+
+                <sheet>
+
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+
+                    <group>
+
+                        <group string="General Settings">
+                            <field name="company_id"/>
+                            <field name="active"/>
+                            <field name="default_van_active"/>
+                            <field name="allow_salesman_van_selection"/>
+                        </group>
+
+                    </group>
+
+                    <notebook>
+
+                        <!-- ======================================
+                             ROUTE SETTINGS
+                             ====================================== -->
+
+                        <page string="Route Settings">
+
+                            <group>
+
+                                <group>
+                                    <field name="route_required_transfer"/>
+                                    <field name="route_require_locations"/>
+                                </group>
+
+                            </group>
+
+                        </page>
+
+
+                        <!-- ======================================
+                             STOCK TRANSFER SETTINGS
+                             ====================================== -->
+
+                        <page string="Stock Transfer Settings">
+
+                            <group>
+
+                                <group>
+                                    <field name="require_transfer_approval"/>
+                                    <field name="allow_partial_approval"/>
+                                    <field name="require_stock_check"/>
+                                </group>
+
+                            </group>
+
+                        </page>
+
+
+                        <!-- ======================================
+                             APPROVAL SETTINGS
+                             ====================================== -->
+
+                        <page string="Approval Settings">
+
+                            <group>
+
+                                <group>
+                                    <field name="require_supervisor_approval"/>
+                                    <field name="require_manager_approval"/>
+                                </group>
+
+                                <group string="Approval Users">
+                                    <field
+                                        name="approval_user_ids"
+                                        widget="many2many_tags"
+                                        options="{'no_create': False}"
+                                    />
+                                </group>
+
+                            </group>
+
+                        </page>
+
+
+                        <!-- ======================================
+                             NOTES
+                             ====================================== -->
+
+                        <page string="Notes">
+
+                            <field
+                                name="note"
+                                placeholder="Add configuration notes..."
+                            />
+
+                        </page>
+
+                    </notebook>
+
+                </sheet>
+
+            </form>
+
+        </field>
+    </record>
+
+
+    <!-- ==========================================================
+         VAN SETTINGS ACTION
+         ========================================================== -->
+
+    <record id="action_van_configuration_settings" model="ir.actions.act_window">
+
+        <field name="name">Van Settings</field>
+
+        <field name="res_model">van.configuration</field>
+
+        <field name="view_mode">form</field>
+
+        <field name="view_id"
+               ref="view_van_configuration_settings_form"/>
+
+        <field name="target">current</field>
+
+    </record>
+
+
+    <!-- ==========================================================
+         ROUTE CONFIGURATION
+         Model: van.route.configuration
+         ========================================================== -->
+
+    <record id="view_van_route_configuration_form" model="ir.ui.view">
+
+        <field name="name">van.route.configuration.form</field>
+
+        <field name="model">van.route.configuration</field>
+
+        <field name="arch" type="xml">
+
+            <form string="Route Configuration">
+
+                <sheet>
+
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+
+                    <group>
+
+                        <group string="General">
+                            <field name="company_id"/>
+                            <field name="active"/>
+                        </group>
+
+                    </group>
+
+                    <group string="Route Requirements">
+
+                        <group>
+                            <field name="require_route_date"/>
+                            <field name="require_van"/>
+                            <field name="require_internal_transfer"/>
+                        </group>
+
+                        <group>
+                            <field name="require_start_location"/>
+                            <field name="require_end_location"/>
+                            <field name="allow_route_cancellation"/>
+                        </group>
+
+                    </group>
+
+                    <group string="Notes">
+                        <field
+                            name="note"
+                            placeholder="Add route configuration notes..."
+                        />
+                    </group>
+
+                </sheet>
+
+            </form>
+
+        </field>
+
+    </record>
+
+
+    <!-- ==========================================================
+         ROUTE CONFIGURATION ACTION
+         ========================================================== -->
+
+    <record id="action_van_route_configuration" model="ir.actions.act_window">
+
+        <field name="name">Route Configuration</field>
+
+        <field name="res_model">van.route.configuration</field>
+
+        <field name="view_mode">form</field>
+
+        <field name="view_id"
+               ref="view_van_route_configuration_form"/>
+
+        <field name="target">current</field>
+
+    </record>
+
+
+    <!-- ==========================================================
+         STOCK TRANSFER CONFIGURATION
+         Model: van.stock.transfer.configuration
+         ========================================================== -->
+
+    <record id="view_van_stock_transfer_configuration_form"
+            model="ir.ui.view">
+
+        <field name="name">van.stock.transfer.configuration.form</field>
+
+        <field name="model">van.stock.transfer.configuration</field>
+
+        <field name="arch" type="xml">
+
+            <form string="Stock Transfer Settings">
+
+                <sheet>
+
+                    <div class="oe_title">
+
+                        <label for="name"/>
+
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+
+                    </div>
+
+                    <group>
+
+                        <group string="General">
+
+                            <field name="company_id"/>
+                            <field name="active"/>
+
+                        </group>
+
+                    </group>
+
+                    <group string="Transfer Rules">
+
+                        <group>
+
+                            <field name="require_approval"/>
+                            <field name="check_available_stock"/>
+
+                        </group>
+
+                        <group>
+
+                            <field name="allow_partial_approval"/>
+                            <field name="auto_create_inventory_transfer"/>
+
+                        </group>
+
+                    </group>
+
+                    <group string="Notes">
+
+                        <field
+                            name="note"
+                            placeholder="Add stock transfer configuration notes..."
+                        />
+
+                    </group>
+
+                </sheet>
+
+            </form>
+
+        </field>
+
+    </record>
+
+
+    <!-- ==========================================================
+         STOCK TRANSFER CONFIGURATION ACTION
+         ========================================================== -->
+
+    <record id="action_van_stock_transfer_settings"
+            model="ir.actions.act_window">
+
+        <field name="name">Stock Transfer Settings</field>
+
+        <field name="res_model">van.stock.transfer.configuration</field>
+
+        <field name="view_mode">form</field>
+
+        <field name="view_id"
+               ref="view_van_stock_transfer_configuration_form"/>
+
+        <field name="target">current</field>
+
+    </record>
+
+
+    <!-- ==========================================================
+         APPROVAL CONFIGURATION
+         Model: van.approval.configuration
+         ========================================================== -->
+
+    <record id="view_van_approval_configuration_form"
+            model="ir.ui.view">
+
+        <field name="name">van.approval.configuration.form</field>
+
+        <field name="model">van.approval.configuration</field>
+
+        <field name="arch" type="xml">
+
+            <form string="Approval Settings">
+
+                <sheet>
+
+                    <div class="oe_title">
+
+                        <label for="name"/>
+
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+
+                    </div>
+
+                    <group>
+
+                        <group string="General">
+
+                            <field name="company_id"/>
+                            <field name="active"/>
+
+                        </group>
+
+                    </group>
+
+                    <group string="Approval Levels">
+
+                        <group>
+
+                            <field name="require_supervisor"/>
+                            <field name="require_manager"/>
+
+                        </group>
+
+                        <group>
+
+                            <field name="allow_rejection"/>
+                            <field name="require_rejection_reason"/>
+
+                        </group>
+
+                    </group>
+
+                    <group string="Approval Users">
+
+                        <field
+                            name="approval_user_ids"
+                            widget="many2many_tags"
+                            options="{'no_create': False}"
+                        />
+
+                    </group>
+
+                    <group string="Notes">
+
+                        <field
+                            name="note"
+                            placeholder="Add approval configuration notes..."
+                        />
+
+                    </group>
+
+                </sheet>
+
+            </form>
+
+        </field>
+
+    </record>
+
+
+    <!-- ==========================================================
+         APPROVAL CONFIGURATION ACTION
+         ========================================================== -->
+
+    <record id="action_van_approval_settings"
+            model="ir.actions.act_window">
+
+        <field name="name">Approval Settings</field>
+
+        <field name="res_model">van.approval.configuration</field>
+
+        <field name="view_mode">form</field>
+
+        <field name="view_id"
+               ref="view_van_approval_configuration_form"/>
+
+        <field name="target">current</field>
+
+    </record>
+
+</odoo>

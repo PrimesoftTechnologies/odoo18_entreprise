@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==========================================================
+         SALES BY ROUTE
+         ========================================================== -->
+
+    <record id="view_van_sales_by_route_tree" model="ir.ui.view">
+        <field name="name">van.sales.by.route.tree</field>
+        <field name="model">van.sales.by.route</field>
+
+        <field name="arch" type="xml">
+            <list string="Sales by Route">
+
+                <field name="route_id"/>
+                <field name="van_id"/>
+                <field name="salesman_id"/>
+                <field name="customer_count"/>
+                <field name="order_count"/>
+
+                <field
+                    name="total_amount"
+                    widget="monetary"
+                />
+
+                <field
+                    name="currency_id"
+                    column_invisible="1"
+                />
+
+                <field name="company_id"/>
+
+            </list>
+        </field>
+    </record>
+
+
+    <!-- ==========================================================
+         SALES BY SALESMAN
+         ========================================================== -->
+
+    <record id="view_van_sales_by_salesman_tree" model="ir.ui.view">
+        <field name="name">van.sales.by.salesman.tree</field>
+        <field name="model">van.sales.by.salesman</field>
+
+        <field name="arch" type="xml">
+            <list string="Sales by Salesman">
+
+                <field name="salesman_id"/>
+                <field name="route_count"/>
+                <field name="customer_count"/>
+                <field name="order_count"/>
+
+                <field
+                    name="total_amount"
+                    widget="monetary"
+                />
+
+                <field
+                    name="currency_id"
+                    column_invisible="1"
+                />
+
+                <field name="company_id"/>
+
+            </list>
+        </field>
+    </record>
+
+
+    <!-- ==========================================================
+         SALES REPORT
+         ========================================================== -->
+
+    <record id="view_van_sales_report_tree" model="ir.ui.view">
+        <field name="name">van.sales.report.tree</field>
+        <field name="model">van.sales.report</field>
+
+        <field name="arch" type="xml">
+            <list string="Sales Report">
+
+                <field name="date_order"/>
+                <field name="order_name"/>
+                <field name="customer_id"/>
+                <field name="salesman_id"/>
+                <field name="route_id"/>
+                <field name="van_id"/>
+
+                <field
+                    name="amount_untaxed"
+                    widget="monetary"
+                />
+
+                <field
+                    name="amount_tax"
+                    widget="monetary"
+                />
+
+                <field
+                    name="amount_total"
+                    widget="monetary"
+                />
+
+                <field
+                    name="currency_id"
+                    column_invisible="1"
+                />
+
+                <field name="state"/>
+                <field name="company_id"/>
+
+            </list>
+        </field>
+    </record>
+
+
+    <!-- ==========================================================
+         SALES BY ROUTE ACTION
+         ========================================================== -->
+
+    <record id="action_van_sales_by_route" model="ir.actions.act_window">
+
+        <field name="name">Sales by Route</field>
+
+        <field name="res_model">van.sales.by.route</field>
+
+        <field name="view_mode">list</field>
+
+        <field
+            name="view_id"
+            ref="view_van_sales_by_route_tree"
+        />
+
+    </record>
+
+
+    <!-- ==========================================================
+         SALES BY SALESMAN ACTION
+         ========================================================== -->
+
+    <record id="action_van_sales_by_salesman" model="ir.actions.act_window">
+
+        <field name="name">Sales by Salesman</field>
+
+        <field name="res_model">van.sales.by.salesman</field>
+
+        <field name="view_mode">list</field>
+
+        <field
+            name="view_id"
+            ref="view_van_sales_by_salesman_tree"
+        />
+
+    </record>
+
+
+    <!-- ==========================================================
+         SALES REPORT ACTION
+         ========================================================== -->
+
+    <record id="action_van_sales_report" model="ir.actions.act_window">
+
+        <field name="name">Sales Report</field>
+
+        <field name="res_model">van.sales.report</field>
+
+        <field name="view_mode">list</field>
+
+        <field
+            name="view_id"
+            ref="view_van_sales_report_tree"
+        />
+
+    </record>
+
+
+</odoo>

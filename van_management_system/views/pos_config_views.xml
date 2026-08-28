@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+
+    <!-- ========================================================= -->
+    <!-- POS CONFIG - VAN DISTRIBUTION                             -->
+    <!-- ========================================================= -->
+
+    <record id="view_pos_config_form_van_management" model="ir.ui.view">
+
+        <field name="name">pos.config.form.van.management</field>
+
+        <field name="model">pos.config</field>
+
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+
+        <field name="arch" type="xml">
+
+            <!-- Odoo 18 POS Config form -->
+            <xpath expr="//sheet" position="inside">
+
+                <group
+                    string="Van Distribution"
+                    name="van_distribution_settings"
+                >
+
+                    <group>
+
+                        <field name="is_van_pos"/>
+
+                        <field
+                            name="van_id"
+                            invisible="not is_van_pos"
+                            required="is_van_pos"
+                        />
+
+                        <field
+                            name="van_salesman_id"
+                            invisible="not is_van_pos"
+                        />
+
+                    </group>
+
+
+                    <group>
+
+                        <button
+                            name="action_assign_to_van"
+                            type="object"
+                            string="Assign POS to Van"
+                            class="btn-primary"
+                            invisible="not is_van_pos or not van_id"
+                        />
+
+                    </group>
+
+                </group>
+
+            </xpath>
+
+        </field>
+
+    </record>
+
+</odoo>
