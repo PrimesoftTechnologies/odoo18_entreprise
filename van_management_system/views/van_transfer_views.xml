@@ -60,7 +60,7 @@
                         type="object"
                         string="Submit for Approval"
                         class="btn-primary"
-                        invisible="state not in ('draft', 'rejected') or requested_by != uid"
+                        invisible="state not in ('draft', 'rejected')"
                     />
 
                     <!-- CANCEL / SET TO DRAFT -->
@@ -69,7 +69,7 @@
                         type="object"
                         string="Set to Draft"
                         class="btn-secondary"
-                        invisible="state not in ('waiting_approval', 'rejected') or requested_by != uid"
+                        invisible="state not in ('waiting_approval', 'rejected')"
                     />
 
                     <!-- APPROVE (Manager / Supervisor) -->
@@ -79,7 +79,7 @@
                         string="Approve"
                         class="btn-primary"
                         groups="van_management_system.group_van_supervisor,van_management_system.group_van_manager"
-                        invisible="state != 'waiting_approval' or requested_by == uid"
+                        invisible="state != 'waiting_approval'"
                     />
 
                     <!-- REJECT (Manager / Supervisor) -->
@@ -89,7 +89,7 @@
                         string="Reject"
                         class="btn-secondary"
                         groups="van_management_system.group_van_supervisor,van_management_system.group_van_manager"
-                        invisible="state != 'waiting_approval' or requested_by == uid"
+                        invisible="state != 'waiting_approval'"
                     />
 
                     <!-- START ROUTE (Salesman) - Ikitumika inatoweka haijirudii -->
@@ -98,7 +98,7 @@
                         type="object"
                         string="Start Route"
                         class="btn-primary"
-                        invisible="state != 'approved' or requested_by != uid or route_start_location"
+                        invisible="state != 'approved' or route_start_location"
                     />
 
                     <!-- Kitufe cha Complete Route kilikuwa hapa, KIMEONDOLEWA KABISA ili kisiharibu mtiririko wako -->
