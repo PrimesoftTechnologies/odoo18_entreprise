@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- 1. Kuongeza Helper chini ya Salesperson ndani ya Other Info Tab -->
+    <!-- 1. Kuongeza Helper kwenye Other Info Tab ya Form View -->
     <record id="view_order_form_inherit_sales_helper" model="ir.ui.view">
         <field name="name">sale.order.form.inherit.sales.helper</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <!-- Tunalenga user_id iliyo ndani ya group ya SALES kwenye Other Info tab -->
-            <xpath expr="//group[@name='sales_person']//field[@name='user_id']" position="after">
+            <!-- Tunatumia company_id ambayo ipo ndani ya Other Info tab kuhakikisha inaingia huko huko -->
+            <xpath expr="//field[@name='company_id']" position="before">
                 <field name="helper_id" widget="many2one_avatar_user"/>
             </xpath>
         </field>
