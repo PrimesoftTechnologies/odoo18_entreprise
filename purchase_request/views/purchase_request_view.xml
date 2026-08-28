@@ -8,12 +8,12 @@
         <field name="arch" type="xml">
             <form string="Purchase Request">
                 <header>
+                    <!-- Kitufe cha Reset kinaonekana ikiwa to_approve (wakati imetumwa kusubiri approval) -->
                     <button
                         name="button_draft"
                         string="Reset"
-                        invisible="state not in ('to_approve','approved','rejected','in_progress','done')"
+                        invisible="state not in ('to_approve')"
                         type="object"
-                        groups="purchase_request.group_purchase_request_manager"
                     />
                     <button
                         name="button_to_approve"
@@ -37,19 +37,21 @@
                         type="object"
                         groups="purchase_request.group_purchase_request_manager"
                     />
+                    <!-- Kitufe cha Create RFQ kinaonekana ikiwa approved -->
                     <button
                         name="%(action_purchase_request_line_make_purchase_order)d"
-                        invisible="state not in ('approved', 'in_progress')"
+                        invisible="state not in ('approved')"
                         string="Create RFQ"
                         type="action"
+                        class="oe_highlight"
                     />
+                    <!-- Kitufe cha Done kinaonekana tu ikiwa ipo 'in_progress' (yaani baada ya Create RFQ kubonyezwa au mchakato kuanza) -->
                     <button
                         name="button_done"
-                        invisible="state not in ('approved', 'in_progress')"
+                        invisible="state not in ('in_progress')"
                         string="Done"
                         type="object"
                         class="oe_highlight"
-                        groups="purchase_request.group_purchase_request_manager"
                     />
                     <button
                         name="button_rejected"
@@ -165,6 +167,7 @@
                                     <field name="product_id" />
                                     <field name="name" />
                                     <field name="product_qty" />
+                                    <field name="qty_available" />
                                     <field
                                         name="product_uom_category_id"
                                         column_invisible="1"

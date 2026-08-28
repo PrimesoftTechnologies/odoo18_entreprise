@@ -31,6 +31,13 @@ class PurchaseRequestLine(models.Model):
     product_qty = fields.Float(
         string="Quantity", tracking=True, digits="Product Unit of Measure"
     )
+    qty_available = fields.Float(
+        string="On Hand",
+        digits="Product Unit of Measure",
+        compute="_compute_qty_available",
+        store=True,
+        help="Current quantity on hand for the product.",
+    )
     request_id = fields.Many2one(
         comodel_name="purchase.request",
         string="Purchase Request",
@@ -173,6 +180,11 @@ class PurchaseRequestLine(models.Model):
         tracking=True,
     )
 
+    @api.depends("product_id", "product_id.qty_available")
+    def _compute_qty_available(self):
+        for rec in self:
+            rec.qty_available = rec.product_id.qty_available if rec.product_id else 0.0
+
     @api.depends(
         "purchase_request_allocation_ids",
         "purchase_request_allocation_ids.stock_move_id.state",
@@ -227,8 +239,6 @@ class PurchaseRequestLine(models.Model):
                     .filtered(lambda sm: sm.state == "cancel")
                     .mapped("product_qty")
                 )
-                # done this way as i cannot track what was received before
-                # cancelled the purchase order
                 qty_cancelled -= request.qty_done
             if request.product_uom_id:
                 request.qty_cancelled = (
@@ -349,9 +359,6 @@ class PurchaseRequestLine(models.Model):
     @api.model
     def _calc_new_qty(self, request_line, po_line=None, new_pr_line=False):
         purchase_uom = po_line.product_uom or request_line.product_id.uom_po_id
-        # TODO: Not implemented yet.
-        #  Make sure we use the minimum quantity of the partner corresponding
-        #  to the PO. This does not apply in case of dropshipping
         supplierinfo_min_qty = 0.0
         if not po_line.order_id.dest_address_id:
             supplierinfo_min_qty = self._get_supplier_min_qty(
@@ -359,7 +366,6 @@ class PurchaseRequestLine(models.Model):
             )
 
         rl_qty = 0.0
-        # Recompute quantity by adding existing running procurements.
         for rl in po_line.purchase_request_lines:
             rl_qty += rl.product_uom_id._compute_quantity(rl.product_qty, purchase_uom)
         qty = max(rl_qty, supplierinfo_min_qty)
