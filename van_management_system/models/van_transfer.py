@@ -308,9 +308,6 @@ class VanStockTransfer(models.Model):
             if rec.state != "waiting_approval":
                 raise UserError(_("Only transfers waiting for approval can be approved."))
             
-            if rec.requested_by == self.env.user:
-                raise UserError(_("You cannot approve your own transfer request!"))
-
             rec._create_picking()
             rec.approved_by = self.env.user
             rec.approved_date = fields.Datetime.now()
