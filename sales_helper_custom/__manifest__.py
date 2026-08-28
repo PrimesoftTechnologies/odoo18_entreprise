@@ -4,7 +4,7 @@
     'sequence':-23,
     'summary': 'Adds a Helper field to Sale Orders under Salesperson',
     'category': 'Sales',
-    'author': 'Custom',
+    'author': 'PrimeSoft Technologies',
     'depends': ['sale'],
     'data': [
         'views/sale_order_views.xml',
