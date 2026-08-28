@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_purchase_order_form_company_approval" model="ir.ui.view">
+        <field name="name">purchase.order.form.company.approval</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            
+            <!-- TECHNICAL FIELDS -->
+            <xpath expr="//header" position="inside">
+                <field name="approval_enabled" invisible="1"/>
+                <field name="can_approve_procurement" invisible="1"/>
+                <field name="can_approve_finance" invisible="1"/>
+                <field name="can_confirm_purchase" invisible="1"/>
+                <field name="approval_stage" invisible="1"/>
+                <field name="approval_submitted_by" invisible="1"/>
+            </xpath>
+
+            <!-- STATUSBAR -->
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="approval_statusbar" widget="statusbar" statusbar_visible="draft,waiting_approval,procurement_approved,finance_approved,rejected,purchase"
+                       invisible="not approval_enabled" readonly="1"/>
+            </xpath>
+
+            <xpath expr="//field[@name='state']" position="attributes">
+                <attribute name="invisible">approval_enabled</attribute>
+            </xpath>
+
+            <!-- APPROVAL FIELDS INFO -->
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="approved_by" readonly="1" invisible="not approved_by"/>
+                <field name="approved_date" readonly="1" invisible="not approved_date"/>
+                <field name="approval_submitted_by" readonly="1" invisible="not approval_submitted_by"/>
+                <field name="reject_reason" readonly="1" invisible="not reject_reason" decoration-danger="1"/>
+            </xpath>
+
+            <!-- ORDER LINES: Zisomeke tu isipokuwa zikiwa kwenye state ya draft -->
+            <xpath expr="//field[@name='order_line']" position="attributes">
+                <attribute name="readonly">approval_enabled and state != 'draft'</attribute>
+            </xpath>
+
+            <!-- ON HAND COLUMN IN ODOO LIST VIEW -->
+            <xpath expr="//field[@name='order_line']/list//field[@name='product_qty']" position="after">
+                <field name="qty_available" optional="show"/>
+            </xpath>
+
+            <!-- CUSTOM WORKFLOW APPROVAL BUTTONS -->
+            <xpath expr="//header" position="inside">
+                <!-- Set to Draft (Itaonekana ikiwa rejected na sio draft bado) -->
+                <button name="action_set_to_draft_custom" string="Set to Draft" type="object"
+                        class="btn-secondary"
+                        invisible="
+                            not approval_enabled
+                            or approval_stage != 'rejected'
+                            or state == 'draft'
+                        "/>
+
+                <!-- Submit for Approval (Itaonekana kwenye Draft ya kawaida, au mara tu baada ya Set to Draft kubonyezwa) -->
+                <button name="action_submit_for_approval" string="Submit for Approval" type="object"
+                        class="btn-primary"
+                        invisible="
+                            not approval_enabled
+                            or state != 'draft'
+                            or (approval_stage not in ('none', 'rejected'))
+                        "/>
+
+                <!-- Procurement Manager Approval -->
+                <button name="action_approve_procurement"
+                        string="Approve [Procurement Manager]"
+                        type="object"
+                        class="btn-primary"
+                        invisible="not can_approve_procurement"/>
+
+                <!-- Finance Manager Approval -->
+                <button name="action_approve_finance"
+                        string="Approve [Finance Manager]"
+                        type="object"
+                        class="btn-primary"
+                        invisible="not can_approve_finance"/>
+
+                <!-- Cancel Order (Procurement & Finance wakiwa wanakagua tu) -->
+                <button name="button_cancel" string="Cancel" type="object"
+                        class="btn-secondary"
+                        invisible="
+                            not approval_enabled
+                            or not (can_approve_procurement or can_approve_finance)
+                        "/>
+
+                <!-- Reject (Procurement & Finance wakiwa wanakagua tu) -->
+                <button name="action_reject"
+                        string="Reject"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="
+                            not approval_enabled
+                            or not (can_approve_procurement or can_approve_finance)
+                        "/>
+            </xpath>
+
+            <!-- CONTROL NATIVE ODOO BUTTONS -->
+            <xpath expr="//button[@name='action_rfq_send'][1]" position="attributes">
+                <attribute name="invisible">
+                    approval_enabled and not can_confirm_purchase
+                </attribute>
+            </xpath>
+
+            <xpath expr="//button[@name='action_rfq_send'][2]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//button[@name='print_quotation']" position="attributes">
+                <attribute name="invisible">
+                    approval_enabled and not can_confirm_purchase
+                </attribute>
+            </xpath>
+
+            <!-- Zuia kabisa kitufe asili cha cancel ya Odoo kisije kikaonekana mahali pa kawaida -->
+            <xpath expr="//button[@name='button_cancel']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//button[@name='button_confirm'][1]" position="attributes">
+                <attribute name="invisible">
+                    approval_enabled and not can_confirm_purchase
+                </attribute>
+                <attribute name="class">btn-secondary</attribute>
+            </xpath>
+
+            <xpath expr="//button[@name='button_confirm'][2]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
