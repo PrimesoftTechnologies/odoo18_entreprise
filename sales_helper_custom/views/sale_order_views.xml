@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- 1. Kuongeza Helper kwenye Form View -->
+    <!-- 1. Kuongeza Helper kwenye Other Info Tab ya Form View -->
     <record id="view_order_form_inherit_sales_helper" model="ir.ui.view">
         <field name="name">sale.order.form.inherit.sales.helper</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <!-- Tunatumia partner_id badala ya user_id ili kuepuka kukosa xpath -->
-            <xpath expr="//field[@name='partner_id']" position="after">
+            <!-- Inawekwa chini ya company_id ndani ya Other Info tab -->
+            <xpath expr="//field[@name='company_id']" position="after">
                 <field name="helper_id" widget="many2one_avatar_user"/>
             </xpath>
         </field>
     </record>
 
-    <!-- 2. Kuongeza Helper kwenye Tree/List View -->
+    <!-- 2. Kuongeza Helper kwenye Tree/List View (Quotation & Sale Orders List) -->
     <record id="view_quotation_tree_inherit_sales_helper" model="ir.ui.view">
         <field name="name">sale.order.tree.inherit.sales.helper</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_quotation_tree"/>
         <field name="arch" type="xml">
-            <!-- Tunatumia partner_id kwenye list view pia -->
-            <xpath expr="//field[@name='partner_id']" position="after">
+            <!-- Tunaweka field ya helper_id kwenye list view baada ya user_id -->
+            <xpath expr="//field[@name='user_id']" position="after">
                 <field name="helper_id" optional="show" widget="many2one_avatar_user"/>
             </xpath>
         </field>
