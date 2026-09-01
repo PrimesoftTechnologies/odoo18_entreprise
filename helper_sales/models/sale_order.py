@@ -7,7 +7,7 @@ class SaleOrder(models.Model):
     _inherit = "sale.order"
 
     helper_id = fields.Many2one(
-        "hr.employee",
+        comodel_name="hr.employee",
         string="Helper",
         tracking=True,
     )
