@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- 1. Kuongeza Helper kwenye Form View -->
-    <record id="view_order_form_inherit_sales_helper" model="ir.ui.view">
-        <field name="name">sale.order.form.inherit.sales.helper</field>
+    <!-- 1. Form View: Kuweka helper chini ya Salesperson ndani ya Other Info -->
+    <record id="view_sale_order_form_helper" model="ir.ui.view">
+        <field name="name">sale.order.form.helper</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='user_id']" position="after">
+            <!-- Tunatumia team_id kuweka helper_id juu yake (yaani chini ya user_id) -->
+            <xpath expr="//field[@name='team_id']" position="before">
                 <field name="helper_id" widget="many2one_avatar_employee"/>
             </xpath>
         </field>
     </record>
 
-    <!-- 2. Kuongeza Helper kwenye Tree/List View -->
+    <!-- 2. Tree/List View: Kuongeza helper kwenye Orodha ya Quotations -->
     <record id="view_quotation_tree_inherit_sales_helper" model="ir.ui.view">
         <field name="name">sale.order.tree.inherit.sales.helper</field>
         <field name="model">sale.order</field>
