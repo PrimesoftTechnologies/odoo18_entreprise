@@ -1,13 +1,10 @@
-# -*- coding: utf-8 -*-
-
-from odoo import fields, models
-
+from odoo import models, fields
 
 class SaleOrder(models.Model):
-    _inherit = "sale.order"
+    _inherit = 'sale.order'
 
     helper_id = fields.Many2one(
-        comodel_name="hr.employee",
-        string="Helper",
-        tracking=True,
+        'hr.employee', 
+        string='Helper', 
+        tracking=True
     )

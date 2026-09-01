@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- 1. Form View: Kuweka helper chini ya Salesperson kwenye Other Info -->
-    <record id="view_sale_order_form_helper" model="ir.ui.view">
-        <field name="name">sale.order.form.helper</field>
+    <!-- 1. Kuongeza Helper kwenye Form View -->
+    <record id="view_order_form_inherit_sales_helper" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.sales.helper</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
@@ -12,7 +12,7 @@
         </field>
     </record>
 
-    <!-- 2. Tree/List View: Kuongeza helper kwenye Orodha ya Quotations/Orders -->
+    <!-- 2. Kuongeza Helper kwenye Tree/List View -->
     <record id="view_quotation_tree_inherit_sales_helper" model="ir.ui.view">
         <field name="name">sale.order.tree.inherit.sales.helper</field>
         <field name="model">sale.order</field>
