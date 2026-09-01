@@ -8,7 +8,7 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
 
-            <xpath expr="//field[@name='user_id']" position="after">
+            <xpath expr="//page[@name='other_information']//field[@name='user_id']" position="after">
                 <field name="helper_id"/>
             </xpath>
 
