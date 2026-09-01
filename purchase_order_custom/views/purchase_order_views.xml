@@ -44,7 +44,7 @@
 
             <!-- ON HAND COLUMN IN ODOO LIST VIEW -->
             <xpath expr="//field[@name='order_line']/list//field[@name='product_qty']" position="after">
-                <field name="qty_available" optional="show"/>
+                <field name="qty_available"/>
             </xpath>
 
             <!-- CUSTOM WORKFLOW APPROVAL BUTTONS -->
