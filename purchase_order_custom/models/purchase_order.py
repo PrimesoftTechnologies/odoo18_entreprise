@@ -134,6 +134,33 @@ class PurchaseOrder(models.Model):
                 and order.company_id.finance_manager_id == current_user
             )
 
+    can_reject_or_cancel = fields.Boolean(
+        string='Can Reject Or Cancel',
+        compute='_compute_can_reject_or_cancel',
+    )
+
+    @api.depends(
+        'approval_stage',
+        'company_id.procurement_manager_id',
+        'company_id.finance_manager_id',
+    )
+    def _compute_can_reject_or_cancel(self):
+        current_user = self.env.user
+        for order in self:
+            is_proc = order.company_id.procurement_manager_id == current_user
+            is_fin = order.company_id.finance_manager_id == current_user
+            
+            # Procurement anaona wakiwa waiting_procurement au procurement_approved
+            # Finance anaona wakiwa procurement_approved au hata akishafanya finance_approved (kabla ya confirmed)
+            if order.approval_stage == 'waiting_procurement':
+                order.can_reject_or_cancel = is_proc
+            elif order.approval_stage == 'procurement_approved':
+                order.can_reject_or_cancel = is_proc or is_fin
+            elif order.approval_stage == 'finance_approved':
+                order.can_reject_or_cancel = is_fin
+            else:
+                order.can_reject_or_cancel = False
+
     can_confirm_purchase = fields.Boolean(
         string='Can Confirm Purchase',
         compute='_compute_can_confirm_purchase',
@@ -284,7 +311,7 @@ class PurchaseOrder(models.Model):
         for order in self:
             order.write({
                 'state': 'draft',
-                'approval_stage': 'rejected',
+                'approval_stage': 'none',
             })
             order.modified(['state', 'approval_stage', 'approval_statusbar'])
         return True
@@ -324,10 +351,7 @@ class PurchaseOrder(models.Model):
     def action_reject(self):
         self.ensure_one()
 
-        if not (
-            self.can_approve_procurement
-            or self.can_approve_finance
-        ):
+        if not self.can_reject_or_cancel:
             raise UserError(
                 "You are not authorized to reject this order."
             )
@@ -342,6 +366,19 @@ class PurchaseOrder(models.Model):
                 'default_order_id': self.id,
             },
         }
+
+    def button_cancel(self):
+        for order in self:
+            if not order.can_reject_or_cancel:
+                raise UserError(
+                    "You are not authorized to cancel this order."
+                )
+            order.write({
+                'state': 'cancel',
+                'approval_stage': 'rejected',
+            })
+            order.modified(['state', 'approval_stage', 'approval_statusbar'])
+        return True
 
     def button_confirm(self):
         for order in self:

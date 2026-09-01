@@ -4,7 +4,7 @@
     'category': 'Purchases',
     'summary': 'Multi-level approval for Purchase Orders (Procurement & Finance Manager)',
     'author': 'Primesoft Technologies',
-    'sequence':-21,
+    'sequence':-27,
     'depends': ['purchase'],
     'data': [
         'security/ir.model.access.csv',

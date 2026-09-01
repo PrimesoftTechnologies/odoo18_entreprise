@@ -12,14 +12,17 @@
                 <field name="can_approve_procurement" invisible="1"/>
                 <field name="can_approve_finance" invisible="1"/>
                 <field name="can_confirm_purchase" invisible="1"/>
+                <field name="can_reject_or_cancel" invisible="1"/>
                 <field name="approval_stage" invisible="1"/>
                 <field name="approval_submitted_by" invisible="1"/>
             </xpath>
 
-            <!-- STATUSBAR -->
+            <!-- STATUSBAR NA RED BADGE KWAJILI YA REJECTED -->
             <xpath expr="//field[@name='state']" position="after">
-                <field name="approval_statusbar" widget="statusbar" statusbar_visible="draft,waiting_approval,procurement_approved,finance_approved,rejected,purchase"
-                       invisible="not approval_enabled" readonly="1"/>
+                <field name="approval_statusbar" widget="statusbar" 
+                       statusbar_visible="draft,waiting_approval,procurement_approved,finance_approved,rejected,purchase"
+                       invisible="not approval_enabled" readonly="1"
+                       decoration-danger="approval_statusbar == 'rejected'"/>
             </xpath>
 
             <xpath expr="//field[@name='state']" position="attributes">
@@ -36,7 +39,7 @@
 
             <!-- ORDER LINES: Zisomeke tu isipokuwa zikiwa kwenye state ya draft -->
             <xpath expr="//field[@name='order_line']" position="attributes">
-                <attribute name="readonly">approval_enabled and state != 'draft'</attribute>
+                <attribute name="readonly">approval_enabled and approval_stage != 'none'</attribute>
             </xpath>
 
             <!-- ON HAND COLUMN IN ODOO LIST VIEW -->
@@ -46,22 +49,22 @@
 
             <!-- CUSTOM WORKFLOW APPROVAL BUTTONS -->
             <xpath expr="//header" position="inside">
-                <!-- Set to Draft (Itaonekana ikiwa rejected na sio draft bado) -->
+                <!-- Set to Draft -->
                 <button name="action_set_to_draft_custom" string="Set to Draft" type="object"
                         class="btn-secondary"
                         invisible="
                             not approval_enabled
                             or approval_stage != 'rejected'
-                            or state == 'draft'
+                            or approval_submitted_by != uid
                         "/>
 
-                <!-- Submit for Approval (Itaonekana kwenye Draft ya kawaida, au mara tu baada ya Set to Draft kubonyezwa) -->
+                <!-- Submit for Approval -->
                 <button name="action_submit_for_approval" string="Submit for Approval" type="object"
                         class="btn-primary"
                         invisible="
                             not approval_enabled
                             or state != 'draft'
-                            or (approval_stage not in ('none', 'rejected'))
+                            or approval_stage not in ('none', 'rejected')
                         "/>
 
                 <!-- Procurement Manager Approval -->
@@ -78,22 +81,22 @@
                         class="btn-primary"
                         invisible="not can_approve_finance"/>
 
-                <!-- Cancel Order (Procurement & Finance wakiwa wanakagua tu) -->
+                <!-- Cancel Button -->
                 <button name="button_cancel" string="Cancel" type="object"
                         class="btn-secondary"
                         invisible="
                             not approval_enabled
-                            or not (can_approve_procurement or can_approve_finance)
+                            or not can_reject_or_cancel
                         "/>
 
-                <!-- Reject (Procurement & Finance wakiwa wanakagua tu) -->
+                <!-- Reject Button -->
                 <button name="action_reject"
                         string="Reject"
                         type="object"
                         class="btn-secondary"
                         invisible="
                             not approval_enabled
-                            or not (can_approve_procurement or can_approve_finance)
+                            or not can_reject_or_cancel
                         "/>
             </xpath>
 
@@ -114,7 +117,6 @@
                 </attribute>
             </xpath>
 
-            <!-- Zuia kabisa kitufe asili cha cancel ya Odoo kisije kikaonekana mahali pa kawaida -->
             <xpath expr="//button[@name='button_cancel']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
