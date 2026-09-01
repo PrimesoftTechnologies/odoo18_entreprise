@@ -1,5 +1,6 @@
-from odoo import models, fields, api
+from odoo import api, fields, models
 from odoo.exceptions import UserError
+
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
@@ -19,19 +20,23 @@ class AccountMove(models.Model):
             move.is_approver = self.env.user in move.company_id.invoice_approver_ids
 
     def action_post(self):
-        """ post """
+        """ Kila ukibonyeza Confirm, inahakiki Bill Date kwanza, kisha inaenda eto_approve """
         for move in self:
             if move.company_id.invoice_approval_required and move.state == 'draft':
+                # Kama ni Bill (Vendor Bill) na Bill Date haijajazwa, mzuie asiendelee
+                if move.move_type in ('in_invoice', 'in_refund') and not move.invoice_date:
+                    raise UserError("Please enter the Bill Date before proceeding with the approval.")
+                
                 move.write({'state': 'eto_approve'})
                 return True 
         
         return super(AccountMove, self).action_post()
 
     def action_approve_invoice(self):
-        """ post """
+        """ Inarekodi nani ka-approve, lini, kisha inasogeza mbele (post) """
         for move in self:
             if not self.is_approver:
-                raise UserError("Oop! Sorry, you have not right to approve invoice")
+                raise UserError("Sorry, you do not have permission to approve this invoice.")
             
             move.write({
                 'approved_by_id': self.env.user.id,
