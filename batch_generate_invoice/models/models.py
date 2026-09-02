@@ -12,6 +12,7 @@ class BatchInvoiceWizard(models.TransientModel):
     _name = 'batch.invoice.wizard'
     _description = 'Generate Batch Invoice Wizard'
 
+    name = fields.Char(string="Batch Number", readonly=True, default="New")
     line_ids = fields.One2many(
         'batch.invoice.wizard.line',
         'wizard_id',
@@ -36,6 +37,9 @@ class BatchInvoiceWizard(models.TransientModel):
         return res
 
     def action_generate_batch(self):
+        if self.name == 'New' or not self.name:
+            self.name = self.env['ir.sequence'].next_by_code('batch.invoice.sequence') or 'BATCH/2026/001'
+
         for line in self.line_ids:
             if line.invoice_id:
                 line.invoice_id.write({
@@ -85,10 +89,15 @@ class BatchInvoiceWizardLine(models.TransientModel):
         string="Antrak Job No"
     )
 
-    # Tumia Related Fields kwa Currency na Amount ili zisome moja kwa moja kutoka kwenye Invoice
     currency_id = fields.Many2one(
         related='invoice_id.currency_id',
         string="Currency",
+        readonly=True
+    )
+
+    currency_name = fields.Char(
+        related='invoice_id.currency_id.name',
+        string="Currency Name",
         readonly=True
     )
 

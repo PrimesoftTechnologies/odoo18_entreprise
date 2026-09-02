@@ -1,92 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <!-- BATCH INVOICE WIZARD FORM -->
     <record id="view_batch_invoice_wizard_form" model="ir.ui.view">
-
         <field name="name">batch.invoice.wizard.form</field>
-
         <field name="model">batch.invoice.wizard</field>
-
         <field name="arch" type="xml">
-
             <form string="Generate Batch Invoice">
-
                 <sheet>
-
+                    <group>
+                        <field name="name" readonly="1" invisible="name == 'New'"/>
+                    </group>
                     <field name="line_ids" nolabel="1">
-
-                        <list
-                            editable="bottom"
-                            create="0"
-                            delete="0"
-                        >
-
-                            <field
-                                name="invoice_id"
-                                column_invisible="1"
-                            />
-
-                            <field
-                                name="currency_id"
-                                column_invisible="1"
-                            />
-
-                            <field
-                                name="invoice_date"
-                                string="Invoice Date"
-                                readonly="1"
-                            />
-
-                            <field
-                                name="invoice_number"
-                                string="Docket No. / Invoice"
-                                readonly="1"
-                            />
-
-                            <field
-                                name="sas_reference"
-                                string="SAS Reference"
-                            />
-
-                            <field
-                                name="antrak_job_no"
-                                string="Antrak Job No"
-                            />
-
-                            <field
-                                name="amount"
-                                string="Amount"
-                                readonly="1"
-                                sum="Total"
-                            />
-
+                        <list editable="bottom" create="0" delete="0">
+                            <field name="invoice_id" column_invisible="1"/>
+                            <field name="currency_id" column_invisible="1"/>
+                            <field name="invoice_date" string="Invoice Date" readonly="1"/>
+                            <field name="invoice_number" string="Docket No. / Invoice" readonly="1"/>
+                            <field name="sas_reference" string="SAS Reference"/>
+                            <field name="antrak_job_no" string="Antrak Job No"/>
+                            <field name="amount" string="Amount" readonly="1" sum="Total"/>
                         </list>
-
                     </field>
-
                 </sheet>
-
                 <footer>
-
-                    <button
-                        name="action_generate_batch"
-                        string="GENERATE"
-                        type="object"
-                        class="btn-primary"
-                    />
-
-                    <button
-                        string="Cancel"
-                        special="cancel"
-                        class="btn-secondary"
-                    />
-
+                    <button name="action_generate_batch" string="GENERATE" type="object" class="btn-primary"/>
+                    <button string="Cancel" special="cancel" class="btn-secondary"/>
                 </footer>
-
             </form>
-
         </field>
+    </record>
 
+    <!-- WINDOW ACTION -->
+    <record id="action_open_batch_wizard_window" model="ir.actions.act_window">
+        <field name="name">Generate Batch Invoice</field>
+        <field name="res_model">batch.invoice.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_batch_invoice_wizard_form"/>
+        <field name="target">new</field>
+    </record>
+
+    <!-- ACCOUNT MOVE TREE VIEW INHERIT -->
+    <record id="view_move_tree_inherited_batch" model="ir.ui.view">
+        <field name="name">account.move.tree.inherited.batch</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_invoice_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="%(action_open_batch_wizard_window)d" string="Generate Batch" type="action" class="btn-secondary"/>
+            </xpath>
+            <xpath expr="//field[@name='ref']" position="after">
+                <field name="sas_reference" optional="show"/>
+                <field name="antrak_job_no" optional="show"/>
+            </xpath>
+        </field>
     </record>
 
 </odoo>
