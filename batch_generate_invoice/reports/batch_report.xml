@@ -12,7 +12,7 @@
         <field name="binding_type">report</field>
     </record>
 
-    <!-- QWEB REPORT (SILVER BORDER DESIGN) -->
+    <!-- QWEB REPORT (UNIFORM SILVER BORDERS) -->
     <template id="report_batch_invoice_document">
         <t t-call="web.external_layout">
             <t t-foreach="docs" t-as="o">
@@ -41,11 +41,11 @@
                             </div>
                         </div>
 
-                        <!-- CUSTOMER INFORMATION SECTION (SILVER BORDER) -->
+                        <!-- CUSTOMER INFORMATION SECTION (CLEAN UNIFORM BOX) -->
                         <div style="margin-bottom: 25px; width: 100%;">
-                            <table style="width: 100%; border-collapse: collapse;">
+                            <table style="width: 100%; border-collapse: collapse; border: 1px solid #e9ecef; background-color: #f8f9fa; border-radius: 4px;">
                                 <tr>
-                                    <td style="width: 50%; vertical-align: top; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 12px;">
+                                    <td style="width: 100%; vertical-align: top; padding: 12px; border: none;">
                                         <div style="font-size: 10px; text-transform: uppercase; color: #7f8c8d; font-weight: bold; margin-bottom: 4px; letter-spacing: 0.5px;">
                                             Billed To:
                                         </div>
@@ -67,7 +67,6 @@
                                             </t>
                                         </div>
                                     </td>
-                                    <td style="width: 50%;"></td>
                                 </tr>
                             </table>
                         </div>
@@ -76,30 +75,30 @@
                         <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 25px;">
                             <thead>
                                 <tr style="background-color: #2c3e50; color: #ffffff;">
-                                    <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 15%;">Invoice Date</th>
-                                    <th style="padding: 8px 6px; text-align: left; font-weight: 600; width: 25%;">Docket No. / Invoice</th>
-                                    <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 25%;">SAS Reference</th>
-                                    <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 20%;">Antrak Job No</th>
-                                    <th style="padding: 8px 6px; text-align: right; font-weight: 600; width: 15%;">Amount (<span t-esc="curr_symbol"/>)</th>
+                                    <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 15%; border: none;">Invoice Date</th>
+                                    <th style="padding: 8px 6px; text-align: left; font-weight: 600; width: 25%; border: none;">Docket No. / Invoice</th>
+                                    <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 25%; border: none;">SAS Reference</th>
+                                    <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 20%; border: none;">Antrak Job No</th>
+                                    <th style="padding: 8px 6px; text-align: right; font-weight: 600; width: 15%; border: none;">Amount (<span t-esc="curr_symbol"/>)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <t t-set="total_amount" t-value="0"/>
                                 <t t-foreach="o.line_ids" t-as="line">
                                     <tr style="border-bottom: 1px solid #e9ecef;">
-                                        <td style="padding: 8px 6px; text-align: center; color: #555555;">
+                                        <td style="padding: 8px 6px; text-align: center; color: #555555; border: 1px solid #e9ecef;">
                                             <span t-esc="line.invoice_date and line.invoice_date.strftime('%d/%m/%Y') or '-'"/>
                                         </td>
-                                        <td style="padding: 8px 6px; text-align: left; font-weight: 500; color: #2c3e50;">
+                                        <td style="padding: 8px 6px; text-align: left; font-weight: 500; color: #2c3e50; border: 1px solid #e9ecef;">
                                             <span t-esc="line.invoice_number or '-'"/>
                                         </td>
-                                        <td style="padding: 8px 6px; text-align: center; color: #555555;">
+                                        <td style="padding: 8px 6px; text-align: center; color: #555555; border: 1px solid #e9ecef;">
                                             <span t-esc="line.sas_reference or '-'"/>
                                         </td>
-                                        <td style="padding: 8px 6px; text-align: center; color: #555555;">
+                                        <td style="padding: 8px 6px; text-align: center; color: #555555; border: 1px solid #e9ecef;">
                                             <span t-esc="line.antrak_job_no or '-'"/>
                                         </td>
-                                        <td style="padding: 8px 6px; text-align: right; font-weight: 600; color: #2c3e50;">
+                                        <td style="padding: 8px 6px; text-align: right; font-weight: 600; color: #2c3e50; border: 1px solid #e9ecef;">
                                             <span t-esc="curr_symbol"/> <span t-esc="'%.2f' % line.amount"/>
                                             <t t-set="total_amount" t-value="total_amount + line.amount"/>
                                         </td>
@@ -122,26 +121,26 @@
                             <div style="display: table-cell; width: 45%; vertical-align: top;">
                                 <table style="width: 100%; border-collapse: collapse; font-size: 11px; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px;">
                                     <tr>
-                                        <td style="padding: 6px 10px; color: #555555;">TAXABLE (18%)</td>
-                                        <td style="text-align: right; padding: 6px 10px; color: #555555;">
+                                        <td style="padding: 6px 10px; color: #555555; border-bottom: 1px solid #e9ecef;">TAXABLE (18%)</td>
+                                        <td style="text-align: right; padding: 6px 10px; color: #555555; border-bottom: 1px solid #e9ecef;">
                                             <span t-esc="curr_symbol"/> 0.00
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td style="padding: 6px 10px; color: #555555;">NON-TAXABLE</td>
-                                        <td style="text-align: right; padding: 6px 10px; color: #555555;">
+                                        <td style="padding: 6px 10px; color: #555555; border-bottom: 1px solid #e9ecef;">NON-TAXABLE</td>
+                                        <td style="text-align: right; padding: 6px 10px; color: #555555; border-bottom: 1px solid #e9ecef;">
                                             <span t-esc="curr_symbol"/> <span t-esc="'%.2f' % total_amount"/>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td style="padding: 6px 10px; color: #555555; border-bottom: 1px solid #dee2e6;">VAT 18%</td>
-                                        <td style="text-align: right; padding: 6px 10px; color: #555555; border-bottom: 1px solid #dee2e6;">
+                                        <td style="padding: 6px 10px; color: #555555; border-bottom: 1px solid #e9ecef;">VAT 18%</td>
+                                        <td style="text-align: right; padding: 6px 10px; color: #555555; border-bottom: 1px solid #e9ecef;">
                                             <span t-esc="curr_symbol"/> 0.00
                                         </td>
                                     </tr>
                                     <tr style="background-color: #e9ecef;">
-                                        <td style="padding: 8px 10px; font-weight: bold; color: #2c3e50;">TOTAL <span t-esc="curr_symbol"/></td>
-                                        <td style="text-align: right; padding: 8px 10px; font-weight: bold; color: #2c3e50; font-size: 12px;">
+                                        <td style="padding: 8px 10px; font-weight: bold; color: #2c3e50; border: none;">TOTAL <span t-esc="curr_symbol"/></td>
+                                        <td style="text-align: right; padding: 8px 10px; font-weight: bold; color: #2c3e50; font-size: 12px; border: none;">
                                             <span t-esc="curr_symbol"/> <span t-esc="'%.2f' % total_amount"/>
                                         </td>
                                     </tr>
