@@ -12,7 +12,7 @@
         <field name="binding_type">report</field>
     </record>
 
-    <!-- QWEB REPORT (CLEAN & PROFESSIONAL DESIGN) -->
+    <!-- QWEB REPORT (SILVER BORDER DESIGN) -->
     <template id="report_batch_invoice_document">
         <t t-call="web.external_layout">
             <t t-foreach="docs" t-as="o">
@@ -41,7 +41,7 @@
                             </div>
                         </div>
 
-                        <!-- CUSTOMER INFORMATION SECTION -->
+                        <!-- CUSTOMER INFORMATION SECTION (SILVER BORDER) -->
                         <div style="margin-bottom: 25px; width: 100%;">
                             <table style="width: 100%; border-collapse: collapse;">
                                 <tr>
