@@ -11,7 +11,7 @@
         <field name="binding_type">report</field>
     </record>
 
-    <!-- Template safi ya Gate Pass bila kuongeza fields za ziada juu -->
+    <!-- Template safi kabisa ya Gate Pass -->
     <template id="report_gate_pass_document">
         <t t-call="web.external_layout">
             <t t-foreach="docs" t-as="o">
@@ -26,7 +26,7 @@
                             </div>
                         </div>
 
-                        <!-- Kichwa: GATE PASS na Namba kubwa ya Invoice (INV/...) -->
+                        <!-- Kichwa: GATE PASS na Namba ya Invoice -->
                         <div class="row mt-4 mb-3">
                             <div class="col-12">
                                 <h3 style="font-weight: bold; color: #333; margin-bottom: 5px;">GATE PASS</h3>
@@ -36,7 +36,7 @@
                             </div>
                         </div>
 
-                        <!-- Orodha ya Bidhaa (Table yenye Description, Quantity, na Unit Price) -->
+                        <!-- Orodha ya Bidhaa -->
                         <table class="table table-sm o_main_table" style="margin-top: 20px;">
                             <thead>
                                 <tr style="background-color: #f2f2f2;">
@@ -72,7 +72,7 @@
                             </table>
                         </div>
 
-                        <!-- Sehemu ya Saini za Chini -->
+                        <!-- Sehemu ya Saini za Chini (Zimeondolewa Manager na Auditor) -->
                         <div style="margin-top: 30px; page-break-inside: avoid;">
                             <table style="width: 100%; border-collapse: collapse !important; border: 1px solid #dee2e6;">
                                 <tr style="background-color: #f8f9fa;">
@@ -84,8 +84,8 @@
                                 <tr>
                                     <td style="width: 25%; padding: 8px; border: 1px solid #dee2e6;"><strong>Supervisor II</strong><div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div></td>
                                     <td style="width: 25%; padding: 8px; border: 1px solid #dee2e6;"><strong>Security</strong><div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div></td>
-                                    <td style="width: 25%; padding: 8px; border: 1px solid #dee2e6;"><strong>Manager</strong><div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div></td>
-                                    <td style="width: 25%; padding: 8px; border: 1px solid #dee2e6;"><strong>Auditor</strong><div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div></td>
+                                    <td style="width: 25%; padding: 8px; border: 1px solid #dee2e6;"></td>
+                                    <td style="width: 25%; padding: 8px; border: 1px solid #dee2e6;"></td>
                                 </tr>
                             </table>
                         </div>
