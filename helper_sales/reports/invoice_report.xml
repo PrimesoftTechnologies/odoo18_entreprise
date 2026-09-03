@@ -11,7 +11,7 @@
         <field name="binding_type">report</field>
     </record>
 
-    <!-- Template safi kabisa ya Gate Pass -->
+    <!-- Template safi kabisa ya Gate Pass (Bila Unit Price) -->
     <template id="report_gate_pass_document">
         <t t-call="web.external_layout">
             <t t-foreach="docs" t-as="o">
@@ -36,13 +36,12 @@
                             </div>
                         </div>
 
-                        <!-- Orodha ya Bidhaa -->
+                        <!-- Orodha ya Bidhaa (Description na Quantity pekee) -->
                         <table class="table table-sm o_main_table" style="margin-top: 20px;">
                             <thead>
                                 <tr style="background-color: #f2f2f2;">
                                     <th name="th_description"><span>Description</span></th>
                                     <th name="th_quantity" class="text-end"><span>Quantity</span></th>
-                                    <th name="th_priceunit" class="text-end"><span>Unit Price</span></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -50,7 +49,6 @@
                                     <tr>
                                         <td><span t-field="line.name"/></td>
                                         <td class="text-end"><span t-field="line.quantity"/></td>
-                                        <td class="text-end"><span t-field="line.price_unit"/></td>
                                     </tr>
                                 </t>
                             </tbody>
