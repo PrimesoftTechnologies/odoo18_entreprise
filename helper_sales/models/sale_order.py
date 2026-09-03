@@ -18,10 +18,13 @@ class SaleOrder(models.Model):
         required=True,
         tracking=True,
     )
-    helper_id = fields.Many2one(
+    # Imebadilishwa kuwa Many2many ili kuweka helpers zaidi ya mmoja (helpers wengi)
+    helper_ids = fields.Many2many(
         "hr.employee",
-        string="Helper",
-        required=True,
+        "sale_order_helper_rel",
+        "order_id",
+        "employee_id",
+        string="Helpers",
         tracking=True,
     )
     car_number = fields.Char(

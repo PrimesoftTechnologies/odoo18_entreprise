@@ -6,10 +6,10 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <!-- Kuongeza fields za Driver, Helper, Car Number na Region baada ya partner_id -->
+            <!-- Kuongeza fields za Driver, Helpers (Wengi), Car Number na Region baada ya partner_id -->
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="driver_id" widget="many2one_avatar_employee"/>
-                <field name="helper_id" widget="many2one_avatar_employee"/>
+                <field name="helper_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
                 <field name="car_number"/>
                 <field name="region_id"/>
             </xpath>
@@ -21,7 +21,7 @@
         </field>
     </record>
 
-    <!-- Orodha nyingine za views na menu ziache kama ulivyaziweka awali -->
+    <!-- Orodha ya Quotation/Order Tree View -->
     <record id="view_quotation_tree_inherit_driver_helper" model="ir.ui.view">
         <field name="name">sale.order.tree.inherit.driver.helper</field>
         <field name="model">sale.order</field>
@@ -29,13 +29,14 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='user_id']" position="after">
                 <field name="driver_id" optional="show" widget="many2one_avatar_employee"/>
-                <field name="helper_id" optional="show" widget="many2one_avatar_employee"/>
+                <field name="helper_ids" optional="show" widget="many2many_tags"/>
                 <field name="car_number" optional="show"/>
                 <field name="region_id" optional="show"/>
             </xpath>
         </field>
     </record>
 
+    <!-- Orodha nyingine za Sale Regions -->
     <record id="view_sale_region_tree" model="ir.ui.view">
         <field name="name">sale.region.tree</field>
         <field name="model">sale.region</field>
