@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- 1. Form View ya Sale Order: Kuweka fields na kufanya Unit Price iwe read-only -->
+    <!-- 1. Form View ya Sale Order: Kuweka fields na kufanya ziwe read-only baada ya Confirm -->
     <record id="view_sale_order_form_helper" model="ir.ui.view">
         <field name="name">sale.order.form.helper</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <!-- Kuongeza fields za Driver, Helpers (Wengi), Car Number na Region baada ya partner_id -->
+            <!-- Kuongeza fields za Driver, Helpers (Wengi), Car Number na Region baada ya partner_id zikiwa na masharti ya readonly -->
             <xpath expr="//field[@name='partner_id']" position="after">
-                <field name="driver_id" widget="many2one_avatar_employee"/>
-                <field name="helper_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
-                <field name="car_number"/>
-                <field name="region_id"/>
+                <field name="driver_id" widget="many2one_avatar_employee" readonly="state not in ['draft', 'sent']"/>
+                <field name="helper_ids" widget="many2many_tags" options="{'color_field': 'color'}" readonly="state not in ['draft', 'sent']"/>
+                <field name="car_number" readonly="state not in ['draft', 'sent']"/>
+                <field name="region_id" readonly="state not in ['draft', 'sent']"/>
             </xpath>
 
             <!-- Kufanya Unit Price iwe Read-Only kwenye Order Lines -->
