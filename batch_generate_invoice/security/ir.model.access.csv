@@ -1,3 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_batch_invoice,batch.invoice.access,model_batch_invoice,base.group_user,1,1,1,1
+access_batch_invoice_line,batch.invoice.line.access,model_batch_invoice_line,base.group_user,1,1,1,1
 access_batch_invoice_wizard,batch.invoice.wizard.access,model_batch_invoice_wizard,base.group_user,1,1,1,1
 access_batch_invoice_wizard_line,batch.invoice.wizard.line.access,model_batch_invoice_wizard_line,base.group_user,1,1,1,1

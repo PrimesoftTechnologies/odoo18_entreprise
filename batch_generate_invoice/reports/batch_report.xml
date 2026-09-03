@@ -4,15 +4,15 @@
     <!-- BATCH INVOICE REPORT ACTION -->
     <record id="action_report_batch_invoice" model="ir.actions.report">
         <field name="name">Batch Invoice</field>
-        <field name="model">batch.invoice.wizard</field>
+        <field name="model">batch.invoice</field> <!-- IMEBADILISHWA: Iwe batch.invoice -->
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">batch_generate_invoice.report_batch_invoice_document</field>
         <field name="report_file">batch_generate_invoice.report_batch_invoice_document</field>
-        <field name="binding_model_id" ref="model_batch_invoice_wizard"/>
+        <field name="binding_model_id" ref="model_batch_invoice"/> <!-- IMEBADILISHWA: Iwe model_batch_invoice -->
         <field name="binding_type">report</field>
     </record>
 
-    <!-- QWEB REPORT (SILVER BORDER DESIGN) -->
+    <!-- QWEB REPORT (SILVER BORDER DESIGN) - Inabaki kama ilivyo hapa chini -->
     <template id="report_batch_invoice_document">
         <t t-call="web.external_layout">
             <t t-foreach="docs" t-as="o">
