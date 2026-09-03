@@ -2,7 +2,7 @@
 
 {
     "name": "Helper Sales",
-    "version": "18.0.1.1.3",
+    "version": "18.0.1.1.5",
     "category": "Sales",
     "sequence": -28,
     "summary": "Add Helper field to Sales Orders and Invoices",
