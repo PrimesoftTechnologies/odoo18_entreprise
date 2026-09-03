@@ -1,27 +1,61 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- 1. Form View: Kuweka helper chini ya Salesperson ndani ya Other Info -->
+    <!-- 1. Form View ya Sale Order: Kuweka fields na kufanya Unit Price iwe read-only -->
     <record id="view_sale_order_form_helper" model="ir.ui.view">
         <field name="name">sale.order.form.helper</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <!-- Tunatumia team_id kuweka helper_id juu yake (yaani chini ya user_id) -->
-            <xpath expr="//field[@name='team_id']" position="before">
+            <!-- Kuongeza fields za Driver, Helper, Car Number na Region baada ya partner_id -->
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="driver_id" widget="many2one_avatar_employee"/>
                 <field name="helper_id" widget="many2one_avatar_employee"/>
+                <field name="car_number"/>
+                <field name="region_id"/>
+            </xpath>
+
+            <!-- Kufanya Unit Price iwe Read-Only kwenye Order Lines -->
+            <xpath expr="//field[@name='order_line']/list//field[@name='price_unit']" position="attributes">
+                <attribute name="readonly">1</attribute>
             </xpath>
         </field>
     </record>
 
-    <!-- 2. Tree/List View: Kuongeza helper kwenye Orodha ya Quotations -->
-    <record id="view_quotation_tree_inherit_sales_helper" model="ir.ui.view">
-        <field name="name">sale.order.tree.inherit.sales.helper</field>
+    <!-- Orodha nyingine za views na menu ziache kama ulivyaziweka awali -->
+    <record id="view_quotation_tree_inherit_driver_helper" model="ir.ui.view">
+        <field name="name">sale.order.tree.inherit.driver.helper</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_quotation_tree"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='user_id']" position="after">
+                <field name="driver_id" optional="show" widget="many2one_avatar_employee"/>
                 <field name="helper_id" optional="show" widget="many2one_avatar_employee"/>
+                <field name="car_number" optional="show"/>
+                <field name="region_id" optional="show"/>
             </xpath>
         </field>
     </record>
+
+    <record id="view_sale_region_tree" model="ir.ui.view">
+        <field name="name">sale.region.tree</field>
+        <field name="model">sale.region</field>
+        <field name="arch" type="xml">
+            <list string="Regions" editable="bottom">
+                <field name="name"/>
+                <field name="code"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_sale_region" model="ir.actions.act_window">
+        <field name="name">Regions</field>
+        <field name="res_model">sale.region</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_sale_region"
+              name="Regions"
+              parent="sale.menu_sale_config"
+              action="action_sale_region"
+              sequence="20"/>
 </odoo>

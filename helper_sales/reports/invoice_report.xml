@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="report_invoice_document_inherit_helper" inherit_id="account.report_invoice_document">
+        <xpath expr="//div[hasclass('page')]" position="replace">
+            <div class="page">
+                <!-- Sehemu ya Juu: Namba ya Invoice tu (Standard header ya Odoo inashughulikia jina la mteja juu) -->
+                <div class="row mt32 mb32">
+                    <div class="col-12">
+                        <h2>
+                            <span t-field="o.name"/>
+                        </h2>
+                    </div>
+                </div>
+
+                <!-- Orodha ya Bidhaa kwenye Table (Description, Quantity, Unit, Unit Price TU) -->
+                <table class="table table-sm o_main_table" style="margin-top: 30px;">
+                    <thead>
+                        <tr>
+                            <th name="th_description"><span>Description</span></th>
+                            <th name="th_quantity" class="text-end"><span>Quantity</span></th>
+                            <th name="th_uom" class="text-end"><span>Unit</span></th>
+                            <th name="th_priceunit" class="text-end"><span>Unit Price</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="o.invoice_line_ids" t-as="line">
+                            <tr>
+                                <td><span t-field="line.name"/></td>
+                                <td class="text-end"><span t-field="line.quantity"/></td>
+                                <td class="text-end"><span t-field="line.product_uom_id"/></td>
+                                <td class="text-end"><span t-field="line.price_unit"/></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <!-- Driver Name & Truck Name Kwenye Same Row (Mistari Mifupi na Safi) -->
+                <div style="margin-top: 40px; font-size: 14px;">
+                    <table style="width: 100%; border: none;">
+                        <tr>
+                            <td style="width: 50%; vertical-align: top;">
+                                <strong>Driver name &amp; Signature:</strong>
+                                <div style="margin-top: 30px; border-bottom: 1px solid black; width: 75%;"></div>
+                            </td>
+                            <td style="width: 50%; vertical-align: top;">
+                                <strong>Truck name:</strong>
+                                <div style="margin-top: 30px; border-bottom: 1px solid black; width: 75%;"></div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Sehemu ya Saini na Maeneo ya Kujaza kwa Chini Kabisa -->
+                <div style="margin-top: 50px; font-size: 13px; page-break-inside: avoid;">
+                    <table style="width: 100%; border: none;">
+                        <tr>
+                            <td style="width: 25%; vertical-align: top;">
+                                <strong>Prepared By:</strong>
+                                <div style="margin-top: 40px; border-bottom: 1px solid black; width: 80%;"></div>
+                            </td>
+                            <td style="width: 25%; vertical-align: top;">
+                                <strong>Supervisor I</strong>
+                                <div style="margin-top: 40px; border-bottom: 1px solid black; width: 80%;"></div>
+                            </td>
+                            <td style="width: 25%; vertical-align: top;">
+                                <strong>StoreKeeper</strong>
+                                <div style="margin-top: 40px; border-bottom: 1px solid black; width: 80%;"></div>
+                            </td>
+                            <td style="width: 25%; vertical-align: top;">
+                                <strong>Approved BY</strong>
+                                <div style="margin-top: 40px; border-bottom: 1px solid black; width: 80%;"></div>
+                            </td>
+                        </tr>
+                        <tr style="height: 35px;"></tr>
+                        <tr>
+                            <td style="vertical-align: top;"></td>
+                            <td style="vertical-align: top;">
+                                <strong>Supervisor II</strong>
+                                <div style="margin-top: 40px; border-bottom: 1px solid black; width: 80%;"></div>
+                            </td>
+                            <td style="vertical-align: top;">
+                                <strong>Security</strong>
+                                <div style="margin-top: 40px; border-bottom: 1px solid black; width: 80%;"></div>
+                            </td>
+                            <td style="vertical-align: top;"></td>
+                        </tr>
+                    </table>
+                </div>
+
+            </div>
+        </xpath>
+    </template>
+</odoo>
