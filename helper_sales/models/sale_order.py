@@ -25,6 +25,7 @@ class SaleOrder(models.Model):
         "order_id",
         "employee_id",
         string="Helpers",
+        required=True,
         tracking=True,
     )
     car_number = fields.Char(
