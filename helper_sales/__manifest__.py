@@ -2,7 +2,7 @@
 
 {
     "name": "Helper Sales",
-    "version": "18.0.1.1.5",
+    "version": "18.0.1.1.6",
     "category": "Sales",
     "sequence": -28,
     "summary": "Add Helper field to Sales Orders and Invoices",
@@ -20,6 +20,7 @@
         "security/ir.model.access.csv", 
         "views/sale_order_views.xml",
         "views/account_move_views.xml", 
+        "views/account_payment_views.xml", 
         "reports/invoice_report.xml",
     ],
     "installable": True,
