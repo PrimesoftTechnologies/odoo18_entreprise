@@ -11,29 +11,37 @@
         <field name="binding_type">report</field>
     </record>
 
-    <!-- Template ya Gate Pass yenye <main> tag ili kuepusha IndexError -->
+    <!-- Template ya Gate Pass -->
     <template id="report_gate_pass_document">
         <t t-call="web.external_layout">
             <t t-foreach="docs" t-as="o">
                 <main>
-                    <div class="page">
-                        <!-- Kichwa cha Ripoti: Gate Pass & Namba ya Invoice -->
-                        <div class="row mt32 mb32">
+                    <div class="page" style="font-size: 13px;">
+                        
+                        <!-- Sehemu ya Anwani ya Mteja (Kama ilivyo kwenye invoice ya kawaida) -->
+                        <div class="row mb-4">
                             <div class="col-6">
-                                <h2>GATE PASS</h2>
-                                <h4>
-                                    <span t-field="o.name"/>
-                                </h4>
+                                <span t-field="o.partner_id.commercial_partner_id"
+                                      t-options="{'widget': 'contact', 'fields': ['address', 'name', 'phone', 'vat'], 'no_marker': True}"/>
                             </div>
-                            <div class="col-6 text-end" style="font-size: 14px;">
-                                <strong>Customer: </strong> <span t-field="o.partner_id.name"/><br/>
+                        </div>
+
+                        <!-- Kichwa: GATE PASS na Namba kubwa ya Invoice (INV/...) -->
+                        <div class="row mt-4 mb-3">
+                            <div class="col-6">
+                                <h3 style="font-weight: bold; color: #333;">GATE PASS</h3>
+                                <h2 style="font-weight: bold; color: #008784;">
+                                    <span t-field="o.name"/>
+                                </h2>
+                            </div>
+                            <div class="col-6 text-end" style="font-size: 13px;">
                                 <strong>Car Number: </strong> <span t-field="o.car_number"/><br/>
                                 <strong>Region: </strong> <span t-field="o.region_id.name"/>
                             </div>
                         </div>
 
                         <!-- Taarifa za Driver na Helpers -->
-                        <div class="row mb32" style="font-size: 14px; background-color: #f8f9fa; padding: 10px; border-radius: 5px;">
+                        <div class="row mb-3" style="background-color: #f8f9fa; padding: 8px; border-radius: 4px;">
                             <div class="col-6">
                                 <strong>Driver Name: </strong> <span t-field="o.driver_id.name"/>
                             </div>
@@ -45,12 +53,13 @@
                             </div>
                         </div>
 
-                        <!-- Orodha ya Bidhaa -->
+                        <!-- Orodha ya Bidhaa (Table yenye Description, Quantity, na Unit Price kama picha) -->
                         <table class="table table-sm o_main_table" style="margin-top: 20px;">
                             <thead>
-                                <tr>
+                                <tr style="background-color: #f2f2f2;">
                                     <th name="th_description"><span>Description</span></th>
                                     <th name="th_quantity" class="text-end"><span>Quantity</span></th>
+                                    <th name="th_priceunit" class="text-end"><span>Unit Price</span></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -58,66 +67,42 @@
                                     <tr>
                                         <td><span t-field="line.name"/></td>
                                         <td class="text-end"><span t-field="line.quantity"/></td>
+                                        <td class="text-end"><span t-field="line.price_unit"/></td>
                                     </tr>
                                 </t>
                             </tbody>
                         </table>
 
-                        <!-- Driver & Truck Name Saini -->
-                        <div style="margin-top: 30px; font-size: 14px;">
-                            <table style="width: 100%; border-collapse: collapse !important; border: none !important; background: transparent !important;">
-                                <tr style="border: none !important; background: transparent !important;">
-                                    <td style="width: 50%; vertical-align: top; border: none !important; padding-right: 20px;">
+                        <!-- Sehemu ya Driver & Truck Name Saini (Kama kwenye picha) -->
+                        <div style="margin-top: 25px;">
+                            <table style="width: 100%; border-collapse: collapse !important; border: 1px solid #dee2e6;">
+                                <tr style="background-color: #f8f9fa;">
+                                    <td style="width: 50%; padding: 10px; border-right: 1px solid #dee2e6;">
                                         <strong>Driver name &amp; Signature:</strong>
-                                        <div style="margin-top: 30px; border-bottom: 1px solid black; width: 85%;"></div>
+                                        <div style="margin-top: 35px; border-bottom: 1px solid black; width: 90%;"></div>
                                     </td>
-                                    <td style="width: 50%; vertical-align: top; border: none !important; padding-left: 20px;">
+                                    <td style="width: 50%; padding: 10px;">
                                         <strong>Truck name:</strong>
-                                        <div style="margin-top: 30px; border-bottom: 1px solid black; width: 85%;"></div>
+                                        <div style="margin-top: 35px; border-bottom: 1px solid black; width: 90%;"></div>
                                     </td>
                                 </tr>
                             </table>
                         </div>
 
-                        <!-- Sehemu ya Saini za Chini -->
-                        <div style="margin-top: 40px; font-size: 12px; page-break-inside: avoid;">
-                            <table style="width: 100%; border-collapse: collapse !important; border: none !important; background: transparent !important;">
-                                <tr style="border: none !important; background: transparent !important;">
-                                    <td style="width: 25%; vertical-align: top; border: none !important; padding: 4px;">
-                                        <strong>Prepared By:</strong>
-                                        <div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div>
-                                    </td>
-                                    <td style="width: 25%; vertical-align: top; border: none !important; padding: 4px;">
-                                        <strong>Supervisor I</strong>
-                                        <div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div>
-                                    </td>
-                                    <td style="width: 25%; vertical-align: top; border: none !important; padding: 4px;">
-                                        <strong>StoreKeeper</strong>
-                                        <div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div>
-                                    </td>
-                                    <td style="width: 25%; vertical-align: top; border: none !important; padding: 4px;">
-                                        <strong>Approved BY</strong>
-                                        <div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div>
-                                    </td>
+                        <!-- Sehemu ya Saini za Chini (Prepared By, Storekeeper, Security, n.k.) -->
+                        <div style="margin-top: 30px; page-break-inside: avoid;">
+                            <table style="width: 100%; border-collapse: collapse !important; border: 1px solid #dee2e6;">
+                                <tr style="background-color: #f8f9fa;">
+                                    <td style="width: 25%; padding: 8px; border: 1px solid #dee2e6;"><strong>Prepared By:</strong><div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div></td>
+                                    <td style="width: 25%; padding: 8px; border: 1px solid #dee2e6;"><strong>Supervisor I</strong><div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div></td>
+                                    <td style="width: 25%; padding: 8px; border: 1px solid #dee2e6;"><strong>StoreKeeper</strong><div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div></td>
+                                    <td style="width: 25%; padding: 8px; border: 1px solid #dee2e6;"><strong>Approved BY</strong><div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div></td>
                                 </tr>
-                                <tr style="height: 20px; border: none !important;"><td colspan="4" style="border: none !important;"></td></tr>
-                                <tr style="border: none !important; background: transparent !important;">
-                                    <td style="width: 25%; vertical-align: top; border: none !important; padding: 4px;">
-                                        <strong>Supervisor II</strong>
-                                        <div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div>
-                                    </td>
-                                    <td style="width: 25%; vertical-align: top; border: none !important; padding: 4px;">
-                                        <strong>Security</strong>
-                                        <div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div>
-                                    </td>
-                                    <td style="width: 25%; vertical-align: top; border: none !important; padding: 4px;">
-                                        <strong>Manager</strong>
-                                        <div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div>
-                                    </td>
-                                    <td style="width: 25%; vertical-align: top; border: none !important; padding: 4px;">
-                                        <strong>Auditor</strong>
-                                        <div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div>
-                                    </td>
+                                <tr>
+                                    <td style="width: 25%; padding: 8px; border: 1px solid #dee2e6;"><strong>Supervisor II</strong><div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div></td>
+                                    <td style="width: 25%; padding: 8px; border: 1px solid #dee2e6;"><strong>Security</strong><div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div></td>
+                                    <td style="width: 25%; padding: 8px; border: 1px solid #dee2e6;"><strong>Manager</strong><div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div></td>
+                                    <td style="width: 25%; padding: 8px; border: 1px solid #dee2e6;"><strong>Auditor</strong><div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div></td>
                                 </tr>
                             </table>
                         </div>
