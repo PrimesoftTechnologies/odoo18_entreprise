@@ -3,7 +3,7 @@
     <template id="report_invoice_document_inherit_helper" inherit_id="account.report_invoice_document">
         <xpath expr="//div[hasclass('page')]" position="replace">
             <div class="page">
-                <!-- Sehemu ya Juu: Namba ya Invoice (Header ya Odoo inaleta jina la mteja juu) -->
+                <!-- Sehemu ya Juu: Namba ya Invoice -->
                 <div class="row mt32 mb32">
                     <div class="col-12">
                         <h2>
@@ -12,7 +12,7 @@
                     </div>
                 </div>
 
-                <!-- Orodha ya Bidhaa: Description, Quantity na Unit Price TU (Bila Unit) -->
+                <!-- Orodha ya Bidhaa: Description, Quantity na Unit Price TU -->
                 <table class="table table-sm o_main_table" style="margin-top: 30px;">
                     <thead>
                         <tr>
@@ -32,15 +32,15 @@
                     </tbody>
                 </table>
 
-                <!-- Driver Name & Truck Name (Kwenye Mistari Safi Bila Border Boxes) -->
+                <!-- Driver Name & Truck Name (Bila Maboksi wala Borders Kabisa) -->
                 <div style="margin-top: 40px; font-size: 14px;">
-                    <table style="width: 100%; border-collapse: collapse; border: none;">
-                        <tr>
-                            <td style="width: 50%; vertical-align: top; border: none; padding-right: 20px;">
+                    <table style="width: 100%; border-collapse: collapse !important; border: none !important; background: transparent !important;">
+                        <tr style="border: none !important; background: transparent !important;">
+                            <td style="width: 50%; vertical-align: top; border: none !important; background: transparent !important; padding-right: 20px;">
                                 <strong>Driver name &amp; Signature:</strong>
                                 <div style="margin-top: 35px; border-bottom: 1px solid black; width: 85%;"></div>
                             </td>
-                            <td style="width: 50%; vertical-align: top; border: none; padding-left: 20px;">
+                            <td style="width: 50%; vertical-align: top; border: none !important; background: transparent !important; padding-left: 20px;">
                                 <strong>Truck name:</strong>
                                 <div style="margin-top: 35px; border-bottom: 1px solid black; width: 85%;"></div>
                             </td>
@@ -48,39 +48,39 @@
                     </table>
                 </div>
 
-                <!-- Sehemu ya Saini za Chini (Bila Border Boxes, Mistari Mitupu Safi) -->
+                <!-- Sehemu ya Saini za Chini (Bila Maboksi wala Borders Kabisa) -->
                 <div style="margin-top: 50px; font-size: 13px; page-break-inside: avoid;">
-                    <table style="width: 100%; border-collapse: collapse; border: none;">
-                        <tr>
-                            <td style="width: 25%; vertical-align: top; border: none; padding: 5px;">
+                    <table style="width: 100%; border-collapse: collapse !important; border: none !important; background: transparent !important;">
+                        <tr style="border: none !important; background: transparent !important;">
+                            <td style="width: 25%; vertical-align: top; border: none !important; background: transparent !important; padding: 5px;">
                                 <strong>Prepared By:</strong>
                                 <div style="margin-top: 35px; border-bottom: 1px solid black; width: 90%;"></div>
                             </td>
-                            <td style="width: 25%; vertical-align: top; border: none; padding: 5px;">
+                            <td style="width: 25%; vertical-align: top; border: none !important; background: transparent !important; padding: 5px;">
                                 <strong>Supervisor I</strong>
                                 <div style="margin-top: 35px; border-bottom: 1px solid black; width: 90%;"></div>
                             </td>
-                            <td style="width: 25%; vertical-align: top; border: none; padding: 5px;">
+                            <td style="width: 25%; vertical-align: top; border: none !important; background: transparent !important; padding: 5px;">
                                 <strong>StoreKeeper</strong>
                                 <div style="margin-top: 35px; border-bottom: 1px solid black; width: 90%;"></div>
                             </td>
-                            <td style="width: 25%; vertical-align: top; border: none; padding: 5px;">
+                            <td style="width: 25%; vertical-align: top; border: none !important; background: transparent !important; padding: 5px;">
                                 <strong>Approved BY</strong>
                                 <div style="margin-top: 35px; border-bottom: 1px solid black; width: 90%;"></div>
                             </td>
                         </tr>
-                        <tr style="height: 30px; border: none;"><td colspan="4" style="border: none;"></td></tr>
-                        <tr>
-                            <td style="vertical-align: top; border: none; padding: 5px;"></td>
-                            <td style="vertical-align: top; border: none; padding: 5px;">
+                        <tr style="height: 30px; border: none !important; background: transparent !important;"><td colspan="4" style="border: none !important; background: transparent !important;"></td></tr>
+                        <tr style="border: none !important; background: transparent !important;">
+                            <td style="vertical-align: top; border: none !important; background: transparent !important; padding: 5px;"></td>
+                            <td style="vertical-align: top; border: none !important; background: transparent !important; padding: 5px;">
                                 <strong>Supervisor II</strong>
                                 <div style="margin-top: 35px; border-bottom: 1px solid black; width: 90%;"></div>
                             </td>
-                            <td style="vertical-align: top; border: none; padding: 5px;">
+                            <td style="vertical-align: top; border: none !important; background: transparent !important; padding: 5px;">
                                 <strong>Security</strong>
                                 <div style="margin-top: 35px; border-bottom: 1px solid black; width: 90%;"></div>
                             </td>
-                            <td style="vertical-align: top; border: none; padding: 5px;"></td>
+                            <td style="vertical-align: top; border: none !important; background: transparent !important; padding: 5px;"></td>
                         </tr>
                     </table>
                 </div>
