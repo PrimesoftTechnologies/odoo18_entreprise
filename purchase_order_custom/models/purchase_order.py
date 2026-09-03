@@ -150,8 +150,6 @@ class PurchaseOrder(models.Model):
             is_proc = order.company_id.procurement_manager_id == current_user
             is_fin = order.company_id.finance_manager_id == current_user
             
-            # Procurement anaona wakiwa waiting_procurement au procurement_approved
-            # Finance anaona wakiwa procurement_approved au hata akishafanya finance_approved (kabla ya confirmed)
             if order.approval_stage == 'waiting_procurement':
                 order.can_reject_or_cancel = is_proc
             elif order.approval_stage == 'procurement_approved':
@@ -305,6 +303,18 @@ class PurchaseOrder(models.Model):
             })
             order.modified(['state', 'approval_stage', 'approval_statusbar'])
 
+            # --- TUMA ACTIVITY NOTIFICATION KWA PROCUREMENT MANAGER ---
+            if order.company_id.procurement_manager_id:
+                # Maliza activity za zamani kama zilikuwepo kwenye hii order
+                order.activity_feedback(['mail.mail_activity_data_todo'])
+                
+                order.activity_schedule(
+                    'mail.mail_activity_data_todo',
+                    user_id=order.company_id.procurement_manager_id.id,
+                    summary='Pending Purchase Approval',
+                    note=f'Please review and approve purchase order {order.name} submitted by {self.env.user.name}.'
+                )
+
         return True
 
     def action_set_to_draft_custom(self):
@@ -329,6 +339,17 @@ class PurchaseOrder(models.Model):
             })
             order.modified(['state', 'approval_stage', 'approval_statusbar'])
 
+            # --- MALIZA ACTIVITY YA PROCUREMENT NA TUMA KWA FINANCE MANAGER ---
+            order.activity_feedback(['mail.mail_activity_data_todo'])
+
+            if order.company_id.finance_manager_id:
+                order.activity_schedule(
+                    'mail.mail_activity_data_todo',
+                    user_id=order.company_id.finance_manager_id.id,
+                    summary='Pending Finance Approval',
+                    note=f'Procurement approved purchase order {order.name}. Your financial approval is required.'
+                )
+
         return True
 
     def action_approve_finance(self):
@@ -345,6 +366,17 @@ class PurchaseOrder(models.Model):
                 'approved_date': fields.Datetime.now(),
             })
             order.modified(['state', 'approval_stage', 'approval_statusbar'])
+
+            # --- MALIZA ACTIVITY YA FINANCE NA TUMA KWA USER ALIYE-SUBMIT A-CONFIRM ---
+            order.activity_feedback(['mail.mail_activity_data_todo'])
+
+            if order.approval_submitted_by:
+                order.activity_schedule(
+                    'mail.mail_activity_data_todo',
+                    user_id=order.approval_submitted_by.id,
+                    summary='Confirm Purchase Order',
+                    note=f'Purchase order {order.name} has been fully approved. Please confirm the order.'
+                )
 
         return True
 
@@ -378,6 +410,10 @@ class PurchaseOrder(models.Model):
                 'approval_stage': 'rejected',
             })
             order.modified(['state', 'approval_stage', 'approval_statusbar'])
+            
+            # Maliza activity zote kwenye hii order ikighairiwa
+            order.activity_feedback(['mail.mail_activity_data_todo'])
+
         return True
 
     def button_confirm(self):
@@ -395,6 +431,16 @@ class PurchaseOrder(models.Model):
                         "purchase order for approval can confirm it."
                     )
 
+                # --- UKAGUZI WA ATTACHMENT KABLA YA CONFIRM ---
+                attachment_count = self.env['ir.attachment'].search_count([
+                    ('res_model', '=', 'purchase.order'),
+                    ('res_id', '=', order.id)
+                ])
+                if attachment_count == 0:
+                    raise UserError(
+                        "Please attach a document (attachment) before confirming this purchase order!"
+                    )
+
         res = super().button_confirm()
 
         for order in self:
@@ -404,6 +450,9 @@ class PurchaseOrder(models.Model):
                     'approval_stage': 'purchase',
                 })
                 order.modified(['state', 'approval_stage', 'approval_statusbar'])
+                
+                # Maliza activity ya mwisho baada ya ku-confirm
+                order.activity_feedback(['mail.mail_activity_data_todo'])
 
         return res
 
