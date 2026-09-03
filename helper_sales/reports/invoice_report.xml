@@ -72,7 +72,7 @@
                             </table>
                         </div>
 
-                        <!-- Sehemu ya Saini za Chini (Mpangilio sawa na picha yako) -->
+                        <!-- Sehemu ya Saini za Chini -->
                         <div style="margin-top: 30px; page-break-inside: avoid;">
                             <table style="width: 100%; border-collapse: collapse !important; border: 1px solid #dee2e6;">
                                 <tr style="background-color: #f8f9fa;">
@@ -95,4 +95,4 @@
             </t>
         </t>
     </template>
-</template>
+</odoo>
