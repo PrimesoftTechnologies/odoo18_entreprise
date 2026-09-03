@@ -72,7 +72,7 @@
                             </table>
                         </div>
 
-                        <!-- Sehemu ya Saini za Chini (Zimeondolewa Manager na Auditor) -->
+                        <!-- Sehemu ya Saini za Chini (Mpangilio sawa na picha yako) -->
                         <div style="margin-top: 30px; page-break-inside: avoid;">
                             <table style="width: 100%; border-collapse: collapse !important; border: 1px solid #dee2e6;">
                                 <tr style="background-color: #f8f9fa;">
@@ -82,9 +82,9 @@
                                     <td style="width: 25%; padding: 8px; border: 1px solid #dee2e6;"><strong>Approved BY</strong><div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div></td>
                                 </tr>
                                 <tr>
+                                    <td style="width: 25%; padding: 8px; border: 1px solid #dee2e6;"></td>
                                     <td style="width: 25%; padding: 8px; border: 1px solid #dee2e6;"><strong>Supervisor II</strong><div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div></td>
                                     <td style="width: 25%; padding: 8px; border: 1px solid #dee2e6;"><strong>Security</strong><div style="margin-top: 25px; border-bottom: 1px solid black; width: 90%;"></div></td>
-                                    <td style="width: 25%; padding: 8px; border: 1px solid #dee2e6;"></td>
                                     <td style="width: 25%; padding: 8px; border: 1px solid #dee2e6;"></td>
                                 </tr>
                             </table>
@@ -95,4 +95,4 @@
             </t>
         </t>
     </template>
-</odoo>
+</template>
