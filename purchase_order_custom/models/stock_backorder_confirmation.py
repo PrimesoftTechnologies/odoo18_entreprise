@@ -5,7 +5,6 @@ from odoo.exceptions import UserError
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
 
-    # Kubadilisha majina moja kwa moja kwenye kiwango cha Mfumo (Model Level)
     location_id = fields.Many2one(string='Ware house')
     partner_id = fields.Many2one(string='Customer Name')
 

@@ -293,6 +293,25 @@ class PurchaseOrder(models.Model):
                     "or processed through the approval workflow."
                 )
 
+            # --- UKAGUZI WA ATTACHMENT WAMEHAMISHIA HAPA (SUBMIT FOR APPROVAL) ---
+            attachment_count = self.env['ir.attachment'].search_count([
+                ('res_model', '=', 'purchase.order'),
+                ('res_id', '=', order.id)
+            ])
+            
+            # Angalia pia kwenye mail.message kama kuna attachments za chatter
+            if attachment_count == 0:
+                msg_attachments = self.env['ir.attachment'].search_count([
+                    ('res_model', '=', 'mail.message'),
+                    ('res_id', 'in', order.message_ids.ids)
+                ])
+                attachment_count += msg_attachments
+
+            if attachment_count == 0:
+                raise UserError(
+                    f"You cannot submit purchase order ({order.name}) for approval! Please attach the required document in the attachment section below first."
+                )
+
             order.write({
                 'state': 'waiting_approval',
                 'approval_stage': 'waiting_procurement',
@@ -305,7 +324,6 @@ class PurchaseOrder(models.Model):
 
             # --- TUMA ACTIVITY NOTIFICATION KWA PROCUREMENT MANAGER ---
             if order.company_id.procurement_manager_id:
-                # Maliza activity za zamani kama zilikuwepo kwenye hii order
                 order.activity_feedback(['mail.mail_activity_data_todo'])
                 
                 order.activity_schedule(
@@ -411,7 +429,6 @@ class PurchaseOrder(models.Model):
             })
             order.modified(['state', 'approval_stage', 'approval_statusbar'])
             
-            # Maliza activity zote kwenye hii order ikighairiwa
             order.activity_feedback(['mail.mail_activity_data_todo'])
 
         return True
@@ -430,16 +447,7 @@ class PurchaseOrder(models.Model):
                         "Only the user who submitted this "
                         "purchase order for approval can confirm it."
                     )
-
-                # --- UKAGUZI WA ATTACHMENT KABLA YA CONFIRM ---
-                attachment_count = self.env['ir.attachment'].search_count([
-                    ('res_model', '=', 'purchase.order'),
-                    ('res_id', '=', order.id)
-                ])
-                if attachment_count == 0:
-                    raise UserError(
-                        "Please attach a document (attachment) before confirming this purchase order!"
-                    )
+                # (Ukaguzi wa attachment umeondolewa hapa kwenye confirm na kuhamishiwa kwenye Submit for Approval)
 
         res = super().button_confirm()
 
@@ -451,7 +459,6 @@ class PurchaseOrder(models.Model):
                 })
                 order.modified(['state', 'approval_stage', 'approval_statusbar'])
                 
-                # Maliza activity ya mwisho baada ya ku-confirm
                 order.activity_feedback(['mail.mail_activity_data_todo'])
 
         return res
