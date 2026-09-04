@@ -1,9 +1,30 @@
-from odoo import models
+from odoo import models, api
 from odoo.exceptions import UserError
 
 
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
+
+    @api.model
+    def fields_view_get(self, view_id=None, view_type='form', toolbar=False, submenu=False):
+        res = super().fields_view_get(view_id=view_id, view_type=view_type, toolbar=toolbar, submenu=submenu)
+        
+        # Kubadilisha majina ya lebo kwenye fomu kwa nguvu kupitia Python
+        if view_type == 'form':
+            from lxml import etree
+            doc = etree.XML(res['arch'])
+            
+            # Badilisha Delivery Address kuwa Customer Name
+            for node in doc.xpath("//field[@name='partner_id']"):
+                node.set('string', 'Customer Name')
+                
+            # Badilisha Source Location kuwa Ware house
+            for node in doc.xpath("//field[@name='location_id']"):
+                node.set('string', 'Ware house')
+                
+            res['arch'] = etree.tostring(doc, encoding='unicode')
+            
+        return res
 
     def button_validate(self):
         for picking in self:
@@ -37,7 +58,7 @@ class StockPicking(models.Model):
                         ])
                         attachment_count += msg_attachments
                     
-                    # Kama badohakuna attachment, mzuie hapa hapa kabla ya pop-up haijaja!
+                    # Kama bado hakuna attachment, mzuie hapa hapa kabla ya pop-up haijaja!
                     if attachment_count == 0:
                         raise UserError(
                             f"You cannot proceed! Please attach the required document to this Delivery/Receipt ({picking.name}) in the attachment section below before validating the shortage items."

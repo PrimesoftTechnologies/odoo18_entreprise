@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_picking_form_change_labels" model="ir.ui.view">
+        <field name="name">stock.picking.form.change.labels</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <!-- 1. Customer Name -->
+            <xpath expr="//label[@for='partner_id']" position="attributes">
+                <attribute name="string">Customer Name</attribute>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="string">Customer Name</attribute>
+            </xpath>
+            
+            <!-- 2. Source Location kwenda Ware house (Tunatumia field pekee bila label tag) -->
+            <xpath expr="//field[@name='location_id']" position="attributes">
+                <attribute name="string">Ware house</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
