@@ -13,7 +13,7 @@
                 <attribute name="string">Customer Name</attribute>
             </xpath>
             
-            <!-- 2. Source Location kwenda Ware house (Tunatumia field pekee bila label tag) -->
+            <!-- 2. Source Location kwenda Ware house (Tunatumia field pekee bila kusababisha error) -->
             <xpath expr="//field[@name='location_id']" position="attributes">
                 <attribute name="string">Ware house</attribute>
             </xpath>
