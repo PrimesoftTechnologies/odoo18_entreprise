@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
+    <!-- 1. Form View ya Sale Order: Kuweka fields, Read-only baada ya Confirm, na Chatter sahihi -->
     <record id="view_sale_order_form_helper" model="ir.ui.view">
         <field name="name">sale.order.form.helper</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
+            <!-- Kuongeza fields mpya baada ya partner_id zikiwa na masharti ya readonly -->
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="driver_id" widget="many2one_avatar_employee" readonly="state not in ['draft', 'sent']"/>
                 <field name="helper_ids" widget="many2many_tags" options="{'color_field': 'color'}" readonly="state not in ['draft', 'sent']"/>
@@ -12,11 +14,13 @@
                 <field name="region_id" readonly="state not in ['draft', 'sent']"/>
             </xpath>
 
+            <!-- Kufanya Unit Price iwe Read-Only kwenye Order Lines -->
             <xpath expr="//field[@name='order_line']/list//field[@name='price_unit']" position="attributes">
                 <attribute name="readonly">1</attribute>
             </xpath>
 
-            <xpath expr="//sheet" position="after">
+            <!-- Kuongeza Chatter kwa usahihi mwishoni mwa form tag -->
+            <xpath expr="//form" position="inside">
                 <div class="oe_chatter">
                     <field name="message_follower_ids"/>
                     <field name="activity_ids"/>
@@ -26,6 +30,7 @@
         </field>
     </record>
 
+    <!-- Orodha ya Quotation/Order Tree View -->
     <record id="view_quotation_tree_inherit_driver_helper" model="ir.ui.view">
         <field name="name">sale.order.tree.inherit.driver.helper</field>
         <field name="model">sale.order</field>
@@ -40,6 +45,7 @@
         </field>
     </record>
 
+    <!-- 2. Orodha na Menu ya Sale Cars (Magari chini ya Configuration) -->
     <record id="view_sale_car_tree" model="ir.ui.view">
         <field name="name">sale.car.tree</field>
         <field name="model">sale.car</field>
@@ -58,11 +64,12 @@
     </record>
 
     <menuitem id="menu_sale_car"
-              name="Register Vehicles"
+              name="Cars"
               parent="sale.menu_sale_config"
               action="action_sale_car"
               sequence="19"/>
 
+    <!-- 3. Orodha na Menu ya Sale Regions -->
     <record id="view_sale_region_tree" model="ir.ui.view">
         <field name="name">sale.region.tree</field>
         <field name="model">sale.region</field>
