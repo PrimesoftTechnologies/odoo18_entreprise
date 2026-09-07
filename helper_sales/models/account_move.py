@@ -16,7 +16,9 @@ class AccountMove(models.Model):
         string="Helpers",
         tracking=True,
     )
-    car_number = fields.Char(
+    # Imebadilishwa kuwa car_id ili kuendana na Sale Order na mfumo mpya wa Sale Car
+    car_id = fields.Many2one(
+        "sale.car",
         string="Car Number",
         tracking=True,
     )
@@ -35,7 +37,7 @@ class SaleOrder(models.Model):
         invoice_vals.update({
             'driver_id': self.driver_id.id,
             'helper_ids': [(6, 0, self.helper_ids.ids)],
-            'car_number': self.car_number,
+            'car_id': self.car_id.id,  # Imebadilishwa kutoka car_number kwenda car_id.id
             'region_id': self.region_id.id,
         })
         return invoice_vals
