@@ -9,7 +9,7 @@
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="driver_id" widget="many2one_avatar_employee" readonly="state != 'draft'"/>
                 <field name="helper_ids" widget="many2many_tags" readonly="state != 'draft'"/>
-                <field name="car_number" readonly="state != 'draft'"/>
+                <field name="car_id" readonly="state != 'draft'"/>
                 <field name="region_id" readonly="state != 'draft'"/>
             </xpath>
         </field>
