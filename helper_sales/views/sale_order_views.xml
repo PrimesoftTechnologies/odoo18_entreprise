@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- 1. Form View ya Sale Order: Kuweka fields, Read-only baada ya Confirm, na Chatter sahihi -->
+    <!-- 1. Form View ya Sale Order: Kuweka fields na kufanya ziwe read-only baada ya Confirm -->
     <record id="view_sale_order_form_helper" model="ir.ui.view">
         <field name="name">sale.order.form.helper</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <!-- Kuongeza fields mpya baada ya partner_id zikiwa na masharti ya readonly -->
+            <!-- Kuongeza fields za Driver, Helpers, Car ID na Region baada ya partner_id zikiwa na masharti ya readonly -->
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="driver_id" widget="many2one_avatar_employee" readonly="state not in ['draft', 'sent']"/>
                 <field name="helper_ids" widget="many2many_tags" options="{'color_field': 'color'}" readonly="state not in ['draft', 'sent']"/>
@@ -17,15 +17,6 @@
             <!-- Kufanya Unit Price iwe Read-Only kwenye Order Lines -->
             <xpath expr="//field[@name='order_line']/list//field[@name='price_unit']" position="attributes">
                 <attribute name="readonly">1</attribute>
-            </xpath>
-
-            <!-- Kuongeza Chatter kwa usahihi mwishoni mwa form tag -->
-            <xpath expr="//form" position="inside">
-                <div class="oe_chatter">
-                    <field name="message_follower_ids"/>
-                    <field name="activity_ids"/>
-                    <field name="message_ids"/>
-                </div>
             </xpath>
         </field>
     </record>
@@ -42,7 +33,7 @@
                 <field name="car_id" optional="show"/>
                 <field name="region_id" optional="show"/>
             </xpath>
-        </field>
+        </record>
     </record>
 
     <!-- 2. Orodha na Menu ya Sale Cars (Magari chini ya Configuration) -->
