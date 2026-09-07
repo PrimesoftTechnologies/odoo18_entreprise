@@ -1,5 +1,14 @@
 from odoo import fields, models
 
+class SaleCar(models.Model):
+    _name = 'sale.car'
+    _description = 'Sales Car'
+    _rec_name = 'name'
+
+    name = fields.Char(string='Car Number', required=True, tracking=True)
+    model_name = fields.Char(string='Car Model', tracking=True)
+
+
 class SaleRegion(models.Model):
     _name = 'sale.region'
     _description = 'Sales Region'
@@ -18,7 +27,6 @@ class SaleOrder(models.Model):
         required=True,
         tracking=True,
     )
-    # Imebadilishwa kuwa Many2many ili kuweka helpers zaidi ya mmoja (helpers wengi)
     helper_ids = fields.Many2many(
         "hr.employee",
         "sale_order_helper_rel",
@@ -28,7 +36,9 @@ class SaleOrder(models.Model):
         required=True,
         tracking=True,
     )
-    car_number = fields.Char(
+    # Imebadilishwa kutoka Char kwenda Many2one ya sale.car na kuwekewa tracking
+    car_id = fields.Many2one(
+        "sale.car",
         string="Car Number",
         required=True,
         tracking=True,

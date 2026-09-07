@@ -1,27 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- 1. Form View ya Sale Order: Kuweka fields na kufanya ziwe read-only baada ya Confirm -->
     <record id="view_sale_order_form_helper" model="ir.ui.view">
         <field name="name">sale.order.form.helper</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <!-- Kuongeza fields za Driver, Helpers (Wengi), Car Number na Region baada ya partner_id zikiwa na masharti ya readonly -->
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="driver_id" widget="many2one_avatar_employee" readonly="state not in ['draft', 'sent']"/>
                 <field name="helper_ids" widget="many2many_tags" options="{'color_field': 'color'}" readonly="state not in ['draft', 'sent']"/>
-                <field name="car_number" readonly="state not in ['draft', 'sent']"/>
+                <field name="car_id" readonly="state not in ['draft', 'sent']"/>
                 <field name="region_id" readonly="state not in ['draft', 'sent']"/>
             </xpath>
 
-            <!-- Kufanya Unit Price iwe Read-Only kwenye Order Lines -->
             <xpath expr="//field[@name='order_line']/list//field[@name='price_unit']" position="attributes">
                 <attribute name="readonly">1</attribute>
+            </xpath>
+
+            <xpath expr="//sheet" position="after">
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
             </xpath>
         </field>
     </record>
 
-    <!-- Orodha ya Quotation/Order Tree View -->
     <record id="view_quotation_tree_inherit_driver_helper" model="ir.ui.view">
         <field name="name">sale.order.tree.inherit.driver.helper</field>
         <field name="model">sale.order</field>
@@ -30,13 +34,35 @@
             <xpath expr="//field[@name='user_id']" position="after">
                 <field name="driver_id" optional="show" widget="many2one_avatar_employee"/>
                 <field name="helper_ids" optional="show" widget="many2many_tags"/>
-                <field name="car_number" optional="show"/>
+                <field name="car_id" optional="show"/>
                 <field name="region_id" optional="show"/>
             </xpath>
         </field>
     </record>
 
-    <!-- Orodha nyingine za Sale Regions -->
+    <record id="view_sale_car_tree" model="ir.ui.view">
+        <field name="name">sale.car.tree</field>
+        <field name="model">sale.car</field>
+        <field name="arch" type="xml">
+            <list string="Cars" editable="bottom">
+                <field name="name"/>
+                <field name="model_name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_sale_car" model="ir.actions.act_window">
+        <field name="name">Cars</field>
+        <field name="res_model">sale.car</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_sale_car"
+              name="Register Vehicles"
+              parent="sale.menu_sale_config"
+              action="action_sale_car"
+              sequence="19"/>
+
     <record id="view_sale_region_tree" model="ir.ui.view">
         <field name="name">sale.region.tree</field>
         <field name="model">sale.region</field>
