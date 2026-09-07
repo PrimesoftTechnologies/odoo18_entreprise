@@ -33,7 +33,7 @@
                 <field name="car_id" optional="show"/>
                 <field name="region_id" optional="show"/>
             </xpath>
-        </record>
+        </field>
     </record>
 
     <!-- 2. Orodha na Menu ya Sale Cars (Magari chini ya Configuration) -->
