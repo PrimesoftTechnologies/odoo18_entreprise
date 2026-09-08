@@ -6,6 +6,7 @@ class AccountMove(models.Model):
 
     sas_reference = fields.Char(string="SAS Reference")
     antrak_job_no = fields.Char(string="Antrak Job No")
+    bank_details_id = fields.Many2one('res.bank', string="Bank Details For Payment")
 
 
 # 1. Hifadhi ya Kudumu (Database Record) kwa ajili ya Batch zote zinazozalishwa
@@ -15,23 +16,12 @@ class BatchInvoice(models.Model):
     _order = 'id desc'
 
     name = fields.Char(string="Batch ID / Number", readonly=True, default="New")
+    bank_details_id = fields.Many2one('res.bank', string="Bank Details For Payment", readonly=True)
     line_ids = fields.One2many(
         'batch.invoice.line',
         'batch_id',
         string="Batch Lines"
     )
-    # Ongeza currency_id ili Odoo itambue sarafu ya Batch husika
-    currency_id = fields.Many2one(
-        'res.currency',
-        string="Currency",
-        compute='_compute_currency',
-        store=True
-    )
-
-    @api.depends('line_ids.currency_id')
-    def _compute_currency(self):
-        for record in self:
-            record.currency_id = record.line_ids[:1].currency_id.id or self.env.company.currency_id.id
 
     def action_print_batch(self):
         return self.env.ref(
@@ -85,6 +75,7 @@ class BatchInvoiceWizard(models.TransientModel):
     _description = 'Generate Batch Invoice Wizard'
 
     name = fields.Char(string="Batch Number", readonly=True, default="New")
+    bank_details_id = fields.Many2one('res.bank', string="Bank Details For Payment")
     line_ids = fields.One2many(
         'batch.invoice.wizard.line',
         'wizard_id',
@@ -113,15 +104,19 @@ class BatchInvoiceWizard(models.TransientModel):
 
         batch_vals = {
             'name': batch_name,
+            'bank_details_id': self.bank_details_id.id if self.bank_details_id else False,
             'line_ids': []
         }
 
         for line in self.line_ids:
             if line.invoice_id:
-                line.invoice_id.write({
+                write_vals = {
                     'sas_reference': line.sas_reference,
                     'antrak_job_no': line.antrak_job_no,
-                })
+                }
+                if self.bank_details_id:
+                    write_vals['bank_details_id'] = self.bank_details_id.id
+                line.invoice_id.write(write_vals)
             
             batch_vals['line_ids'].append((0, 0, {
                 'invoice_id': line.invoice_id.id,
