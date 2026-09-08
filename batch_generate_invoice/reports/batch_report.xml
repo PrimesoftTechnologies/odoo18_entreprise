@@ -12,7 +12,7 @@
         <field name="binding_type">report</field>
     </record>
 
-    <!-- QWEB REPORT (RED THEME DESIGN) -->
+    <!-- QWEB REPORT (RED THEME DESIGN WITH BANK DETAILS) -->
     <template id="report_batch_invoice_document">
         <t t-call="web.external_layout">
             <t t-foreach="docs" t-as="o">
@@ -110,11 +110,17 @@
 
                         <!-- TOTALS & TERMS SECTION -->
                         <div style="width: 100%; display: table; margin-top: 10px;">
-                            <!-- Terms Left Column -->
+                            <!-- Terms & Bank Details Left Column -->
                             <div style="display: table-cell; width: 55%; vertical-align: top; padding-right: 20px;">
-                                <div style="font-size: 10px; color: #7f8c8d; line-height: 1.4;">
-                                    <strong style="color: #c0392b;">Terms &amp; Conditions:</strong><br/>
-                                    Payment is due as per agreed terms. Thank you for your business.
+                                <div style="font-size: 10px; color: #555555; line-height: 1.4;">
+                                    <t t-if="o.bank_details_id">
+                                        <strong style="color: #c0392b;"><span t-field="o.bank_details_id.name"/>:</strong><br/>
+                                        <span t-field="o.bank_details_id.note"/>
+                                    </t>
+                                    <t t-else="">
+                                        <strong style="color: #c0392b;">Terms &amp; Conditions:</strong><br/>
+                                        Payment is due as per agreed terms. Thank you for your business.
+                                    </t>
                                 </div>
                             </div>
 
