@@ -76,10 +76,11 @@
                         <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 25px;">
                             <thead>
                                 <tr style="background-color: #c0392b; color: #ffffff;">
-                                    <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 15%;">Invoice Date</th>
-                                    <th style="padding: 8px 6px; text-align: left; font-weight: 600; width: 25%;">Docket No. / Invoice</th>
-                                    <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 25%;">SAS Reference</th>
-                                    <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 20%;">Antrak Job No</th>
+                                    <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 12%;">Invoice Date</th>
+                                    <th style="padding: 8px 6px; text-align: left; font-weight: 600; width: 20%;">Docket No. / Invoice</th>
+                                    <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 18%;">SAS Reference</th>
+                                    <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 15%;">Antrak Job No</th>
+                                    <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 20%;">PO No</th>
                                     <th style="padding: 8px 6px; text-align: right; font-weight: 600; width: 15%;">Amount (<span t-esc="curr_symbol"/>)</th>
                                 </tr>
                             </thead>
@@ -98,6 +99,9 @@
                                         </td>
                                         <td style="padding: 8px 6px; text-align: center; color: #555555;">
                                             <span t-esc="line.antrak_job_no or '-'"/>
+                                        </td>
+                                        <td style="padding: 8px 6px; text-align: center; color: #555555;">
+                                            <span t-esc="line.po_no or '-'"/>
                                         </td>
                                         <td style="padding: 8px 6px; text-align: right; font-weight: 600; color: #333333;">
                                             <span t-esc="curr_symbol"/> <span t-esc="'%.2f' % line.amount"/>

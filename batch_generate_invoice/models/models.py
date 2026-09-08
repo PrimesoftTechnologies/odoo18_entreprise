@@ -6,7 +6,7 @@ class AccountMove(models.Model):
 
     sas_reference = fields.Char(string="SAS Reference")
     antrak_job_no = fields.Char(string="Antrak Job No")
-    # Hapa lazima iwe terms_template_id kama ilivyo kwenye database/views zako za invoice
+    po_no = fields.Char(string="PO No")  # Field mpya ya PO No kwenye Invoice
     terms_template_id = fields.Many2one('sale.terms.template', string="Bank Details For Payment", ondelete='set null')
 
 
@@ -57,6 +57,7 @@ class BatchInvoiceLine(models.Model):
     )
     sas_reference = fields.Char(string="SAS Reference")
     antrak_job_no = fields.Char(string="Antrak Job No")
+    po_no = fields.Char(string="PO No")  # Imeongezwa hapa kwenye Batch Line
     currency_id = fields.Many2one(
         related='invoice_id.currency_id',
         string="Currency",
@@ -95,6 +96,7 @@ class BatchInvoiceWizard(models.TransientModel):
                 'invoice_id': inv.id,
                 'sas_reference': inv.sas_reference or '',
                 'antrak_job_no': inv.antrak_job_no or '',
+                'po_no': inv.po_no or '',  # Inavuta PO No ya sasa kwenye wizard
             }))
 
         res['line_ids'] = lines
@@ -114,9 +116,9 @@ class BatchInvoiceWizard(models.TransientModel):
                 write_vals = {
                     'sas_reference': line.sas_reference,
                     'antrak_job_no': line.antrak_job_no,
+                    'po_no': line.po_no,  # Inasave mabadiliko ya PO No kwenye account.move kama ikibadilishwa
                 }
                 if self.bank_details_id:
-                    # Hapa tunaiandika kwenye terms_template_id ya account.move
                     write_vals['terms_template_id'] = self.bank_details_id.id
                 line.invoice_id.write(write_vals)
             
@@ -124,6 +126,7 @@ class BatchInvoiceWizard(models.TransientModel):
                 'invoice_id': line.invoice_id.id,
                 'sas_reference': line.sas_reference,
                 'antrak_job_no': line.antrak_job_no,
+                'po_no': line.po_no,  # Inaingiza PO No kwenye kudumu (batch.invoice.line)
             }))
 
         new_batch = self.env['batch.invoice'].create(batch_vals)
@@ -160,6 +163,7 @@ class BatchInvoiceWizardLine(models.TransientModel):
     )
     sas_reference = fields.Char(string="SAS Reference")
     antrak_job_no = fields.Char(string="Antrak Job No")
+    po_no = fields.Char(string="PO No")  # Field ya PO No kwenye Wizard Line
     currency_id = fields.Many2one(
         related='invoice_id.currency_id',
         string="Currency",

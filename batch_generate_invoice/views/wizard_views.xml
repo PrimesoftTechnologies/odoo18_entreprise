@@ -42,6 +42,7 @@
                             <field name="invoice_number" string="Docket No. / Invoice" readonly="1"/>
                             <field name="sas_reference" string="SAS Reference"/>
                             <field name="antrak_job_no" string="Antrak Job No"/>
+                            <field name="po_no" string="PO No"/> <!-- Imeongezwa hapa kwenye Batch Form -->
                             <field name="amount" string="Amount" readonly="1" sum="Total"/>
                         </list>
                     </field>
@@ -72,6 +73,7 @@
                             <field name="invoice_number" string="Docket No. / Invoice" readonly="1"/>
                             <field name="sas_reference" string="SAS Reference"/>
                             <field name="antrak_job_no" string="Antrak Job No"/>
+                            <field name="po_no" string="PO No"/> <!-- Imeongezwa hapa kwenye Wizard Form -->
                             <field name="amount" string="Amount" readonly="1" sum="Total"/>
                         </list>
                     </field>
@@ -133,6 +135,7 @@
             <xpath expr="//field[@name='ref']" position="after">
                 <field name="sas_reference" optional="show"/>
                 <field name="antrak_job_no" optional="show"/>
+                <field name="po_no" optional="show"/> <!-- Imeongezwa pia kwenye Invoice Tree kama utapenda kuiona hapo -->
             </xpath>
         </field>
     </record>

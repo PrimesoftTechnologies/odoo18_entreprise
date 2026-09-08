@@ -42,6 +42,7 @@
                             <field name="invoice_number" string="Docket No. / Invoice" readonly="1"/>
                             <field name="sas_reference" string="SAS Reference"/>
                             <field name="antrak_job_no" string="Antrak Job No"/>
+                            <field name="po_no" string="PO No"/> <!-- IMEONGEZWA HAPA -->
                             <field name="amount" string="Amount" readonly="1" sum="Total"/>
                         </list>
                     </field>
@@ -86,6 +87,9 @@
 
                             <!-- Antrak Job Number -->
                             <field name="antrak_job_no" string="Antrak Job No"/>
+
+                            <!-- PO No -->
+                            <field name="po_no" string="PO No"/> <!-- IMEONGEZWA HAPA PIA -->
 
                             <!-- Amount -->
                             <field name="amount" string="Amount" readonly="1" sum="Total"/>
@@ -160,10 +164,11 @@
                         class="btn-secondary"/>
             </xpath>
 
-            <!-- SAS Reference -->
+            <!-- SAS Reference & PO No -->
             <xpath expr="//field[@name='ref']" position="after">
                 <field name="sas_reference" optional="show"/>
                 <field name="antrak_job_no" optional="show"/>
+                <field name="po_no" optional="show"/> <!-- IMEONGEZWA KWENYE INVOICE LIST PIA -->
             </xpath>
 
         </field>
