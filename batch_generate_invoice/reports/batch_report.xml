@@ -78,9 +78,9 @@
                                 <tr style="background-color: #c0392b; color: #ffffff;">
                                     <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 12%;">Invoice Date</th>
                                     <th style="padding: 8px 6px; text-align: left; font-weight: 600; width: 20%;">Docket No. / Invoice</th>
+                                    <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 20%;">PO No</th>
                                     <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 18%;">SAS Reference</th>
                                     <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 15%;">Antrak Job No</th>
-                                    <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 20%;">PO No</th>
                                     <th style="padding: 8px 6px; text-align: right; font-weight: 600; width: 15%;">Amount (<span t-esc="curr_symbol"/>)</th>
                                 </tr>
                             </thead>
