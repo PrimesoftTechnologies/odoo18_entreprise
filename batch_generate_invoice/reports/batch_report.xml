@@ -12,7 +12,7 @@
         <field name="binding_type">report</field>
     </record>
 
-    <!-- QWEB REPORT (RED THEME DESIGN WITH BANK DETAILS) -->
+    <!-- QWEB REPORT (RED THEME DESIGN WITH REARRANGED COLUMNS) -->
     <template id="report_batch_invoice_document">
         <t t-call="web.external_layout">
             <t t-foreach="docs" t-as="o">
@@ -72,13 +72,13 @@
                             </table>
                         </div>
 
-                        <!-- INVOICE LINES TABLE -->
+                        <!-- INVOICE LINES TABLE (REARRANGED) -->
                         <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 25px;">
                             <thead>
                                 <tr style="background-color: #c0392b; color: #ffffff;">
                                     <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 12%;">Invoice Date</th>
-                                    <th style="padding: 8px 6px; text-align: left; font-weight: 600; width: 20%;">Docket No. / Invoice</th>
-                                    <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 20%;">PO No</th>
+                                    <th style="padding: 8px 6px; text-align: left; font-weight: 600; width: 22%;">Docket No. / Invoice</th>
+                                    <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 18%;">PO No</th>
                                     <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 18%;">SAS Reference</th>
                                     <th style="padding: 8px 6px; text-align: center; font-weight: 600; width: 15%;">Antrak Job No</th>
                                     <th style="padding: 8px 6px; text-align: right; font-weight: 600; width: 15%;">Amount (<span t-esc="curr_symbol"/>)</th>
@@ -88,21 +88,27 @@
                                 <t t-set="total_amount" t-value="0"/>
                                 <t t-foreach="o.line_ids" t-as="line">
                                     <tr style="border-bottom: 1px solid #e9ecef;">
+                                        <!-- Invoice Date -->
                                         <td style="padding: 8px 6px; text-align: center; color: #555555;">
                                             <span t-esc="line.invoice_date and line.invoice_date.strftime('%d/%m/%Y') or '-'"/>
                                         </td>
+                                        <!-- Docket No. / Invoice -->
                                         <td style="padding: 8px 6px; text-align: left; font-weight: 500; color: #333333;">
                                             <span t-esc="line.invoice_number or '-'"/>
                                         </td>
-                                        <td style="padding: 8px 6px; text-align: center; color: #555555;">
-                                            <span t-esc="line.sas_reference or '-'"/>
-                                        </td>
-                                        <td style="padding: 8px 6px; text-align: center; color: #555555;">
-                                            <span t-esc="line.antrak_job_no or '-'"/>
-                                        </td>
+                                        <!-- PO No -->
                                         <td style="padding: 8px 6px; text-align: center; color: #555555;">
                                             <span t-esc="line.po_no or '-'"/>
                                         </td>
+                                        <!-- SAS Reference -->
+                                        <td style="padding: 8px 6px; text-align: center; color: #555555;">
+                                            <span t-esc="line.sas_reference or '-'"/>
+                                        </td>
+                                        <!-- Antrak Job No -->
+                                        <td style="padding: 8px 6px; text-align: center; color: #555555;">
+                                            <span t-esc="line.antrak_job_no or '-'"/>
+                                        </td>
+                                        <!-- Amount -->
                                         <td style="padding: 8px 6px; text-align: right; font-weight: 600; color: #333333;">
                                             <span t-esc="curr_symbol"/> <span t-esc="'%.2f' % line.amount"/>
                                             <t t-set="total_amount" t-value="total_amount + line.amount"/>
