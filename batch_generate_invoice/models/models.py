@@ -6,7 +6,8 @@ class AccountMove(models.Model):
 
     sas_reference = fields.Char(string="SAS Reference")
     antrak_job_no = fields.Char(string="Antrak Job No")
-    bank_details_id = fields.Many2one('sale.terms.template', string="Bank Details For Payment", ondelete='set null')
+    # Hapa lazima iwe terms_template_id kama ilivyo kwenye database/views zako za invoice
+    terms_template_id = fields.Many2one('sale.terms.template', string="Bank Details For Payment", ondelete='set null')
 
 
 # 1. Hifadhi ya Kudumu (Database Record) kwa ajili ya Batch zote zinazozalishwa
@@ -115,7 +116,8 @@ class BatchInvoiceWizard(models.TransientModel):
                     'antrak_job_no': line.antrak_job_no,
                 }
                 if self.bank_details_id:
-                    write_vals['bank_details_id'] = self.bank_details_id.id
+                    # Hapa tunaiandika kwenye terms_template_id ya account.move
+                    write_vals['terms_template_id'] = self.bank_details_id.id
                 line.invoice_id.write(write_vals)
             
             batch_vals['line_ids'].append((0, 0, {
