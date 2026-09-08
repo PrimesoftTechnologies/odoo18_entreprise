@@ -40,9 +40,9 @@
                             <field name="currency_id" column_invisible="1"/>
                             <field name="invoice_date" string="Invoice Date" readonly="1"/>
                             <field name="invoice_number" string="Docket No. / Invoice" readonly="1"/>
+                             <field name="po_no" string="PO No"/> 
                             <field name="sas_reference" string="SAS Reference"/>
-                            <field name="antrak_job_no" string="Antrak Job No"/>
-                            <field name="po_no" string="PO No"/> <!-- Imeongezwa hapa kwenye Batch Form -->
+                            <field name="antrak_job_no" string="Antrak Job No"/>                         
                             <field name="amount" string="Amount" readonly="1" sum="Total"/>
                         </list>
                     </field>
