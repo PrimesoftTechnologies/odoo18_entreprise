@@ -2,7 +2,56 @@
 <odoo>
 
     <!-- ==========================================================
-         BATCH INVOICE WIZARD FORM
+         1. BATCH INVOICE TREE VIEW (HISTORY LIST)
+         ========================================================== -->
+    <record id="view_batch_invoice_tree" model="ir.ui.view">
+        <field name="name">batch.invoice.tree</field>
+        <field name="model">batch.invoice</field>
+        <field name="arch" type="xml">
+            <list string="Batch Invoices" create="0">
+                <field name="name" string="Batch ID"/>
+                <field name="bank_details_id" string="Bank Details"/>
+                <field name="create_date" string="Generated Date"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ==========================================================
+         2. BATCH INVOICE FORM VIEW (DETAILS)
+         ========================================================== -->
+    <record id="view_batch_invoice_form" model="ir.ui.view">
+        <field name="name">batch.invoice.form</field>
+        <field name="model">batch.invoice</field>
+        <field name="arch" type="xml">
+            <form string="Batch Invoice Details">
+                <header>
+                    <button name="action_print_batch" string="Print / Preview PDF" type="object" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <field name="bank_details_id" readonly="1"/>
+                    </group>
+                    <field name="line_ids" nolabel="1">
+                        <list editable="bottom" create="0" delete="0">
+                            <field name="invoice_id" column_invisible="1"/>
+                            <field name="currency_id" column_invisible="1"/>
+                            <field name="invoice_date" string="Invoice Date" readonly="1"/>
+                            <field name="invoice_number" string="Docket No. / Invoice" readonly="1"/>
+                            <field name="sas_reference" string="SAS Reference"/>
+                            <field name="antrak_job_no" string="Antrak Job No"/>
+                            <field name="amount" string="Amount" readonly="1" sum="Total"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ==========================================================
+         3. BATCH INVOICE WIZARD FORM (POP-UP)
          ========================================================== -->
     <record id="view_batch_invoice_wizard_form" model="ir.ui.view">
         <field name="name">batch.invoice.wizard.form</field>
@@ -10,8 +59,8 @@
         <field name="arch" type="xml">
             <form string="Generate Batch Invoice">
                 <sheet>
-                    <!-- Hapa ndipo nimeongeza field ya kuchagua Bank kwenye Pop-up -->
                     <group>
+                        <!-- Dropdown ya Bank Details kwenye Pop-up -->
                         <field name="bank_details_id" options="{'no_create': True}" string="Bank Details For Payment"/>
                     </group>
 
@@ -62,7 +111,7 @@
 
 
     <!-- ==========================================================
-         WINDOW ACTION
+         4. WINDOW ACTION FOR WIZARD
          ========================================================== -->
     <record id="action_open_batch_wizard_window"
             model="ir.actions.act_window">
@@ -73,9 +122,28 @@
         <field name="target">new</field>
     </record>
 
+    <!-- ==========================================================
+         5. WINDOW ACTION FOR BATCH HISTORY LIST
+         ========================================================== -->
+    <record id="action_batch_invoice_history" model="ir.actions.act_window">
+        <field name="name">Batch Invoices</field>
+        <field name="res_model">batch.invoice</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'group_by': 'name'}</field>
+    </record>
 
     <!-- ==========================================================
-         ACCOUNT MOVE TREE VIEW
+         6. MENUITEM UNDER ACCOUNTING
+         ========================================================== -->
+    <menuitem id="menu_batch_invoice_customer"
+              name="Batch Invoices"
+              parent="account.menu_finance_receivables"
+              action="action_batch_invoice_history"
+              sequence="30"/>
+
+
+    <!-- ==========================================================
+         7. ACCOUNT MOVE TREE VIEW INHERIT
          ========================================================== -->
     <record id="view_move_tree_inherited_batch"
             model="ir.ui.view">

@@ -6,7 +6,7 @@ class AccountMove(models.Model):
 
     sas_reference = fields.Char(string="SAS Reference")
     antrak_job_no = fields.Char(string="Antrak Job No")
-    bank_details_id = fields.Many2one('res.bank', string="Bank Details For Payment")
+    bank_details_id = fields.Many2one('sale.terms.template', string="Bank Details For Payment")
 
 
 # 1. Hifadhi ya Kudumu (Database Record) kwa ajili ya Batch zote zinazozalishwa
@@ -16,7 +16,7 @@ class BatchInvoice(models.Model):
     _order = 'id desc'
 
     name = fields.Char(string="Batch ID / Number", readonly=True, default="New")
-    bank_details_id = fields.Many2one('res.bank', string="Bank Details For Payment", readonly=True)
+    bank_details_id = fields.Many2one('sale.terms.template', string="Bank Details For Payment", readonly=True)
     line_ids = fields.One2many(
         'batch.invoice.line',
         'batch_id',
@@ -75,7 +75,7 @@ class BatchInvoiceWizard(models.TransientModel):
     _description = 'Generate Batch Invoice Wizard'
 
     name = fields.Char(string="Batch Number", readonly=True, default="New")
-    bank_details_id = fields.Many2one('res.bank', string="Bank Details For Payment")
+    bank_details_id = fields.Many2one('sale.terms.template', string="Bank Details For Payment")
     line_ids = fields.One2many(
         'batch.invoice.wizard.line',
         'wizard_id',
