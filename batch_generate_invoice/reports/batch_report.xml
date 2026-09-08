@@ -12,7 +12,7 @@
         <field name="binding_type">report</field>
     </record>
 
-    <!-- QWEB REPORT (RED THEME DESIGN WITH REARRANGED COLUMNS) -->
+    <!-- QWEB REPORT (RED THEME DESIGN WITH COMMA FORMATTED AMOUNTS) -->
     <template id="report_batch_invoice_document">
         <t t-call="web.external_layout">
             <t t-foreach="docs" t-as="o">
@@ -72,7 +72,7 @@
                             </table>
                         </div>
 
-                        <!-- INVOICE LINES TABLE (REARRANGED) -->
+                        <!-- INVOICE LINES TABLE -->
                         <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 25px;">
                             <thead>
                                 <tr style="background-color: #c0392b; color: #ffffff;">
@@ -88,29 +88,24 @@
                                 <t t-set="total_amount" t-value="0"/>
                                 <t t-foreach="o.line_ids" t-as="line">
                                     <tr style="border-bottom: 1px solid #e9ecef;">
-                                        <!-- Invoice Date -->
                                         <td style="padding: 8px 6px; text-align: center; color: #555555;">
                                             <span t-esc="line.invoice_date and line.invoice_date.strftime('%d/%m/%Y') or '-'"/>
                                         </td>
-                                        <!-- Docket No. / Invoice -->
                                         <td style="padding: 8px 6px; text-align: left; font-weight: 500; color: #333333;">
                                             <span t-esc="line.invoice_number or '-'"/>
                                         </td>
-                                        <!-- PO No -->
                                         <td style="padding: 8px 6px; text-align: center; color: #555555;">
                                             <span t-esc="line.po_no or '-'"/>
                                         </td>
-                                        <!-- SAS Reference -->
                                         <td style="padding: 8px 6px; text-align: center; color: #555555;">
                                             <span t-esc="line.sas_reference or '-'"/>
                                         </td>
-                                        <!-- Antrak Job No -->
                                         <td style="padding: 8px 6px; text-align: center; color: #555555;">
                                             <span t-esc="line.antrak_job_no or '-'"/>
                                         </td>
-                                        <!-- Amount -->
+                                        <!-- AMOUNT WITH COMMAS FORMATTING -->
                                         <td style="padding: 8px 6px; text-align: right; font-weight: 600; color: #333333;">
-                                            <span t-esc="curr_symbol"/> <span t-esc="'%.2f' % line.amount"/>
+                                            <span t-esc="curr_symbol"/> <span t-esc="'{:,.2f}'.format(line.amount)"/>
                                             <t t-set="total_amount" t-value="total_amount + line.amount"/>
                                         </td>
                                     </tr>
@@ -146,7 +141,7 @@
                                     <tr>
                                         <td style="padding: 6px 10px; color: #555555;">NON-TAXABLE</td>
                                         <td style="text-align: right; padding: 6px 10px; color: #555555;">
-                                            <span t-esc="curr_symbol"/> <span t-esc="'%.2f' % total_amount"/>
+                                            <span t-esc="curr_symbol"/> <span t-esc="'{:,.2f}'.format(total_amount)"/>
                                         </td>
                                     </tr>
                                     <tr>
@@ -157,8 +152,9 @@
                                     </tr>
                                     <tr style="background-color: #f2dede;">
                                         <td style="padding: 8px 10px; font-weight: bold; color: #c0392b;">TOTAL <span t-esc="curr_symbol"/></td>
+                                        <!-- TOTAL AMOUNT WITH COMMAS FORMATTING -->
                                         <td style="text-align: right; padding: 8px 10px; font-weight: bold; color: #c0392b; font-size: 12px;">
-                                            <span t-esc="curr_symbol"/> <span t-esc="'%.2f' % total_amount"/>
+                                            <span t-esc="curr_symbol"/> <span t-esc="'{:,.2f}'.format(total_amount)"/>
                                         </td>
                                     </tr>
                                 </table>
