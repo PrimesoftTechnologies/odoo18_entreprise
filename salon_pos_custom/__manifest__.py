@@ -24,8 +24,11 @@
         "views/pos_order_views.xml",
         "views/pos_order_line_views.xml",
         
-        # New Product View (Not Commission Checkbox)
+        # New Product View (Not Commission & Fixed Commission Checkboxes)
         "views/product_template_views.xml",
+
+        # New Commission Payout & Deductions View
+        "views/salon_commission_payout_views.xml",
 
         # ======================================================
         # COMMISSION WIZARD

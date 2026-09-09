@@ -219,6 +219,16 @@ class EmployeeCommissionReport(models.AbstractModel):
 
             if employee.id not in employees:
 
+                # Tunatafuta rekodi ya Commission Payout iliyofanyiwa "Mark as Paid"
+                payout_record = self.env['salon.commission.payout'].search([
+                    ('employee_id', '=', employee.id),
+                    ('date_from', '>=', date_from),
+                    ('date_to', '<=', date_to),
+                    ('state', '=', 'paid')
+                ], limit=1)
+
+                advance_deduction = payout_record.advance_deduction if payout_record else 0.0
+
                 employees[
                     employee.id
                 ] = {
@@ -233,6 +243,12 @@ class EmployeeCommissionReport(models.AbstractModel):
                         0.0,
 
                     "total_commission":
+                        0.0,
+
+                    "advance_deduction":
+                        advance_deduction,
+
+                    "net_commission":
                         0.0,
 
                 }
@@ -275,6 +291,12 @@ class EmployeeCommissionReport(models.AbstractModel):
                 line.commission_amount
                 or 0.0
             )
+
+        # ==========================================================
+        # CALCULATE NET COMMISSION FOR EACH EMPLOYEE
+        # ==========================================================
+        for emp_id, emp_data in employees.items():
+            emp_data["net_commission"] = emp_data["total_commission"] - emp_data.get("advance_deduction", 0.0)
 
         # ==========================================================
         # GRAND TOTAL PRICE

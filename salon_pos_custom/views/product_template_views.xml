@@ -5,10 +5,12 @@
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
-            <!-- Tunaongeza field kwenye sehemu ya kwanza ya General Information au juu ya tab ya POS -->
             <xpath expr="//page[@name='pos']" position="inside">
                 <group string="Commission Settings">
-                    <field name="is_not_commission"/>
+                    <!-- Zinafanya kazi kwa kupokezana (Ukiwasha moja nyingine inakuwa read-only) -->
+                    <field name="is_not_commission" readonly="is_fixed_commission"/>
+                    <field name="is_fixed_commission" readonly="is_not_commission"/>
+                    <field name="fixed_commission_amount" invisible="not is_fixed_commission" required="is_fixed_commission"/>
                 </group>
             </xpath>
         </field>

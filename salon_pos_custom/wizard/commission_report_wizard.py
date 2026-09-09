@@ -126,21 +126,6 @@ class CommissionReportWizard(models.TransientModel):
         # ------------------------------------------------------
         # POINT OF SALE FILTER
         # ------------------------------------------------------
-        #
-        # IMPORTANT:
-        #
-        # pos.order.line
-        #       ↓
-        # order_id
-        #       ↓
-        # config_id
-        #
-        # When a POS is selected, ONLY orders belonging
-        # to that POS configuration will be included.
-        #
-        # When POS is empty, ALL POS configurations are included.
-        #
-        # ------------------------------------------------------
 
         if self.pos_config_id:
 
@@ -253,6 +238,16 @@ class CommissionReportWizard(models.TransientModel):
 
             if employee.id not in employees:
 
+                # Kutafuta rekodi ya Payout iliyofanyiwa "Mark as Paid"
+                payout_record = self.env['salon.commission.payout'].search([
+                    ('employee_id', '=', employee.id),
+                    ('date_from', '>=', self.date_from),
+                    ('date_to', '<=', self.date_to),
+                    ('state', '=', 'paid')
+                ], limit=1)
+
+                advance_deduction = payout_record.advance_deduction if payout_record else 0.0
+
                 employees[employee.id] = {
 
                     "name": employee.name,
@@ -262,6 +257,10 @@ class CommissionReportWizard(models.TransientModel):
                     "total_price": 0.0,
 
                     "total_commission": 0.0,
+
+                    "advance_deduction": advance_deduction,
+
+                    "net_commission": 0.0,
 
                 }
 
@@ -304,6 +303,12 @@ class CommissionReportWizard(models.TransientModel):
             )
 
         # ------------------------------------------------------
+        # CALCULATE NET COMMISSION FOR EACH EMPLOYEE
+        # ------------------------------------------------------
+        for emp_id, emp_data in employees.items():
+            emp_data["net_commission"] = emp_data["total_commission"] - emp_data.get("advance_deduction", 0.0)
+
+        # ------------------------------------------------------
         # GRAND TOTALS
         # ------------------------------------------------------
 
@@ -331,10 +336,6 @@ class CommissionReportWizard(models.TransientModel):
 
         self.ensure_one()
 
-        # ------------------------------------------------------
-        # VALIDATE EMPLOYEE
-        # ------------------------------------------------------
-
         if (
             self.employee_selection == "employee"
             and not self.employee_id
@@ -343,10 +344,6 @@ class CommissionReportWizard(models.TransientModel):
             raise ValidationError(
                 "Please select an employee."
             )
-
-        # ------------------------------------------------------
-        # VALIDATE DATES
-        # ------------------------------------------------------
 
         if (
             self.date_from
@@ -357,10 +354,6 @@ class CommissionReportWizard(models.TransientModel):
             raise ValidationError(
                 "From Date cannot be later than To Date."
             )
-
-        # ------------------------------------------------------
-        # REPORT DATA
-        # ------------------------------------------------------
 
         data = {
 
@@ -390,10 +383,6 @@ class CommissionReportWizard(models.TransientModel):
 
         }
 
-        # ------------------------------------------------------
-        # PRINT REPORT
-        # ------------------------------------------------------
-
         return self.env.ref(
             "salon_pos_custom.action_employee_commission_report"
         ).report_action(
@@ -409,10 +398,6 @@ class CommissionReportWizard(models.TransientModel):
 
         self.ensure_one()
 
-        # ------------------------------------------------------
-        # VALIDATE EMPLOYEE
-        # ------------------------------------------------------
-
         if (
             self.employee_selection == "employee"
             and not self.employee_id
@@ -421,10 +406,6 @@ class CommissionReportWizard(models.TransientModel):
             raise ValidationError(
                 "Please select an employee."
             )
-
-        # ------------------------------------------------------
-        # VALIDATE DATES
-        # ------------------------------------------------------
 
         if (
             self.date_from
@@ -435,10 +416,6 @@ class CommissionReportWizard(models.TransientModel):
             raise ValidationError(
                 "From Date cannot be later than To Date."
             )
-
-        # ======================================================
-        # CREATE EXCEL FILE
-        # ======================================================
 
         output = io.BytesIO()
 
@@ -452,10 +429,6 @@ class CommissionReportWizard(models.TransientModel):
         sheet = workbook.add_worksheet(
             "Commission Report"
         )
-
-        # ======================================================
-        # PAGE SETTINGS
-        # ======================================================
 
         sheet.set_landscape()
 
@@ -599,6 +572,57 @@ class CommissionReportWizard(models.TransientModel):
             "num_format": '#,##0.00 "TSh"',
         })
 
+        # Formati mpya za Makato na Net Payout kwenye Excel
+        deduction_label_format = workbook.add_format({
+            "bold": True,
+            "font_size": 10,
+            "font_name": "Arial",
+            "font_color": "#C92A2A",
+            "bg_color": "#FAFAFA",
+            "border": 1,
+            "border_color": "#CCCCCC",
+            "align": "right",
+            "valign": "vcenter",
+        })
+
+        deduction_money_format = workbook.add_format({
+            "bold": True,
+            "font_size": 10,
+            "font_name": "Arial",
+            "font_color": "#C92A2A",
+            "bg_color": "#FAFAFA",
+            "border": 1,
+            "border_color": "#CCCCCC",
+            "align": "right",
+            "valign": "vcenter",
+            "num_format": '-#,##0.00 "TSh"',
+        })
+
+        net_label_format = workbook.add_format({
+            "bold": True,
+            "font_size": 10,
+            "font_name": "Arial",
+            "font_color": "#2B8A3E",
+            "bg_color": "#E9ECEF",
+            "border": 1,
+            "border_color": "#CCCCCC",
+            "align": "right",
+            "valign": "vcenter",
+        })
+
+        net_money_format = workbook.add_format({
+            "bold": True,
+            "font_size": 10,
+            "font_name": "Arial",
+            "font_color": "#2B8A3E",
+            "bg_color": "#E9ECEF",
+            "border": 1,
+            "border_color": "#CCCCCC",
+            "align": "right",
+            "valign": "vcenter",
+            "num_format": '#,##0.00 "TSh"',
+        })
+
         grand_total_label_format = workbook.add_format({
             "bold": True,
             "font_size": 13,
@@ -650,10 +674,6 @@ class CommissionReportWizard(models.TransientModel):
             "valign": "vcenter",
         })
 
-        # ======================================================
-        # COLUMN WIDTHS
-        # ======================================================
-
         sheet.set_column(0, 0, 32)
         sheet.set_column(1, 1, 20)
         sheet.set_column(2, 2, 13)
@@ -661,19 +681,11 @@ class CommissionReportWizard(models.TransientModel):
         sheet.set_column(4, 4, 20)
         sheet.set_column(5, 5, 20)
 
-        # ======================================================
-        # GET DATA
-        # ======================================================
-
         (
             employees,
             grand_total_price,
             grand_total_commission,
         ) = self._get_employee_data()
-
-        # ======================================================
-        # REPORT HEADER
-        # ======================================================
 
         row = 0
 
@@ -701,120 +713,36 @@ class CommissionReportWizard(models.TransientModel):
 
         row += 2
 
-        # ======================================================
-        # REPORT DETAILS
-        # ======================================================
-
         selected_employee_name = (
-
             self.employee_id.name
-
             if (
                 self.employee_selection == "employee"
                 and self.employee_id
             )
-
             else "All Employees"
         )
 
         selected_pos_name = (
-
             self.pos_config_id.name
             if self.pos_config_id
             else "All Point of Sales"
         )
 
-        # ------------------------------------------------------
-        # EMPLOYEE
-        # ------------------------------------------------------
-
-        sheet.write(
-            row,
-            2,
-            "Employee:",
-            detail_label_format,
-        )
-
-        sheet.merge_range(
-            row,
-            3,
-            row,
-            5,
-            selected_employee_name,
-            detail_value_format,
-        )
-
+        sheet.write(row, 2, "Employee:", detail_label_format)
+        sheet.merge_range(row, 3, row, 5, selected_employee_name, detail_value_format)
         row += 1
 
-        # ------------------------------------------------------
-        # POINT OF SALE
-        # ------------------------------------------------------
-
-        sheet.write(
-            row,
-            2,
-            "Point of Sale:",
-            detail_label_format,
-        )
-
-        sheet.merge_range(
-            row,
-            3,
-            row,
-            5,
-            selected_pos_name,
-            detail_value_format,
-        )
-
+        sheet.write(row, 2, "Point of Sale:", detail_label_format)
+        sheet.merge_range(row, 3, row, 5, selected_pos_name, detail_value_format)
         row += 1
 
-        # ------------------------------------------------------
-        # FROM DATE
-        # ------------------------------------------------------
-
-        sheet.write(
-            row,
-            2,
-            "From:",
-            detail_label_format,
-        )
-
-        sheet.merge_range(
-            row,
-            3,
-            row,
-            5,
-            str(self.date_from),
-            detail_value_format,
-        )
-
+        sheet.write(row, 2, "From:", detail_label_format)
+        sheet.merge_range(row, 3, row, 5, str(self.date_from), detail_value_format)
         row += 1
 
-        # ------------------------------------------------------
-        # TO DATE
-        # ------------------------------------------------------
-
-        sheet.write(
-            row,
-            2,
-            "To:",
-            detail_label_format,
-        )
-
-        sheet.merge_range(
-            row,
-            3,
-            row,
-            5,
-            str(self.date_to),
-            detail_value_format,
-        )
-
+        sheet.write(row, 2, "To:", detail_label_format)
+        sheet.merge_range(row, 3, row, 5, str(self.date_to), detail_value_format)
         row += 2
-
-        # ======================================================
-        # EMPLOYEE SECTIONS
-        # ======================================================
 
         for emp in employees.values():
 
@@ -852,10 +780,6 @@ class CommissionReportWizard(models.TransientModel):
             sheet.set_row(row, 25)
 
             row += 1
-
-            # --------------------------------------------------
-            # EMPLOYEE LINES
-            # --------------------------------------------------
 
             for line in emp["lines"]:
 
@@ -931,7 +855,7 @@ class CommissionReportWizard(models.TransientModel):
                 row += 1
 
             # --------------------------------------------------
-            # EMPLOYEE TOTAL
+            # 1. EMPLOYEE TOTAL (GROSS COMMISSION)
             # --------------------------------------------------
 
             sheet.merge_range(
@@ -939,7 +863,7 @@ class CommissionReportWizard(models.TransientModel):
                 0,
                 row,
                 3,
-                "Employee Total",
+                "Employee Total (Gross Commission)",
                 total_label_format,
             )
 
@@ -955,6 +879,54 @@ class CommissionReportWizard(models.TransientModel):
                 5,
                 emp["total_commission"],
                 total_money_format,
+            )
+
+            sheet.set_row(row, 25)
+
+            row += 1
+
+            # --------------------------------------------------
+            # 2. LESS: ADVANCE / DEDUCTIONS
+            # --------------------------------------------------
+
+            sheet.merge_range(
+                row,
+                0,
+                row,
+                4,
+                "Less: Advance / Deductions (Payout)",
+                deduction_label_format,
+            )
+
+            sheet.write_number(
+                row,
+                5,
+                emp.get("advance_deduction", 0.0),
+                deduction_money_format,
+            )
+
+            sheet.set_row(row, 22)
+
+            row += 1
+
+            # --------------------------------------------------
+            # 3. NET COMMISSION PAYABLE
+            # --------------------------------------------------
+
+            sheet.merge_range(
+                row,
+                0,
+                row,
+                4,
+                "Net Commission Payable (Actual Payout)",
+                net_label_format,
+            )
+
+            sheet.write_number(
+                row,
+                5,
+                emp.get("net_commission", emp["total_commission"]),
+                net_money_format,
             )
 
             sheet.set_row(row, 25)
@@ -1029,20 +1001,12 @@ class CommissionReportWizard(models.TransientModel):
             footer_format,
         )
 
-        # ======================================================
-        # PRINT AREA
-        # ======================================================
-
         sheet.print_area(
             0,
             0,
             row,
             5,
         )
-
-        # ======================================================
-        # HEADER / FOOTER
-        # ======================================================
 
         sheet.set_header(
             "&LEmployee Commission Report"
@@ -1053,10 +1017,6 @@ class CommissionReportWizard(models.TransientModel):
             "&CGenerated by Odoo"
         )
 
-        # ======================================================
-        # CLOSE WORKBOOK
-        # ======================================================
-
         workbook.close()
 
         output.seek(0)
@@ -1064,10 +1024,6 @@ class CommissionReportWizard(models.TransientModel):
         file_data = base64.b64encode(
             output.read()
         )
-
-        # ======================================================
-        # CREATE ATTACHMENT
-        # ======================================================
 
         attachment = self.env[
             "ir.attachment"
@@ -1086,10 +1042,6 @@ class CommissionReportWizard(models.TransientModel):
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 
         })
-
-        # ======================================================
-        # DOWNLOAD EXCEL
-        # ======================================================
 
         return {
 

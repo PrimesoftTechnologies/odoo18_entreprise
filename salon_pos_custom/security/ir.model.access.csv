@@ -1,2 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_commission_report_wizard_01,commission.report.wizard,model_commission_report_wizard,base.group_user,1,1,1,1
+access_salon_commission_payout,salon.commission.payout,model_salon_commission_payout,base.group_user,1,1,1,1

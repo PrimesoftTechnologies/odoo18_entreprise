@@ -484,14 +484,13 @@
 
 
                                 <!-- ================================================= -->
-                                <!-- EMPLOYEE TOTAL -->
+                                <!-- EMPLOYEE TOTAL & PAYOUT SUMMARY -->
                                 <!-- ================================================= -->
 
                                 <tfoot>
 
-                                    <tr style="
-                                        page-break-inside: avoid;
-                                    ">
+                                    <!-- Gross Total Row -->
+                                    <tr style="page-break-inside: avoid;">
 
                                         <td colspan="4"
                                             style="
@@ -503,10 +502,9 @@
                                                 font-weight: bold;
                                             ">
 
-                                            Employee Total
+                                            Employee Total (Gross Commission)
 
                                         </td>
-
 
                                         <!-- TOTAL AMOUNT -->
 
@@ -535,7 +533,6 @@
 
                                         </td>
 
-
                                         <!-- COMMISSION -->
 
                                         <td style="
@@ -550,6 +547,98 @@
 
                                             <span t-esc="'{:,.2f}'.format(
                                                 emp['total_commission']
+                                            )"/>
+
+                                            <span style="
+                                                font-size: 9px;
+                                                color: #777777;
+                                            ">
+
+                                                TSh
+
+                                            </span>
+
+                                        </td>
+
+                                    </tr>
+
+                                    <!-- Advance / Deductions Row -->
+                                    <tr style="page-break-inside: avoid;">
+
+                                        <td colspan="5"
+                                            style="
+                                                padding: 7px;
+                                                border: 1px solid #cccccc;
+                                                background-color: #fafafa;
+                                                text-align: right;
+                                                font-size: 10px;
+                                                font-weight: bold;
+                                                color: #c92a2a;
+                                            ">
+
+                                            Less: Advance / Deductions (Payout)
+
+                                        </td>
+
+                                        <td style="
+                                            padding: 7px 5px;
+                                            border: 1px solid #cccccc;
+                                            background-color: #fafafa;
+                                            text-align: right;
+                                            font-size: 10px;
+                                            font-weight: bold;
+                                            color: #c92a2a;
+                                            white-space: nowrap;
+                                        ">
+
+                                            - <span t-esc="'{:,.2f}'.format(
+                                                emp.get('advance_deduction', 0.0)
+                                            )"/>
+
+                                            <span style="
+                                                font-size: 9px;
+                                                color: #777777;
+                                            ">
+
+                                                TSh
+
+                                            </span>
+
+                                        </td>
+
+                                    </tr>
+
+                                    <!-- Net Commission Payable Row -->
+                                    <tr style="page-break-inside: avoid;">
+
+                                        <td colspan="5"
+                                            style="
+                                                padding: 9px 7px;
+                                                border: 1px solid #cccccc;
+                                                background-color: #e9ecef;
+                                                text-align: right;
+                                                font-size: 11px;
+                                                font-weight: bold;
+                                                color: #2b8a3e;
+                                            ">
+
+                                            Net Commission Payable (Actual Payout)
+
+                                        </td>
+
+                                        <td style="
+                                            padding: 9px 5px;
+                                            border: 1px solid #cccccc;
+                                            background-color: #e9ecef;
+                                            text-align: right;
+                                            font-size: 11px;
+                                            font-weight: bold;
+                                            color: #2b8a3e;
+                                            white-space: nowrap;
+                                        ">
+
+                                            <span t-esc="'{:,.2f}'.format(
+                                                emp.get('net_commission', emp['total_commission'])
                                             )"/>
 
                                             <span style="
