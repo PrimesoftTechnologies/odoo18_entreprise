@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_delivery_document_inherited_locations" inherit_id="stock.report_delivery_document">
+        <xpath expr="//div[@name='div_sched_date']" position="after">
+            <div class="col" t-if="o.location_id" name="div_source_location">
+                <strong>Source Location:</strong>
+                <p t-field="o.location_id.complete_name"/>
+            </div>
+            <div class="col" t-if="o.location_dest_id" name="div_dest_location">
+                <strong>Destination Location:</strong>
+                <p t-field="o.location_dest_id.complete_name"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>
