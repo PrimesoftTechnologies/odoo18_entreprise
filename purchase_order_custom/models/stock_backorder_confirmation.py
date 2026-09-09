@@ -40,7 +40,6 @@ class StockPicking(models.Model):
                         ])
                         attachment_count += msg_attachments
                     
-                    # Kama bado hakuna attachment, mzuie hapa hapa kabla ya pop-up haijaja!
                     if attachment_count == 0:
                         raise UserError(
                             f"You cannot proceed! Please attach the required document to this Receipt ({picking.name}) in the attachment section below before validating the shortage items."
