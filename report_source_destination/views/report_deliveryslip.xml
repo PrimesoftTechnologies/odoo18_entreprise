@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="report_delivery_document_inherited_locations" inherit_id="stock.report_delivery_document">
-        <!-- Hapa tunaweka taarifa zionekane chini ya eneo la Order na Shipping Date -->
         <xpath expr="//div[@name='div_sched_date']" position="after">
             <div class="row mt-3" id="stock_locations_row">
                 <div class="col-6" t-if="o.location_id" name="div_source_location">
