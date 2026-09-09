@@ -58,7 +58,6 @@ class SalonCommissionPayout(models.Model):
             else:
                 record.gross_commission = 0.0
 
-    # Onchange hii inasaidia kuleta hesabu papo hapo kabla hata hujasave fomu
     @api.onchange('employee_id', 'date_from', 'date_to')
     def _onchange_employee_dates(self):
         for record in self:
