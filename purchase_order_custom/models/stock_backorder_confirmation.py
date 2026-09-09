@@ -10,8 +10,8 @@ class StockPicking(models.Model):
 
     def button_validate(self):
         for picking in self:
-            # Angalia kama ni Delivery au Receipt inayohusika na operations
-            if picking.state in ['assigned', 'confirmed', 'waiting']:
+            # Weka sharti liwe kwenye Receipt pekee (incoming) na sio Delivery au Internal Transfer
+            if picking.picking_type_id.code == 'incoming' and picking.state in ['assigned', 'confirmed', 'waiting']:
                 
                 # Angalia kama kuna bidhaa iliyopungua (Demand > Quantity iliyofanyika)
                 has_partial_qty = False
@@ -43,7 +43,7 @@ class StockPicking(models.Model):
                     # Kama bado hakuna attachment, mzuie hapa hapa kabla ya pop-up haijaja!
                     if attachment_count == 0:
                         raise UserError(
-                            f"You cannot proceed! Please attach the required document to this Delivery/Receipt ({picking.name}) in the attachment section below before validating the shortage items."
+                            f"You cannot proceed! Please attach the required document to this Receipt ({picking.name}) in the attachment section below before validating the shortage items."
                         )
 
         return super().button_validate()
