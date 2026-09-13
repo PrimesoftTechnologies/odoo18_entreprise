@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 from odoo import api, fields, models
+
 
 class EmployeeCommissionReport(models.AbstractModel):
 
@@ -73,7 +76,6 @@ class EmployeeCommissionReport(models.AbstractModel):
             ].browse(employee_id)
 
             if employee.exists():
-
                 selected_employee = employee.name
 
         else:
@@ -91,7 +93,6 @@ class EmployeeCommissionReport(models.AbstractModel):
             ].browse(pos_config_id)
 
             if pos_config.exists():
-
                 selected_pos = pos_config.name
 
         else:
@@ -99,13 +100,13 @@ class EmployeeCommissionReport(models.AbstractModel):
             selected_pos = "All Point of Sales"
 
         # ==========================================================
-        # SEARCH DOMAIN
+        # SEARCH DOMAIN FOR POS COMMISSION LINES
         # ==========================================================
 
         domain = []
 
         # ----------------------------------------------------------
-        # EMPLOYEE FILTER
+        # EMPLOYEE
         # ----------------------------------------------------------
 
         if (
@@ -122,7 +123,7 @@ class EmployeeCommissionReport(models.AbstractModel):
             )
 
         # ----------------------------------------------------------
-        # POINT OF SALE FILTER
+        # POINT OF SALE
         # ----------------------------------------------------------
 
         if pos_config_id:
@@ -141,34 +142,43 @@ class EmployeeCommissionReport(models.AbstractModel):
 
         if date_from:
 
+            date_from_datetime = fields.Datetime.to_datetime(
+                date_from
+            )
+
             domain.append(
                 (
                     "order_id.date_order",
                     ">=",
-                    date_from,
+                    date_from_datetime,
                 )
             )
 
         # ----------------------------------------------------------
         # TO DATE
         #
-        # Include the complete selected day.
+        # +1 day makes the selected end date inclusive.
         # ----------------------------------------------------------
 
         if date_to:
+
+            date_to_datetime = (
+                fields.Datetime.to_datetime(
+                    date_to
+                )
+                + timedelta(days=1)
+            )
 
             domain.append(
                 (
                     "order_id.date_order",
                     "<",
-                    fields.Datetime.to_datetime(
-                        date_to
-                    ) + __import__("datetime").timedelta(days=1),
+                    date_to_datetime,
                 )
             )
 
         # ----------------------------------------------------------
-        # ONLY EMPLOYEE COMMISSION LINES
+        # ONLY LINES WITH EMPLOYEE
         # ----------------------------------------------------------
 
         domain.append(
@@ -203,7 +213,81 @@ class EmployeeCommissionReport(models.AbstractModel):
         )
 
         # ==========================================================
-        # GROUP LINES BY EMPLOYEE
+        # GET EMPLOYEE IDS
+        # ==========================================================
+
+        employee_ids = lines.mapped(
+            "employee_id"
+        ).ids
+
+        # ==========================================================
+        # GET ALL PAID PAYOUTS
+        #
+        # IMPORTANT:
+        #
+        # We no longer use ONLY the latest payout.
+        #
+        # We get ALL PAID payouts for each employee.
+        #
+        # Example:
+        #
+        # Payout 1:
+        # Deduction = 5,000
+        #
+        # Payout 2:
+        # Deduction = 7,000
+        #
+        # Total deductions = 12,000
+        #
+        # POS commission = 12,000
+        #
+        # Current balance = 0
+        # ==========================================================
+
+        payout_map = {}
+
+        if employee_ids:
+
+            payout_records = self.env[
+                "salon.commission.payout"
+            ].search(
+                [
+                    (
+                        "employee_id",
+                        "in",
+                        employee_ids,
+                    ),
+                    (
+                        "state",
+                        "=",
+                        "paid",
+                    ),
+                ],
+                order="employee_id, id asc",
+            )
+
+            # ------------------------------------------------------
+            # GROUP PAYOUTS BY EMPLOYEE
+            # ------------------------------------------------------
+
+            for payout in payout_records:
+
+                employee_id_value = (
+                    payout.employee_id.id
+                )
+
+                if employee_id_value not in payout_map:
+
+                    payout_map[
+                        employee_id_value
+                    ] = []
+
+                payout_map[
+                    employee_id_value
+                ].append(payout)
+
+        # ==========================================================
+        # GROUP POS LINES BY EMPLOYEE
         # ==========================================================
 
         for line in lines:
@@ -213,24 +297,16 @@ class EmployeeCommissionReport(models.AbstractModel):
             if not employee:
                 continue
 
+            employee_id_value = employee.id
+
             # ------------------------------------------------------
-            # CREATE EMPLOYEE GROUP
+            # CREATE EMPLOYEE RECORD
             # ------------------------------------------------------
 
-            if employee.id not in employees:
-
-                # Tunatafuta rekodi ya Commission Payout iliyofanyiwa "Mark as Paid"
-                payout_record = self.env['salon.commission.payout'].search([
-                    ('employee_id', '=', employee.id),
-                    ('date_from', '>=', date_from),
-                    ('date_to', '<=', date_to),
-                    ('state', '=', 'paid')
-                ], limit=1)
-
-                advance_deduction = payout_record.advance_deduction if payout_record else 0.0
+            if employee_id_value not in employees:
 
                 employees[
-                    employee.id
+                    employee_id_value
                 ] = {
 
                     "name":
@@ -239,32 +315,41 @@ class EmployeeCommissionReport(models.AbstractModel):
                     "lines":
                         [],
 
+                    # Total POS sales value
                     "total_price":
                         0.0,
 
+                    # Total commission earned from POS
+                    # within the selected report period.
                     "total_commission":
                         0.0,
 
+                    # Total amount deducted through
+                    # ALL PAID payout records.
                     "advance_deduction":
-                        advance_deduction,
-
-                    "net_commission":
                         0.0,
 
+                    # Current commission balance.
+                    "current_commission":
+                        0.0,
+
+                    # Net commission.
+                    "net_commission":
+                        0.0,
                 }
 
             # ------------------------------------------------------
-            # ADD LINE
+            # ADD POS LINE
             # ------------------------------------------------------
 
             employees[
-                employee.id
+                employee_id_value
             ][
                 "lines"
             ].append(line)
 
             # ------------------------------------------------------
-            # TOTAL PRICE
+            # TOTAL SALES VALUE
             # ------------------------------------------------------
 
             line_total_price = (
@@ -274,17 +359,17 @@ class EmployeeCommissionReport(models.AbstractModel):
             )
 
             employees[
-                employee.id
+                employee_id_value
             ][
                 "total_price"
             ] += line_total_price
 
             # ------------------------------------------------------
-            # TOTAL COMMISSION
+            # TOTAL POS COMMISSION
             # ------------------------------------------------------
 
             employees[
-                employee.id
+                employee_id_value
             ][
                 "total_commission"
             ] += (
@@ -293,26 +378,132 @@ class EmployeeCommissionReport(models.AbstractModel):
             )
 
         # ==========================================================
-        # CALCULATE NET COMMISSION FOR EACH EMPLOYEE
+        # CALCULATE PAYOUTS AND CURRENT BALANCE
         # ==========================================================
+
         for emp_id, emp_data in employees.items():
-            emp_data["net_commission"] = emp_data["total_commission"] - emp_data.get("advance_deduction", 0.0)
+
+            # ------------------------------------------------------
+            # GET ALL PAID PAYOUTS FOR THIS EMPLOYEE
+            # ------------------------------------------------------
+
+            employee_payouts = payout_map.get(
+                emp_id,
+                []
+            )
+
+            # ------------------------------------------------------
+            # TOTAL DEDUCTIONS FROM ALL PAID PAYOUTS
+            # ------------------------------------------------------
+
+            total_paid_deductions = sum(
+                (
+                    payout.advance_deduction
+                    or 0.0
+                )
+                for payout in employee_payouts
+            )
+
+            # ------------------------------------------------------
+            # CURRENT COMMISSION
+            #
+            # POS commission:
+            #
+            # Example:
+            # 12,000
+            #
+            # Less all paid deductions:
+            #
+            # 5,000 + 7,000 = 12,000
+            #
+            # Balance:
+            #
+            # 12,000 - 12,000 = 0
+            # ------------------------------------------------------
+
+            current_commission = (
+                emp_data[
+                    "total_commission"
+                ]
+                -
+                total_paid_deductions
+            )
+
+            # ------------------------------------------------------
+            # NEVER ALLOW NEGATIVE BALANCE
+            # ------------------------------------------------------
+
+            if current_commission < 0:
+
+                current_commission = 0.0
+
+            # ------------------------------------------------------
+            # SAVE TOTAL DEDUCTIONS
+            # ------------------------------------------------------
+
+            emp_data[
+                "advance_deduction"
+            ] = total_paid_deductions
+
+            # ------------------------------------------------------
+            # SAVE CURRENT BALANCE
+            # ------------------------------------------------------
+
+            emp_data[
+                "current_commission"
+            ] = current_commission
+
+            # ------------------------------------------------------
+            # NET COMMISSION
+            # ------------------------------------------------------
+
+            emp_data[
+                "net_commission"
+            ] = current_commission
 
         # ==========================================================
-        # GRAND TOTAL PRICE
+        # GRAND TOTAL SALES
         # ==========================================================
 
         grand_total_price = sum(
-            employee["total_price"]
+            employee[
+                "total_price"
+            ]
             for employee in employees.values()
         )
 
         # ==========================================================
-        # GRAND TOTAL COMMISSION
+        # GRAND TOTAL POS COMMISSION
+        #
+        # This is the commission earned from POS transactions.
+        # ==========================================================
+
+        grand_total_earned_commission = sum(
+            employee[
+                "total_commission"
+            ]
+            for employee in employees.values()
+        )
+
+        # ==========================================================
+        # GRAND TOTAL DEDUCTIONS
+        # ==========================================================
+
+        grand_total_deductions = sum(
+            employee[
+                "advance_deduction"
+            ]
+            for employee in employees.values()
+        )
+
+        # ==========================================================
+        # GRAND TOTAL CURRENT BALANCE
         # ==========================================================
 
         grand_total_commission = sum(
-            employee["total_commission"]
+            employee[
+                "current_commission"
+            ]
             for employee in employees.values()
         )
 
@@ -352,10 +543,21 @@ class EmployeeCommissionReport(models.AbstractModel):
             "pos_config_id":
                 pos_config_id,
 
+            # ------------------------------------------------------
+            # GRAND TOTALS
+            # ------------------------------------------------------
+
             "grand_total_price":
                 grand_total_price,
 
+            # Current balance / net commission
             "grand_total_commission":
                 grand_total_commission,
 
+            # Additional totals available to QWeb
+            "grand_total_earned_commission":
+                grand_total_earned_commission,
+
+            "grand_total_deductions":
+                grand_total_deductions,
         }

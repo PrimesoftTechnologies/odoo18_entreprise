@@ -1,64 +1,297 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- List View -->
+
+    <!-- =========================================================
+         PAYOUT LIST
+         ========================================================= -->
+
     <record id="view_salon_commission_payout_tree" model="ir.ui.view">
         <field name="name">salon.commission.payout.list</field>
         <field name="model">salon.commission.payout</field>
+
         <field name="arch" type="xml">
+
             <list string="Commission Payouts">
+
                 <field name="name"/>
+
                 <field name="employee_id"/>
+
                 <field name="date_from"/>
+
                 <field name="date_to"/>
-                <field name="gross_commission" sum="Total Gross"/>
-                <field name="advance_deduction" sum="Total Deductions"/>
-                <field name="net_commission" sum="Total Net"/>
-                <field name="state" widget="badge" decoration-success="state == 'paid'" decoration-info="state == 'draft'"/>
+
+                <!-- =============================================
+                     TOTAL GROSS COMMISSION
+                     ============================================= -->
+
+                <field name="gross_commission"
+                       sum="Total Gross Commission"/>
+
+                <!-- =============================================
+                     TOTAL DEDUCTION / ADVANCE
+                     ============================================= -->
+
+                <field name="advance_deduction"
+                       sum="Total Deduction / Advance Taken"/>
+
+                <!-- =============================================
+                     TOTAL NET COMMISSION
+                     ============================================= -->
+
+                <field name="net_commission"
+                       sum="Total Net Commission to Pay"/>
+
+                <!-- =============================================
+                     STATUS
+                     ============================================= -->
+
+                <field name="state"
+                       widget="badge"
+                       decoration-success="state == 'paid'"
+                       decoration-info="state == 'draft'"
+                       decoration-danger="state == 'cancelled'"/>
+
             </list>
+
         </field>
     </record>
 
-    <!-- Form View -->
+
+    <!-- =========================================================
+         SEARCH VIEW
+         ========================================================= -->
+
+    <record id="view_salon_commission_payout_search" model="ir.ui.view">
+        <field name="name">salon.commission.payout.search</field>
+        <field name="model">salon.commission.payout</field>
+
+        <field name="arch" type="xml">
+
+            <search string="Search Commission Payouts">
+
+                <field name="name"/>
+
+                <field name="employee_id"/>
+
+                <field name="state"/>
+
+                <field name="date_from"/>
+
+                <field name="date_to"/>
+
+                <separator/>
+
+                <!-- DRAFT -->
+                <filter
+                    name="filter_draft"
+                    string="Draft"
+                    domain="[('state', '=', 'draft')]"
+                />
+
+                <!-- PAID -->
+                <filter
+                    name="filter_paid"
+                    string="Paid"
+                    domain="[('state', '=', 'paid')]"
+                />
+
+                <!-- CANCELLED -->
+                <filter
+                    name="filter_cancelled"
+                    string="Cancelled"
+                    domain="[('state', '=', 'cancelled')]"
+                />
+
+                <separator/>
+
+                <!-- GROUP BY -->
+
+                <group expand="0" string="Group By">
+
+                    <filter
+                        name="group_by_employee"
+                        string="Employee"
+                        context="{'group_by': 'employee_id'}"
+                    />
+
+                    <filter
+                        name="group_by_state"
+                        string="Status"
+                        context="{'group_by': 'state'}"
+                    />
+
+                    <filter
+                        name="group_by_date_from"
+                        string="Start Date"
+                        context="{'group_by': 'date_from'}"
+                    />
+
+                </group>
+
+            </search>
+
+        </field>
+    </record>
+
+
+    <!-- =========================================================
+         PAYOUT FORM
+         ========================================================= -->
+
     <record id="view_salon_commission_payout_form" model="ir.ui.view">
         <field name="name">salon.commission.payout.form</field>
         <field name="model">salon.commission.payout</field>
+
         <field name="arch" type="xml">
+
             <form string="Commission Payout">
+
                 <header>
-                    <button name="action_mark_paid" string="Mark as Paid" type="object" class="btn-primary" invisible="state == 'paid'"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,paid"/>
+
+                    <!-- =============================================
+                         MARK AS PAID
+                         ============================================= -->
+
+                    <button
+                        name="action_mark_paid"
+                        string="Mark as Paid"
+                        type="object"
+                        class="btn-primary"
+                        invisible="state != 'draft'"
+                    />
+
+                    <!-- =============================================
+                         CANCEL PAID PAYOUT
+                         ============================================= -->
+
+                    <button
+                        name="action_cancel"
+                        string="Cancel"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="state != 'paid'"
+                        confirm="Are you sure you want to cancel this paid payout?"
+                    />
+
+                    <!-- =============================================
+                         STATUS
+                         ============================================= -->
+
+                    <field
+                        name="state"
+                        widget="statusbar"
+                        statusbar_visible="draft,paid,cancelled"
+                    />
+
                 </header>
+
+
                 <sheet>
+
+                    <!-- =============================================
+                         REFERENCE
+                         ============================================= -->
+
                     <div class="oe_title">
-                        <h1><field name="name" readonly="1"/></h1>
+
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+
                     </div>
+
+
+                    <!-- =============================================
+                         PAYOUT DETAILS
+                         ============================================= -->
+
                     <group>
+
+                        <!-- LEFT SIDE -->
+
                         <group>
-                            <field name="employee_id" options="{'no_create': True}"/>
-                            <field name="date_from"/>
-                            <field name="date_to"/>
+
+                            <field
+                                name="employee_id"
+                                options="{'no_create': True}"
+                                readonly="state != 'draft'"
+                            />
+
+                            <field
+                                name="date_from"
+                                readonly="state != 'draft'"
+                            />
+
+                            <field
+                                name="date_to"
+                                readonly="state != 'draft'"
+                            />
+
                         </group>
+
+
+                        <!-- RIGHT SIDE -->
+
                         <group>
-                            <field name="gross_commission" readonly="1"/>
-                            <field name="advance_deduction"/>
-                            <field name="net_commission" readonly="1" class="oe_subtotal_footer_separator"/>
+
+                            <field
+                                name="gross_commission"
+                                readonly="1"
+                            />
+
+                            <field
+                                name="advance_deduction"
+                                readonly="state != 'draft'"
+                            />
+
+                            <field
+                                name="net_commission"
+                                readonly="1"
+                                class="oe_subtotal_footer_separator"
+                            />
+
                         </group>
+
                     </group>
+
                 </sheet>
+
             </form>
+
         </field>
     </record>
 
-    <!-- Action na Menu -->
-    <record id="action_salon_commission_payout" model="ir.actions.act_window">
+
+    <!-- =========================================================
+         ACTION
+         ========================================================= -->
+
+    <record id="action_salon_commission_payout"
+            model="ir.actions.act_window">
+
         <field name="name">Commission Payouts</field>
+
         <field name="res_model">salon.commission.payout</field>
+
         <field name="view_mode">list,form</field>
+
+        <field name="search_view_id"
+               ref="view_salon_commission_payout_search"/>
+
     </record>
 
-    <menuitem id="menu_salon_commission_payout" 
-              name="Advance Commission Payouts" 
-              parent="point_of_sale.menu_point_of_sale" 
-              action="action_salon_commission_payout" 
-              sequence="50"/>
+
+    <!-- =========================================================
+         MENU
+         ========================================================= -->
+
+    <menuitem
+        id="menu_salon_commission_payout"
+        name="Advance Commission Payouts"
+        parent="point_of_sale.menu_point_of_sale"
+        action="action_salon_commission_payout"
+        sequence="50"
+    />
+
 </odoo>

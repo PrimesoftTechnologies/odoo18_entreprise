@@ -18,16 +18,24 @@
         "security/ir.model.access.csv",
 
         # ======================================================
+        # COMMISSION PAYOUT SEQUENCE
+        # Generates PAYOUT/00001, PAYOUT/00002, etc.
+        # ======================================================
+
+        "data/commission_payout_sequence.xml",
+
+        # ======================================================
         # VIEWS
         # ======================================================
 
         "views/pos_order_views.xml",
         "views/pos_order_line_views.xml",
-        
-        # New Product View (Not Commission & Fixed Commission Checkboxes)
+
+        # Product View
+        # Not Commission & Fixed Commission Checkboxes
         "views/product_template_views.xml",
 
-        # New Commission Payout & Deductions View
+        # Commission Payout & Deductions View
         "views/salon_commission_payout_views.xml",
 
         # ======================================================

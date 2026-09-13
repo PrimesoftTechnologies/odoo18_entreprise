@@ -220,7 +220,9 @@
                                 page-break-inside: auto;
                             ">
 
+                                <!-- ================================================= -->
                                 <!-- TABLE HEADER -->
+                                <!-- ================================================= -->
 
                                 <thead style="
                                     display: table-header-group;
@@ -489,8 +491,13 @@
 
                                 <tfoot>
 
-                                    <!-- Gross Total Row -->
-                                    <tr style="page-break-inside: avoid;">
+                                    <!-- ================================================= -->
+                                    <!-- TOTAL COMMISSION EARNED -->
+                                    <!-- ================================================= -->
+
+                                    <tr style="
+                                        page-break-inside: avoid;
+                                    ">
 
                                         <td colspan="4"
                                             style="
@@ -502,11 +509,12 @@
                                                 font-weight: bold;
                                             ">
 
-                                            Employee Total (Gross Commission)
+                                            Total Commission Earned
 
                                         </td>
 
-                                        <!-- TOTAL AMOUNT -->
+
+                                        <!-- TOTAL SALES -->
 
                                         <td style="
                                             padding: 9px 5px;
@@ -533,7 +541,8 @@
 
                                         </td>
 
-                                        <!-- COMMISSION -->
+
+                                        <!-- TOTAL COMMISSION -->
 
                                         <td style="
                                             padding: 9px 5px;
@@ -562,8 +571,14 @@
 
                                     </tr>
 
-                                    <!-- Advance / Deductions Row -->
-                                    <tr style="page-break-inside: avoid;">
+
+                                    <!-- ================================================= -->
+                                    <!-- ALL PAID DEDUCTIONS -->
+                                    <!-- ================================================= -->
+
+                                    <tr style="
+                                        page-break-inside: avoid;
+                                    ">
 
                                         <td colspan="5"
                                             style="
@@ -576,9 +591,10 @@
                                                 color: #c92a2a;
                                             ">
 
-                                            Less: Advance / Deductions (Payout)
+                                            Less: Total Paid / Deductions
 
                                         </td>
+
 
                                         <td style="
                                             padding: 7px 5px;
@@ -591,7 +607,9 @@
                                             white-space: nowrap;
                                         ">
 
-                                            - <span t-esc="'{:,.2f}'.format(
+                                            -
+
+                                            <span t-esc="'{:,.2f}'.format(
                                                 emp.get('advance_deduction', 0.0)
                                             )"/>
 
@@ -608,37 +626,97 @@
 
                                     </tr>
 
-                                    <!-- Net Commission Payable Row -->
-                                    <tr style="page-break-inside: avoid;">
+
+                                    <!-- ================================================= -->
+                                    <!-- CURRENT COMMISSION BALANCE -->
+                                    <!-- ================================================= -->
+
+                                    <tr style="
+                                        page-break-inside: avoid;
+                                    ">
 
                                         <td colspan="5"
                                             style="
-                                                padding: 9px 7px;
+                                                padding: 10px 7px;
                                                 border: 1px solid #cccccc;
                                                 background-color: #e9ecef;
                                                 text-align: right;
-                                                font-size: 11px;
+                                                font-size: 12px;
                                                 font-weight: bold;
                                                 color: #2b8a3e;
                                             ">
 
-                                            Net Commission Payable (Actual Payout)
+                                            Current Commission Balance
 
                                         </td>
 
+
                                         <td style="
-                                            padding: 9px 5px;
+                                            padding: 10px 5px;
                                             border: 1px solid #cccccc;
                                             background-color: #e9ecef;
                                             text-align: right;
-                                            font-size: 11px;
+                                            font-size: 12px;
                                             font-weight: bold;
                                             color: #2b8a3e;
                                             white-space: nowrap;
                                         ">
 
                                             <span t-esc="'{:,.2f}'.format(
-                                                emp.get('net_commission', emp['total_commission'])
+                                                emp.get('current_commission', 0.0)
+                                            )"/>
+
+                                            <span style="
+                                                font-size: 9px;
+                                                color: #777777;
+                                            ">
+
+                                                TSh
+
+                                            </span>
+
+                                        </td>
+
+                                    </tr>
+
+
+                                    <!-- ================================================= -->
+                                    <!-- NET COMMISSION -->
+                                    <!-- ================================================= -->
+
+                                    <tr style="
+                                        page-break-inside: avoid;
+                                    ">
+
+                                        <td colspan="5"
+                                            style="
+                                                padding: 8px 7px;
+                                                border: 1px solid #cccccc;
+                                                background-color: #ffffff;
+                                                text-align: right;
+                                                font-size: 10px;
+                                                font-weight: bold;
+                                                color: #555555;
+                                            ">
+
+                                            Net Commission Payable
+
+                                        </td>
+
+
+                                        <td style="
+                                            padding: 8px 5px;
+                                            border: 1px solid #cccccc;
+                                            background-color: #ffffff;
+                                            text-align: right;
+                                            font-size: 10px;
+                                            font-weight: bold;
+                                            color: #555555;
+                                            white-space: nowrap;
+                                        ">
+
+                                            <span t-esc="'{:,.2f}'.format(
+                                                emp.get('net_commission', 0.0)
                                             )"/>
 
                                             <span style="
@@ -757,6 +835,138 @@
 
                             </tr>
 
+
+                            <!-- ================================================= -->
+                            <!-- GRAND TOTAL DETAILS -->
+                            <!-- ================================================= -->
+
+                            <tr>
+
+                                <td colspan="2"
+                                    style="
+                                        padding: 7px;
+                                        text-align: right;
+                                        font-size: 10px;
+                                        color: #555555;
+                                    ">
+
+                                    Total Commission Earned:
+
+                                </td>
+
+                                <td colspan="2"
+                                    style="
+                                        padding: 7px;
+                                        text-align: right;
+                                        font-size: 10px;
+                                        font-weight: bold;
+                                        white-space: nowrap;
+                                    ">
+
+                                    <span t-esc="'{:,.2f}'.format(
+                                        grand_total_earned_commission
+                                    )"/>
+
+                                    <span style="
+                                        font-size: 9px;
+                                        color: #777777;
+                                    ">
+
+                                        TSh
+
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td colspan="2"
+                                    style="
+                                        padding: 7px;
+                                        text-align: right;
+                                        font-size: 10px;
+                                        color: #c92a2a;
+                                    ">
+
+                                    Total Paid / Deductions:
+
+                                </td>
+
+                                <td colspan="2"
+                                    style="
+                                        padding: 7px;
+                                        text-align: right;
+                                        font-size: 10px;
+                                        font-weight: bold;
+                                        color: #c92a2a;
+                                        white-space: nowrap;
+                                    ">
+
+                                    -
+
+                                    <span t-esc="'{:,.2f}'.format(
+                                        grand_total_deductions
+                                    )"/>
+
+                                    <span style="
+                                        font-size: 9px;
+                                        color: #777777;
+                                    ">
+
+                                        TSh
+
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td colspan="2"
+                                    style="
+                                        padding: 9px 7px;
+                                        text-align: right;
+                                        font-size: 11px;
+                                        font-weight: bold;
+                                        color: #2b8a3e;
+                                    ">
+
+                                    Current Commission Balance:
+
+                                </td>
+
+                                <td colspan="2"
+                                    style="
+                                        padding: 9px 5px;
+                                        text-align: right;
+                                        font-size: 13px;
+                                        font-weight: bold;
+                                        color: #2b8a3e;
+                                        white-space: nowrap;
+                                    ">
+
+                                    <span t-esc="'{:,.2f}'.format(
+                                        grand_total_commission
+                                    )"/>
+
+                                    <span style="
+                                        font-size: 9px;
+                                        color: #777777;
+                                    ">
+
+                                        TSh
+
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
                         </table>
 
                     </div>
@@ -781,7 +991,7 @@
                             |
                         </span>
 
-                        Generated by Odoo
+                        Generated by Asili Looks POS
 
                     </div>
 

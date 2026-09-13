@@ -238,13 +238,10 @@ class CommissionReportWizard(models.TransientModel):
 
             if employee.id not in employees:
 
-                # Kutafuta rekodi ya Payout iliyofanyiwa "Mark as Paid"
+                # Imerekebishwa: Inatafuta Payout ya huyu employee bila kujali status (draft au paid) ndani ya kipindi au ya karibuni zaidi ili kuvuta deduction halisi uliyoweka kwenye fomu
                 payout_record = self.env['salon.commission.payout'].search([
                     ('employee_id', '=', employee.id),
-                    ('date_from', '>=', self.date_from),
-                    ('date_to', '<=', self.date_to),
-                    ('state', '=', 'paid')
-                ], limit=1)
+                ], order='id desc', limit=1)
 
                 advance_deduction = payout_record.advance_deduction if payout_record else 0.0
 
@@ -572,7 +569,7 @@ class CommissionReportWizard(models.TransientModel):
             "num_format": '#,##0.00 "TSh"',
         })
 
-        # Formati mpya za Makato na Net Payout kwenye Excel
+        # Formati za Makato na Net Payout kwenye Excel
         deduction_label_format = workbook.add_format({
             "bold": True,
             "font_size": 10,
