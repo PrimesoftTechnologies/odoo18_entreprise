@@ -12,7 +12,7 @@
         <field name="binding_type">report</field>
     </record>
 
-    <!-- QWEB REPORT (RED THEME DESIGN WITH COMMA FORMATTED AMOUNTS & VAT CALCULATION) -->
+    <!-- QWEB REPORT (RED THEME DESIGN WITH INCLUSIVE VAT CALCULATION) -->
     <template id="report_batch_invoice_document">
         <t t-call="web.external_layout">
             <t t-foreach="docs" t-as="o">
@@ -120,7 +120,7 @@
                             </tbody>
                         </table>
 
-                        <!-- TOTALS & TERMS SECTION WITH 18% VAT CALCULATIONS -->
+                        <!-- TOTALS & TERMS SECTION WITH INCLUSIVE VAT CALCULATIONS -->
                         <div style="width: 100%; display: table; margin-top: 10px;">
                             <!-- Terms & Bank Details Left Column -->
                             <div style="display: table-cell; width: 55%; vertical-align: top; padding-right: 20px;">
@@ -136,11 +136,11 @@
                                 </div>
                             </div>
 
-                            <!-- Totals Right Column with VAT Calculations -->
+                            <!-- Totals Right Column with Inclusive Calculations -->
                             <div style="display: table-cell; width: 45%; vertical-align: top;">
-                                <t t-set="taxable_amount" t-value="total_amount"/>
-                                <t t-set="vat_amount" t-value="taxable_amount * 0.18"/>
-                                <t t-set="grand_total" t-value="taxable_amount + vat_amount"/>
+                                <t t-set="grand_total" t-value="total_amount"/>
+                                <t t-set="vat_amount" t-value="grand_total * 0.18 / 1.18"/>
+                                <t t-set="taxable_amount" t-value="grand_total - vat_amount"/>
 
                                 <table style="width: 100%; border-collapse: collapse; font-size: 11px; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px;">
                                     <tr>
