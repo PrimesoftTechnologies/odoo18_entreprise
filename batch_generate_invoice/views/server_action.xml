@@ -82,14 +82,17 @@
                             <!-- Invoice Number -->
                             <field name="invoice_number" string="Docket No. / Invoice" readonly="1"/>
 
+                            <!-- PO No -->
+                            <field name="po_no" string="PO Description"/> <!-- IMEONGEZWA HAPA PIA -->
+
                             <!-- SAS Reference -->
                             <field name="sas_reference" string="SAS Reference"/>
+                            
 
                             <!-- Antrak Job Number -->
                             <field name="antrak_job_no" string="Antrak Job No"/>
 
-                            <!-- PO No -->
-                            <field name="po_no" string="PO No"/> <!-- IMEONGEZWA HAPA PIA -->
+                            
 
                             <!-- Amount -->
                             <field name="amount" string="Amount" readonly="1" sum="Total"/>
