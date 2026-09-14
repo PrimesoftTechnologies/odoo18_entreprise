@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- 1. Urithi wa Fomu (Form View) -->
     <record id="mrp_bom_form_view_inherit_custom" model="ir.ui.view">
         <field name="name">mrp.bom.form.inherit.custom</field>
         <field name="model">mrp.bom</field>
@@ -11,13 +12,14 @@
         </field>
     </record>
 
+    <!-- 2. Urithi wa Orodha (Tree/List View) na Show Option -->
     <record id="mrp_bom_tree_view_inherit_custom" model="ir.ui.view">
         <field name="name">mrp.bom.tree.inherit.custom</field>
         <field name="model">mrp.bom</field>
         <field name="inherit_id" ref="mrp.mrp_bom_tree_view"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='product_tmpl_id']" position="before">
-                <field name="bom_material_custom" string="BOM Name" decoration-bf="1"/>
+                <field name="bom_material_custom" string="BOM Name" optional="show" decoration-bf="1"/>
             </xpath>
         </field>
     </record>
