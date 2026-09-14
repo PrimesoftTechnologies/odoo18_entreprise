@@ -23,13 +23,13 @@
                         <t t-set="first_inv" t-value="o.line_ids[:1].invoice_id"/>
                         <t t-set="curr_symbol" t-value="first_inv.currency_id.name or ''"/>
 
-                        <!-- BATCH TITLE BAR & SEPARABLE PORTION -->
+                        <!-- BATCH TITLE BAR & SEPARABLE PORTION (SIZE IMEONGEZWA HAPA) -->
                         <div style="border-bottom: 2px solid #c0392b; padding-bottom: 8px; margin-bottom: 20px;">
-                            <h3 style="font-weight: 700; color: #c0392b; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <h3 style="font-weight: 700; font-size: 20px; color: #c0392b; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">
                                 Batch Invoice
                             </h3>
-                            <!-- SEPARABLE PORTION CHINI YA BATCH INVOICE -->
-                            <div style="font-size: 11px; font-weight: 600; color: #555555; text-transform: uppercase; margin-top: 3px; letter-spacing: 0.5px;">
+                            <!-- SEPARABLE PORTION SIZE IMEONGEZWA TOKA 11px MPAKA 14px -->
+                            <div style="font-size: 14px; font-weight: bold; color: #555555; text-transform: uppercase; margin-top: 5px; letter-spacing: 0.5px;">
                                 Separable Portion
                             </div>
                         </div>
