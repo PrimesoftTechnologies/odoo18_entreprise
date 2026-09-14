@@ -5,8 +5,8 @@
         <field name="model">mrp.bom</field>
         <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
         <field name="arch" type="xml">
-            <!-- Inaongeza uwanja wetu baada ya product_tmpl_id au kwenye eneo la kichwa -->
-            <xpath expr="//field[@name='product_tmpl_id']" position="after">
+            <!-- Inaweka BOM Name kabla ya product_tmpl_id -->
+            <xpath expr="//field[@name='product_tmpl_id']" position="before">
                 <field name="bom_material_custom"/>
             </xpath>
         </field>
