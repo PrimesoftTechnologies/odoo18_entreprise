@@ -12,7 +12,7 @@
         <field name="binding_type">report</field>
     </record>
 
-    <!-- QWEB REPORT (RED THEME DESIGN WITH DYNAMIC SEPARABLE PORTION & INCLUSIVE VAT) -->
+    <!-- QWEB REPORT (RED THEME DESIGN WITH SP-XX FORMAT) -->
     <template id="report_batch_invoice_document">
         <t t-call="web.external_layout">
             <t t-foreach="docs" t-as="o">
@@ -23,14 +23,14 @@
                         <t t-set="first_inv" t-value="o.line_ids[:1].invoice_id"/>
                         <t t-set="curr_symbol" t-value="first_inv.currency_id.name or ''"/>
 
-                        <!-- BATCH TITLE BAR & DYNAMIC SEPARABLE PORTION -->
+                        <!-- BATCH TITLE BAR & SEPARABLE PORTION SP-01 / SP-02 -->
                         <div style="border-bottom: 2px solid #c0392b; padding-bottom: 8px; margin-bottom: 20px;">
                             <h3 style="font-weight: 700; font-size: 20px; color: #c0392b; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">
                                 Batch Invoice
                             </h3>
-                            <!-- INASOMA SEPARABLE PORTION KUTOKA DATABASE (MFANO: 01 AU 02) -->
+                            <!-- INASOMA NA KUONGEZA SP- MBELE YAKE -->
                             <div style="font-size: 14px; font-weight: bold; color: #555555; text-transform: uppercase; margin-top: 5px; letter-spacing: 0.5px;">
-                                Separable Portion: <span t-esc="o.separable_portion or '01'"/>
+                                Separable Portion: SP-<span t-esc="o.separable_portion or '01'"/>
                             </div>
                         </div>
 
