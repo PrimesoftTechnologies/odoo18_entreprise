@@ -159,7 +159,7 @@
                                     </tr>
 
                                     <tr>
-                                        <td style="padding: 6px 10px; color: #555555;">NON-TAXABLE</td>
+                                        <td style="padding: 6px 10px; color: #555555;">REIMBURSEMENT</td>
                                         <td style="text-align: right; padding: 6px 10px; color: #555555;">
                                             <span t-esc="curr_symbol"/> 0.00
                                         </td>
