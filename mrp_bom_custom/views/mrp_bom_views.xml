@@ -5,9 +5,19 @@
         <field name="model">mrp.bom</field>
         <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
         <field name="arch" type="xml">
-            <!-- Inaweka BOM Name kabla ya product_tmpl_id -->
             <xpath expr="//field[@name='product_tmpl_id']" position="before">
                 <field name="bom_material_custom"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="mrp_bom_tree_view_inherit_custom" model="ir.ui.view">
+        <field name="name">mrp.bom.tree.inherit.custom</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_tmpl_id']" position="before">
+                <field name="bom_material_custom" string="BOM Name" decoration-bf="1"/>
             </xpath>
         </field>
     </record>
