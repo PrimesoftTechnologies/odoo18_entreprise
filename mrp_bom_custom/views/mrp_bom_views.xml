@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mrp_bom_form_view_inherit_custom" model="ir.ui.view">
+        <field name="name">mrp.bom.form.inherit.custom</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Inaongeza uwanja wetu baada ya product_tmpl_id au kwenye eneo la kichwa -->
+            <xpath expr="//field[@name='product_tmpl_id']" position="after">
+                <field name="bom_material_custom"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
