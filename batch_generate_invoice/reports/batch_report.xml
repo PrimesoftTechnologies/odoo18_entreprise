@@ -23,33 +23,18 @@
                         <t t-set="first_inv" t-value="o.line_ids[:1].invoice_id"/>
                         <t t-set="curr_symbol" t-value="first_inv.currency_id.name or ''"/>
 
-                        <!-- BATCH TITLE & DETAILS BAR -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #c0392b; padding-bottom: 8px; margin-bottom: 20px;">
-                            <div>
-                                <h3 style="font-weight: 700; color: #c0392b; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">
-                                    Batch Invoice
-                                </h3>
-                            </div>
-                            <div style="text-align: right;">
-                                <span style="font-size: 13px; color: #c0392b; font-weight: bold;">
-                                    Batch No: <span t-esc="o.name"/>
-                                </span>
-                                <br/>
-                                <!-- DUE DATE IMEWEKWA HAPA RASMI -->
-                                <span style="font-size: 11px; color: #555555; font-weight: bold;">
-                                    Due Date: <span t-esc="o.due_date and o.due_date.strftime('%d/%m/%Y') or '-'"/>
-                                </span>
-                                <br/>
-                                <span style="font-size: 11px; color: #666666;">
-                                    Date: <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y')"/>
-                                </span>
-                            </div>
+                        <!-- BATCH TITLE BAR (SIMPLE TITLE ONLY) -->
+                        <div style="border-bottom: 2px solid #c0392b; padding-bottom: 8px; margin-bottom: 20px;">
+                            <h3 style="font-weight: 700; color: #c0392b; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                                Batch Invoice
+                            </h3>
                         </div>
 
-                        <!-- CUSTOMER INFORMATION SECTION -->
+                        <!-- CUSTOMER INFORMATION & BATCH DETAILS SECTION -->
                         <div style="margin-bottom: 25px; width: 100%;">
                             <table style="width: 100%; border-collapse: collapse;">
                                 <tr>
+                                    <!-- BILLED TO (LEFT COLUMN) -->
                                     <td style="width: 50%; vertical-align: top; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 12px;">
                                         <div style="font-size: 10px; text-transform: uppercase; color: #7f8c8d; font-weight: bold; margin-bottom: 4px; letter-spacing: 0.5px;">
                                             Billed To:
@@ -72,7 +57,22 @@
                                             </t>
                                         </div>
                                     </td>
-                                    <td style="width: 50%;"></td>
+                                    
+                                    <td style="width: 2%;"></td>
+
+                                    <!-- BATCH DETAILS (RIGHT COLUMN - UMEWEKWA HAPA NDANI YA BOX) -->
+                                    <td style="width: 48%; vertical-align: top; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 12px;">
+                                        <div style="font-size: 10px; text-transform: uppercase; color: #7f8c8d; font-weight: bold; margin-bottom: 4px; letter-spacing: 0.5px; text-align: right;">
+                                            Batch Details:
+                                        </div>
+                                        <div style="font-size: 12px; font-weight: bold; color: #c0392b; margin-bottom: 4px; text-align: right;">
+                                            Batch No: <span t-esc="o.name"/>
+                                        </div>
+                                        <div style="font-size: 11px; color: #555555; line-height: 1.5; text-align: right;">
+                                            <strong>Due Date:</strong> <span t-esc="o.due_date and o.due_date.strftime('%d/%m/%Y') or '-'"/><br/>
+                                            <strong>Date:</strong> <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y')"/>
+                                        </div>
+                                    </td>
                                 </tr>
                             </table>
                         </div>
