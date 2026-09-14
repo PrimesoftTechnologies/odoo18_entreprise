@@ -18,7 +18,12 @@ class BatchInvoice(models.Model):
 
     name = fields.Char(string="Batch ID / Number", readonly=True, default="New")
     bank_details_id = fields.Many2one('sale.terms.template', string="Bank Details For Payment", readonly=True, ondelete='set null')
-    due_date = fields.Date(string="Due Date", readonly=True)  # IMEONGEZWA HAPA KWA KUDUMU
+    due_date = fields.Date(string="Due Date", readonly=True)  # Due Date ya kudumu
+    separable_portion = fields.Selection([
+        ('01', 'SP-01'),
+        ('02', 'SP-02')
+    ], string='Separable Portion', readonly=True, default='01')  # SEPARABLE PORTION YA KUDUMU
+    
     line_ids = fields.One2many(
         'batch.invoice.line',
         'batch_id',
@@ -79,7 +84,12 @@ class BatchInvoiceWizard(models.TransientModel):
 
     name = fields.Char(string="Batch Number", readonly=True, default="New")
     bank_details_id = fields.Many2one('sale.terms.template', string="Bank Details For Payment", ondelete='set null')
-    due_date = fields.Date(string="Due Date")  # IMEONGEZWA HAPA KWENYE WIZARD
+    due_date = fields.Date(string="Due Date")  # Due Date kwenye Wizard
+    separable_portion = fields.Selection([
+        ('01', 'SP-01'),
+        ('02', 'SP-02')
+    ], string='Separable Portion', default='01', required=True)  # SEPARABLE PORTION KWENYE WIZARD (DROP DOWN)
+    
     line_ids = fields.One2many(
         'batch.invoice.wizard.line',
         'wizard_id',
@@ -110,7 +120,8 @@ class BatchInvoiceWizard(models.TransientModel):
         batch_vals = {
             'name': batch_name,
             'bank_details_id': self.bank_details_id.id if self.bank_details_id else False,
-            'due_date': self.due_date,  # INAHIFADHI DUE DATE KWENYE BATCH RECORD
+            'due_date': self.due_date,  # Inahifadhi Due Date kwenye Batch Record
+            'separable_portion': self.separable_portion,  # INAHIFADHI SEPARABLE PORTION ILYOCHAGULIWA
             'line_ids': []
         }
 
@@ -164,6 +175,7 @@ class BatchInvoiceWizardLine(models.TransientModel):
         string="Invoice Number",
         readonly=True
     )
+    sas_field = fields.Char(string="SAS") # Keep or adjust if needed, original code had sas_reference
     sas_reference = fields.Char(string="SAS Reference")
     antrak_job_no = fields.Char(string="Antrak Job No")
     po_no = fields.Char(string="PO No")  # Field ya PO No kwenye Wizard Line
