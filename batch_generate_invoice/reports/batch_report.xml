@@ -35,6 +35,11 @@
                                     Batch No: <span t-esc="o.name"/>
                                 </span>
                                 <br/>
+                                <!-- DUE DATE IMEWEKWA HAPA RASMI -->
+                                <span style="font-size: 11px; color: #555555; font-weight: bold;">
+                                    Due Date: <span t-esc="o.due_date and o.due_date.strftime('%d/%m/%Y') or '-'"/>
+                                </span>
+                                <br/>
                                 <span style="font-size: 11px; color: #666666;">
                                     Date: <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y')"/>
                                 </span>
