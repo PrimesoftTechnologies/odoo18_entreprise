@@ -18,6 +18,7 @@ class BatchInvoice(models.Model):
 
     name = fields.Char(string="Batch ID / Number", readonly=True, default="New")
     bank_details_id = fields.Many2one('sale.terms.template', string="Bank Details For Payment", readonly=True, ondelete='set null')
+    due_date = fields.Date(string="Due Date", readonly=True)  # IMEONGEZWA HAPA KWA KUDUMU
     line_ids = fields.One2many(
         'batch.invoice.line',
         'batch_id',
@@ -78,6 +79,7 @@ class BatchInvoiceWizard(models.TransientModel):
 
     name = fields.Char(string="Batch Number", readonly=True, default="New")
     bank_details_id = fields.Many2one('sale.terms.template', string="Bank Details For Payment", ondelete='set null')
+    due_date = fields.Date(string="Due Date")  # IMEONGEZWA HAPA KWENYE WIZARD
     line_ids = fields.One2many(
         'batch.invoice.wizard.line',
         'wizard_id',
@@ -108,6 +110,7 @@ class BatchInvoiceWizard(models.TransientModel):
         batch_vals = {
             'name': batch_name,
             'bank_details_id': self.bank_details_id.id if self.bank_details_id else False,
+            'due_date': self.due_date,  # INAHIFADHI DUE DATE KWENYE BATCH RECORD
             'line_ids': []
         }
 

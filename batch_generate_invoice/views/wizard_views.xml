@@ -11,6 +11,7 @@
             <list string="Batch Invoices" create="0">
                 <field name="name" string="Batch ID"/>
                 <field name="bank_details_id" string="Bank Details"/>
+                <field name="due_date" string="Due Date"/> <!-- IMEONGEZWA HAPA -->
                 <field name="create_date" string="Generated Date"/>
             </list>
         </field>
@@ -32,7 +33,12 @@
                         <h1><field name="name" readonly="1"/></h1>
                     </div>
                     <group>
-                        <field name="bank_details_id" readonly="1"/>
+                        <group>
+                            <field name="bank_details_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="due_date" readonly="1"/> <!-- IMEONGEZWA HAPA -->
+                        </group>
                     </group>
                     <field name="line_ids" nolabel="1">
                         <list editable="bottom" create="0" delete="0">
@@ -62,8 +68,14 @@
                 <sheet>
                     <group>
                         <field name="name" readonly="1" invisible="name == 'New'"/>
-                        <!-- Dropdown ya Bank Details kwenye Pop-up -->
-                        <field name="bank_details_id" options="{'no_create': True}" string="Bank Details For Payment"/>
+                        <group>
+                            <!-- Dropdown ya Bank Details kwenye Pop-up -->
+                            <field name="bank_details_id" options="{'no_create': True}" string="Bank Details For Payment"/>
+                        </group>
+                        <group>
+                            <!-- Due Date kwenye Pop-up -->
+                            <field name="due_date" string="Due Date"/> <!-- IMEONGEZWA HAPA -->
+                        </group>
                     </group>
                     <field name="line_ids" nolabel="1">
                         <list editable="bottom" create="0" delete="0">
@@ -135,7 +147,7 @@
             <xpath expr="//field[@name='ref']" position="after">
                 <field name="sas_reference" optional="show"/>
                 <field name="antrak_job_no" optional="show"/>
-                <field name="po_no" optional="show"/> <!-- Imeongezwa pia kwenye Invoice Tree kama utapenda kuiona hapo -->
+                <field name="po_no" optional="show"/>
             </xpath>
         </field>
     </record>
