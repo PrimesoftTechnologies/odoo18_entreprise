@@ -17,9 +17,11 @@ class SaleOrder(models.Model):
 
     def _increment_revision(self, change_description="Order updated"):
         for order in self:
-            # Tunaongeza revision tu ikiwa oda ipo tayari (imeshashonwa/save) na iko draft au sent
             if order.state in ['draft', 'sent'] and order.id:
-                order.revision_number += 1
+                if order.revision_number == 0:
+                    order.revision_number = 1
+                else:
+                    order.revision_number += 1
                 rev_code = f"REV-{order.revision_number:02d}"
                 order.message_post(body=f"Order revised to {rev_code}. Reason/Change: {change_description}")
 
@@ -31,11 +33,13 @@ class SaleOrderLine(models.Model):
         lines = super(SaleOrderLine, self).create(vals_list)
         for line in lines:
             order = line.order_id
-            # Tunapuuza wakati wa kuunda mara ya kwanza (kama order bado iko kwenye mchakato wa kuumbwa na haina id thabiti au ndio kwanza inatunzwa)
-            # Revision itaongezeka tu ikiwa order ilikuwa tayari imeshahifadhiwa awali (id ipo) na ikaletwa bidhaa mpya baadaye
-            if order and order.state in ['draft', 'sent'] and order.id and order.revision_number > 0:
+            # Kama order tayari imesha-save (ina id) na iko draft/sent, mtu akiongeza bidhaa mpya baada ya kusave, inatakiwa iwe REV!
+            if order and order.state in ['draft', 'sent'] and order.id and order.name and order.name != 'New':
+                # Tunahakikisha haisomi wakati wa kuundwa kwa mara ya kwanza kabisa (wakati bado haina jina rasmi au ipo kwenye mchakato wa kwanza)
                 product_name = line.product_id.name or "Product"
-                order._increment_revision(f"Added product line: {product_name} (Qty: {line.product_uom_qty})")
+                # Angalia kama order tayari ina lines zaidi ya moja au imeshahifadhiwa awali
+                if len(order.order_line) > 1 or order.create_date != order.write_date:
+                    order._increment_revision(f"Added new product line: {product_name} (Qty: {line.product_uom_qty})")
         return lines
 
     def write(self, vals):
@@ -43,17 +47,9 @@ class SaleOrderLine(models.Model):
         if 'product_uom_qty' in vals:
             for line in self:
                 order = line.order_id
-                # Ikiwa order imeshahifadhiwa na ikabadilishwa quantity, hapa ndipo tunaanzisha au kuongeza revision
                 if order and order.state in ['draft', 'sent'] and order.id:
-                    # Kama bado haina revision hata moja, tunaanzisha REV-01 kwenye update ya kwanza baada ya save
-                    if order.revision_number == 0:
-                        order.revision_number = 1
-                        rev_code = f"REV-01"
-                        product_name = line.product_id.name or "Product"
-                        order.message_post(body=f"Order revised to {rev_code}. Reason/Change: Updated quantity for '{product_name}' to {line.product_uom_qty}")
-                    else:
-                        product_name = line.product_id.name or "Product"
-                        order._increment_revision(f"Updated quantity for '{product_name}' to {line.product_uom_qty}")
+                    product_name = line.product_id.name or "Product"
+                    order._increment_revision(f"Updated quantity for '{product_name}' to {line.product_uom_qty}")
         return res
 
     def action_open_delete_wizard(self):
