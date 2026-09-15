@@ -17,7 +17,6 @@ class SaleOrder(models.Model):
 
     def _increment_revision(self, change_description="Order updated"):
         for order in self:
-            # Tunabadilisha tu ikiwa ipo kwenye mfumo (sio 'New' bado haijahifadhiwa)
             if order.state in ['draft', 'sent'] and order.id:
                 order.revision_number += 1
                 rev_code = f"REV-{order.revision_number:02d}"
@@ -43,3 +42,14 @@ class SaleOrderLine(models.Model):
                     product_name = line.product_id.name or "Product"
                     line.order_id._increment_revision(f"Updated quantity for '{product_name}' to {line.product_uom_qty}")
         return res
+
+    def action_open_delete_wizard(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Reason for Deletion',
+            'res_model': 'sale.order.line.delete.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_sale_order_line_id': self.id},
+        }

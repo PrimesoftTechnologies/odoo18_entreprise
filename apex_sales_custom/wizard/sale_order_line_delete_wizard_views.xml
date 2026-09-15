@@ -8,7 +8,7 @@
             <form string="Reason for Deletion">
                 <group>
                     <field name="sale_order_line_id" invisible="1"/>
-                    <field name="reason" placeholder="Reason for Deletion..."/>
+                    <field name="reason" placeholder="Reason for deletion..."/>
                 </group>
                 <footer>
                     <button string="Confirm Delete" type="object" name="action_confirm_delete" class="btn-primary"/>
@@ -18,18 +18,13 @@
         </field>
     </record>
 
-    <!-- Inherit Sale Order Form to disable standard delete and add custom delete button -->
+    <!-- Inherit Sale Order Form to add custom delete button -->
     <record id="view_order_form_inherit_apex_delete_btn" model="ir.ui.view">
         <field name="name">sale.order.form.inherit.apex.delete.btn</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <!-- Tunazima kitufe cha default cha delete kwenye list/tree view -->
-            <xpath expr="//field[@name='order_line']/list" position="attributes">
-                <attribute name="delete">false</attribute>
-            </xpath>
-            
-            <!-- Tunaongeza kitufe chetu maalum cha kufuta chenye kuleta Wizard pembeni ya kila mstari -->
+            <!-- Tunaongeza kitufe cha kufuta chenye kuleta Wizard kwenye kila mstari -->
             <xpath expr="//field[@name='order_line']/list/field[@name='price_subtotal']" position="after">
                 <button name="action_open_delete_wizard" type="object" icon="fa-trash text-danger" title="Delete with Reason"/>
             </xpath>
