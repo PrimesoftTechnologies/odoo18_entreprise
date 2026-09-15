@@ -10,6 +10,7 @@ class SaleOrder(models.Model):
     def _compute_display_order_name(self):
         for order in self:
             name = order.name or 'New'
+            # Revision itaonekana tu ikiwa revision_number ni kubwa kuliko 0
             if order.revision_number > 0 and name != 'New':
                 order.display_order_name = f"{name}/REV-{order.revision_number:02d}"
             else:
@@ -20,7 +21,7 @@ class SaleOrder(models.Model):
             if order.state in ['draft', 'sent'] and order.id:
                 order.revision_number += 1
                 rev_code = f"REV-{order.revision_number:02d}"
-                order.message_post(body=f"Order Code revised to {rev_code}. Reason/Changes: {change_description}")
+                order.message_post(body=f"Order revised to {rev_code}. Reason/Change: {change_description}")
 
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
@@ -31,7 +32,7 @@ class SaleOrderLine(models.Model):
         for line in lines:
             if line.order_id and line.order_id.state in ['draft', 'sent']:
                 product_name = line.product_id.name or "Product"
-                line.order_id._increment_revision(f"Product Added: {product_name} (Qty: {line.product_uom_qty})")
+                line.order_id._increment_revision(f"Added product line: {product_name} (Qty: {line.product_uom_qty})")
         return lines
 
     def write(self, vals):
