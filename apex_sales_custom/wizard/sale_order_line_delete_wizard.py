@@ -14,7 +14,6 @@ class SaleOrderLineDeleteWizard(models.TransientModel):
         product_name = line.product_id.name or "Unknown Product"
         qty = line.product_uom_qty
         
-        # Ongeza revision na ujumbe kwenye log notes
         if order:
             order.revision_number += 1
             rev_code = f"REV-{order.revision_number:02d}"

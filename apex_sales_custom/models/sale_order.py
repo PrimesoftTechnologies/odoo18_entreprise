@@ -33,11 +33,8 @@ class SaleOrderLine(models.Model):
         lines = super(SaleOrderLine, self).create(vals_list)
         for line in lines:
             order = line.order_id
-            # Kama order tayari imesha-save (ina id) na iko draft/sent, mtu akiongeza bidhaa mpya baada ya kusave, inatakiwa iwe REV!
             if order and order.state in ['draft', 'sent'] and order.id and order.name and order.name != 'New':
-                # Tunahakikisha haisomi wakati wa kuundwa kwa mara ya kwanza kabisa (wakati bado haina jina rasmi au ipo kwenye mchakato wa kwanza)
                 product_name = line.product_id.name or "Product"
-                # Angalia kama order tayari ina lines zaidi ya moja au imeshahifadhiwa awali
                 if len(order.order_line) > 1 or order.create_date != order.write_date:
                     order._increment_revision(f"Added new product line: {product_name} (Qty: {line.product_uom_qty})")
         return lines

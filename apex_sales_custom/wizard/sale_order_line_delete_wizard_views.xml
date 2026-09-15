@@ -18,18 +18,15 @@
         </field>
     </record>
 
-    <!-- Inherit Sale Order Form to replace/disable standard delete and use only our custom button -->
     <record id="view_order_form_inherit_apex_delete_btn" model="ir.ui.view">
         <field name="name">sale.order.form.inherit.apex.delete.btn</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <!-- Tunazima kitufe cha default cha takataka kwenye list/tree view -->
             <xpath expr="//field[@name='order_line']/list" position="attributes">
                 <attribute name="delete">false</attribute>
             </xpath>
             
-            <!-- Tunaondoa kitufe chochote cha zamani na kuweka hiki kimoja maalum -->
             <xpath expr="//field[@name='order_line']/list/field[@name='price_subtotal']" position="after">
                 <button name="action_open_delete_wizard" type="object" icon="fa-trash text-danger" title="Delete with Reason"/>
             </xpath>
