@@ -8,7 +8,7 @@
             <form string="Reason for Deletion">
                 <group>
                     <field name="sale_order_line_id" invisible="1"/>
-                    <field name="reason" placeholder="Reason for deletion..."/>
+                    <field name="reason" placeholder="Andika sababu ya kufuta bidhaa hii..."/>
                 </group>
                 <footer>
                     <button string="Confirm Delete" type="object" name="action_confirm_delete" class="btn-primary"/>
@@ -24,7 +24,6 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <!-- Tunaongeza kitufe cha kufuta chenye kuleta Wizard kwenye kila mstari -->
             <xpath expr="//field[@name='order_line']/list/field[@name='price_subtotal']" position="after">
                 <button name="action_open_delete_wizard" type="object" icon="fa-trash text-danger" title="Delete with Reason"/>
             </xpath>
