@@ -2,7 +2,7 @@
 <odoo>
     <template id="report_saleorder_document_inherit_revision" inherit_id="sale.report_saleorder_document">
         <xpath expr="//span[@t-field='doc.name']" position="replace">
-            <span t-field="doc.display_name"/>
+            <span t-field="doc.display_order_name"/>
         </xpath>
     </template>
 </odoo>
