@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="report_saleorder_document_inherit_revision" inherit_id="sale.report_saleorder_document">
+        
         <xpath expr="//span[@t-field='doc.name']" position="replace">
             <span t-field="doc.display_order_name"/>
         </xpath>
+
+        <xpath expr="//td[@name='td_name']" position="replace">
+            <td name="td_name">
+                <span t-field="line.name"/>
+            </td>
+        </xpath>
+
     </template>
 </odoo>
