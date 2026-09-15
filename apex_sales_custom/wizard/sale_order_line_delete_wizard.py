@@ -14,7 +14,7 @@ class SaleOrderLineDeleteWizard(models.TransientModel):
         product_name = line.product_id.name or "Unknown Product"
         
         message = (
-            f"Product line deleted: '{product_name}' (Qty: {line.product_uom_qty}). "
+            f"Product Removed: '{product_name}' (Qty: {line.product_uom_qty}). "
             f"Reason: {self.reason}"
         )
         order.message_post(body=message)
