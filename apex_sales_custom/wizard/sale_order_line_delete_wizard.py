@@ -12,11 +12,16 @@ class SaleOrderLineDeleteWizard(models.TransientModel):
         line = self.sale_order_line_id
         order = line.order_id
         product_name = line.product_id.name or "Unknown Product"
+        qty = line.product_uom_qty
         
-        message = (
-            f"Product Removed: '{product_name}' (Qty: {line.product_uom_qty}). "
-            f"Reason: {self.reason}"
-        )
-        order.message_post(body=message)
+        # Ongeza revision na ujumbe kwenye log notes
+        if order:
+            order.revision_number += 1
+            rev_code = f"REV-{order.revision_number:02d}"
+            message = (
+                f"Product Removed: '{product_name}' (Qty: {qty}). "
+                f"Reason: {self.reason}. Order updated to {rev_code}"
+            )
+            order.message_post(body=message)
         
         return line.with_context(skip_delete_wizard=True).unlink()
