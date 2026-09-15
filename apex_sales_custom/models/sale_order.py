@@ -26,17 +26,9 @@ class SaleOrder(models.Model):
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
-    @api.model_create_multi
-    def create(self, vals_list):
-        lines = super(SaleOrderLine, self).create(vals_list)
-        for line in lines:
-            if line.order_id and line.order_id.state in ['draft', 'sent']:
-                product_name = line.product_id.name or "Product"
-                line.order_id._increment_revision(f"Added product line: {product_name} (Qty: {line.product_uom_qty})")
-        return lines
-
     def write(self, vals):
         res = super(SaleOrderLine, self).write(vals)
+        # Revision itaongezeka tu ikiwa quantity imebadilishwa kwenye order iliyopo tayari
         if 'product_uom_qty' in vals:
             for line in self:
                 if line.order_id and line.order_id.state in ['draft', 'sent']:
