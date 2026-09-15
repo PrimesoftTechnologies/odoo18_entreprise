@@ -5,7 +5,7 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <!-- Tunabadilisha eneo la namba kubwa pale juu ili kuonyesha S00011/REV-0X -->
+            <!-- Tunatumia njia salama ya kubadilisha namba ya oda pale juu -->
             <xpath expr="//field[@name='name']" position="replace">
                 <field name="display_order_name" readonly="1" class="oe_inline" style="font-size: 25px; font-weight: bold;"/>
             </xpath>

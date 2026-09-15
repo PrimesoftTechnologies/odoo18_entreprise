@@ -4,8 +4,6 @@ class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
     revision_number = fields.Integer(string='Revision Number', default=0, tracking=True)
-    
-    # Tunatengeneza field mpya ya kuonyesha namba yenye revision ambayo itajaza nafasi pale juu
     display_order_name = fields.Char(string='Order/Quotation Revision Name', compute='_compute_display_order_name', store=True)
 
     @api.depends('name', 'revision_number')
@@ -15,7 +13,7 @@ class SaleOrder(models.Model):
             if order.revision_number > 0 and name != 'New':
                 order.display_order_name = f"{name}/REV-{order.revision_number:02d}"
             else:
-                    order.display_order_name = name
+                order.display_order_name = name
 
     def _increment_revision(self, change_description="Order updated"):
         for order in self:
@@ -29,7 +27,7 @@ class SaleOrderLine(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        lines = super(SaleOrderLine, self].create(vals_list) if hasattr(super(SaleOrderLine, self), 'create') else super().create(vals_list)
+        lines = super(SaleOrderLine, self).create(vals_list)
         for line in lines:
             if line.order_id and line.order_id.state in ['draft', 'sent']:
                 product_name = line.product_id.name or "Product"
@@ -37,7 +35,7 @@ class SaleOrderLine(models.Model):
         return lines
 
     def write(self, vals):
-        res = super().write(vals)
+        res = super(SaleOrderLine, self).write(vals)
         if 'product_uom_qty' in vals:
             for line in self:
                 if line.order_id and line.order_id.state in ['draft', 'sent']:
