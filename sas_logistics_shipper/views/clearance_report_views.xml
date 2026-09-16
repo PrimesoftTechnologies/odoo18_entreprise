@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_clearance_report_wizard_form_inherit_sas" model="ir.ui.view">
+        <field name="name">clearance.report.wizard.form.inherit.sas</field>
+        <field name="model">clearance.report.wizard</field>
+        <field name="inherit_id" ref="sas.view_clearance_report_wizard_form"/>
+        <field name="arch" type="xml">
+            <!-- Weka baada ya uwanja wa consignee kwenye XML ya asili -->
+            <xpath expr="//field[@name='consignee']" position="after">
+                <field name="sas_shipper"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
