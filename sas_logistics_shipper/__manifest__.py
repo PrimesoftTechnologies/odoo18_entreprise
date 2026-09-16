@@ -1,12 +1,14 @@
 {
     'name': 'SAS Logistics Shipper Filter',
-    'version': '16.0.1.0.0',
+    'version': '18.0.1.0.0',
     'category': 'Logistics',
     'summary': 'Adds sas_shipper filter to clearance report wizard',
-    'depends': ['base', 'sas'], # Badilisha iendane na jina la moduli yako ya sasa
+    'author': 'SAS Logistics',
+    'depends': ['base', 'sas'],
     'data': [
         'views/clearance_report_views.xml',
     ],
     'installable': True,
     'auto_install': False,
+    'license': 'LGPL-3',
 }
