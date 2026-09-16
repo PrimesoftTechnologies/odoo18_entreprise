@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="view_clearance_report_wizard_form_inherit_sas_shipper" model="ir.ui.view">
-        <field name="name">shipping.clearance.report.form.inherit.sas.shipper</field>
-        <field name="model">shipping.clearance.report</field>
-        <!-- Tunarithi form view kutoka kwenye moduli ya 'sas' -->
-        <field name="inherit_id" ref="sas.view_shipping_clearance_report_form"/> <!-- Hakikisha external ID ya view ya sas inaendana hapa -->
+        <field name="name">sas.clearance.report.wizard.form.inherit.sas.shipper</field>
+        <field name="model">sas.clearance.report.wizard</field>
+        <!-- Tunatumia External ID sahihi uliyotoa -->
+        <field name="inherit_id" ref="sas.view_clearance_report_wizard_form"/>
         <field name="arch" type="xml">
-            <!-- Tunaweka sas_shipper baada ya consignee_id -->
+            <!-- Tunaweka sas_shipper baada ya consignee_id kama ilivyo kwenye muundo wako -->
             <xpath expr="//field[@name='consignee_id']" position="after">
                 <field name="sas_shipper"/>
             </xpath>

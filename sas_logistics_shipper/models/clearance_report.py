@@ -1,11 +1,11 @@
 from odoo import models, fields
 
-class ShippingClearanceReport(models.TransientModel):
-    _inherit = 'shipping.clearance.report'  # Badilisha kuwa model husika ya sas kama ni tofauti
+class SasClearanceReportWizard(models.TransientModel):
+    _inherit = 'sas.clearance.report.wizard'
 
-    # Tunaongeza uwanja mpya wa Shipper
+    # Tunaongeza uwanja mpya wa Shipper kwenye wizard ya ripoti
     sas_shipper = fields.Many2one('res.partner', string='Shipper')
 
     def action_export_xlsx(self):
-        # Unaweza kuongeza mantiki ya kuchuja kwa kutumia self.sas_shipper hapa kama inahitajika
+        # Unaweza kuongeza mantiki ya kuchuja data hapa kama inahitajika
         return super().action_export_xlsx()
