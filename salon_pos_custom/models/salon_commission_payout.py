@@ -22,14 +22,12 @@ class SalonCommissionPayout(models.Model):
         tracking=True
     )
 
-    date_from = fields.Date(
-        string="Start Date",
-        required=True
-    )
-
-    date_to = fields.Date(
-        string="End Date",
-        required=True
+    # Badala ya date_from na date_to, sasa ni date moja tu
+    date = fields.Date(
+        string="Date",
+        required=True,
+        default=fields.Date.context_today,
+        tracking=True
     )
 
     currency_id = fields.Many2one(
@@ -76,7 +74,7 @@ class SalonCommissionPayout(models.Model):
     # GROSS COMMISSION
     # =========================================================
 
-    @api.depends("employee_id")
+    @api.depends("employee_id", "date")
     def _compute_gross_commission(self):
         for record in self:
 
@@ -108,22 +106,28 @@ class SalonCommissionPayout(models.Model):
             else:
 
                 # First payout:
-                # Get all commission from POS order lines
-                lines = self.env["pos.order.line"].search([
+                # Get all commission from POS order lines up to selected date
+                pos_domain = [
                     ("employee_id", "=", record.employee_id.id),
                     ("commission_amount", ">", 0)
-                ])
+                ]
+
+                if record.date:
+                    date_datetime = fields.Datetime.to_datetime(record.date) + fields.timedelta(days=1)
+                    pos_domain.append(("order_id.date_order", "<", date_datetime))
+
+                lines = self.env["pos.order.line"].search(pos_domain)
 
                 record.gross_commission = sum(
                     lines.mapped("commission_amount")
                 )
 
     # =========================================================
-    # ONCHANGE EMPLOYEE
+    # ONCHANGE EMPLOYEE OR DATE
     # =========================================================
 
-    @api.onchange("employee_id")
-    def _onchange_employee(self):
+    @api.onchange("employee_id", "date")
+    def _onchange_employee_date(self):
 
         for record in self:
 
@@ -153,18 +157,25 @@ class SalonCommissionPayout(models.Model):
 
                 else:
 
-                    # First payout
-                    lines = self.env["pos.order.line"].search([
+                    # First payout up to selected date
+                    pos_domain = [
                         ("employee_id", "=", record.employee_id.id),
                         ("commission_amount", ">", 0)
-                    ])
+                    ]
+
+                    if record.date:
+                        date_datetime = fields.Datetime.to_datetime(record.date) + fields.timedelta(days=1)
+                        pos_domain.append(("order_id.date_order", "<", date_datetime))
+
+                    lines = self.env["pos.order.line"].search(pos_domain)
 
                     record.gross_commission = sum(
                         lines.mapped("commission_amount")
                     )
 
-                # New payout starts with zero deduction
-                record.advance_deduction = 0.0
+                # New payout starts with zero deduction if not set
+                if not record.advance_deduction:
+                    record.advance_deduction = 0.0
 
             else:
 

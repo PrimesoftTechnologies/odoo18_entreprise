@@ -17,9 +17,8 @@
 
                 <field name="employee_id"/>
 
-                <field name="date_from"/>
-
-                <field name="date_to"/>
+                <!-- Badala ya date_from na date_to, imewekwa date pekee -->
+                <field name="date"/>
 
                 <!-- =============================================
                      TOTAL GROSS COMMISSION
@@ -76,9 +75,7 @@
 
                 <field name="state"/>
 
-                <field name="date_from"/>
-
-                <field name="date_to"/>
+                <field name="date"/>
 
                 <separator/>
 
@@ -122,9 +119,9 @@
                     />
 
                     <filter
-                        name="group_by_date_from"
-                        string="Start Date"
-                        context="{'group_by': 'date_from'}"
+                        name="group_by_date"
+                        string="Date"
+                        context="{'group_by': 'date'}"
                     />
 
                 </group>
@@ -218,13 +215,9 @@
                                 readonly="state != 'draft'"
                             />
 
+                            <!-- Date moja pekee -->
                             <field
-                                name="date_from"
-                                readonly="state != 'draft'"
-                            />
-
-                            <field
-                                name="date_to"
+                                name="date"
                                 readonly="state != 'draft'"
                             />
 
@@ -237,7 +230,7 @@
 
                             <field
                                 name="gross_commission"
-                                readonly="1"
+                                readonly="state != 'draft'"
                             />
 
                             <field
