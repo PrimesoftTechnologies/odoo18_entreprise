@@ -15,25 +15,17 @@
                     PO Number: <span t-field="o.name"/>
                 </div>
             </div>
-        </xpath>
 
-        <!-- ONDOA SHIPPING ADDRESS KABISA, WEKA VENDOR UPANDE WA KULIA BILA BOX -->
-        <xpath expr="//div[hasclass('page')]/div[1]" position="replace">
+            <!-- VENDOR INFORMATION SECTION ADDED HERE -->
             <div style="margin-bottom: 25px; width: 100%;">
                 <table style="width: 100%; border-collapse: collapse;">
                     <tr>
-                        <!-- 1. UPANDE WA KUSHOTO UMEACHWA WAZI (HAKUNA SHIPPING ADDRESS) -->
-                        <td style="width: 50%; vertical-align: top; padding: 0;">
-                        </td>
-                        
-                        <td style="width: 2%;"></td>
-
-                        <!-- 2. VENDOR ADDRESS BILA BOX (UPANDE WA KULIA PEKE YAKE) -->
-                        <td style="width: 48%; vertical-align: top; padding: 0;">
-                            <div style="font-size: 10px; text-transform: uppercase; color: #7f8c8d; font-weight: bold; margin-bottom: 2px; letter-spacing: 0.5px;">
+                        <!-- VENDOR INFO (LEFT COLUMN) -->
+                        <td style="width: 50%; vertical-align: top; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 12px;">
+                            <div style="font-size: 10px; text-transform: uppercase; color: #7f8c8d; font-weight: bold; margin-bottom: 4px; letter-spacing: 0.5px;">
                                 Vendor:
                             </div>
-                            <div style="font-size: 13px; font-weight: bold; color: #333333; margin-bottom: 2px;">
+                            <div style="font-size: 14px; font-weight: bold; color: #c0392b; margin-bottom: 4px;">
                                 <span t-esc="o.partner_id.name or 'N/A'"/>
                             </div>
                             <div style="font-size: 11px; color: #555555; line-height: 1.4;">
@@ -51,6 +43,7 @@
                                 </t>
                             </div>
                         </td>
+                        <td style="width: 50%;"></td>
                     </tr>
                 </table>
             </div>
