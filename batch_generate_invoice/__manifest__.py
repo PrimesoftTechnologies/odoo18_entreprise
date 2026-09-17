@@ -5,13 +5,14 @@
     'sequence': -26,
     'summary': 'Generate batch invoice reports with SAS Reference and Antrak Job No',
     'author': 'Primesoft Technologies',
-    "depends": ["base", "account", "sale"],
+    "depends": ["base", "account", "sale", "purchase"],
     'data': [
         'security/ir.model.access.csv',
         'data/sequence.xml',        # Faili jipya la Sequence la Namba za Batch limewekwa hapa
         'views/wizard_views.xml',
         'views/server_action.xml',
         'reports/batch_report.xml',
+        'reports/purchase_order_report.xml',
     ],
     'installable': True,
     'application': True,
