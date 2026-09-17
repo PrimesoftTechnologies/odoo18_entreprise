@@ -1,114 +1,256 @@
-<!-- PO TITLE -->
-<div class="row mb-3">
-    <div class="col-7">
-        <!-- Keep company/header area clean -->
-    </div>
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
 
-    <div class="col-5 text-end">
-        <div style="
-            font-size: 11px;
-            font-weight: 600;
-            color: #777;
-            text-transform: uppercase;
-            letter-spacing: 1px;">
-            Purchase Order
+    <!-- =========================================================
+         PURCHASE ORDER REPORT
+         ========================================================= -->
+
+    <!-- Report Wrapper -->
+    <template id="report_purchase_order_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="batch_generate_invoice.report_purchase_order_document_content"/>
+            </t>
+        </t>
+    </template>
+
+
+    <!-- Purchase Order Report Content -->
+    <template id="report_purchase_order_document_content">
+
+        <t t-set="doc" t-value="o"/>
+
+        <div class="page">
+
+            <!-- =================================================
+                 HEADER
+                 ================================================= -->
+
+            <div class="row mb-3">
+
+                <!-- COMPANY LOGO -->
+                <div class="col-6">
+                    <img
+                        t-if="o.company_id.logo"
+                        t-att-src="'data:image/png;base64,%s' % o.company_id.logo"
+                        style="max-height: 45px;"
+                    />
+                </div>
+
+                <!-- DATE -->
+                <div class="col-6 text-end">
+
+                    <div style="
+                        font-size: 10px;
+                        font-weight: 600;
+                        color: #777;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;">
+                        Date
+                    </div>
+
+                    <div style="
+                        font-size: 14px;
+                        font-weight: 700;
+                        color: #c0392b;">
+
+                        <span t-field="o.date_order"/>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 PURCHASE ORDER NUMBER
+                 ================================================= -->
+
+            <div class="row mb-3">
+
+                <div class="col-7">
+                    <!-- Keep company/header area clean -->
+                </div>
+
+                <div class="col-5 text-end">
+
+                    <div style="
+                        font-size: 11px;
+                        font-weight: 600;
+                        color: #777;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;">
+                        Purchase Order
+                    </div>
+
+                    <div style="
+                        font-size: 24px;
+                        font-weight: 700;
+                        color: #c0392b;">
+
+                        <span t-field="o.name"/>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 VENDOR / DELIVERY
+                 ================================================= -->
+
+            <table style="
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+                border: 1px solid #dddddd;">
+
+                <tr>
+
+                    <!-- =================================================
+                         VENDOR
+                         ================================================= -->
+
+                    <td style="
+                        width: 50%;
+                        vertical-align: top;
+                        padding: 12px;
+                        border-right: 1px solid #dddddd;">
+
+                        <div style="
+                            font-size: 10px;
+                            font-weight: bold;
+                            color: #777;
+                            text-transform: uppercase;
+                            margin-bottom: 6px;">
+                            Vendor
+                        </div>
+
+
+                        <!-- VENDOR NAME -->
+
+                        <div style="
+                            font-size: 14px;
+                            font-weight: bold;
+                            color: #c0392b;
+                            margin-bottom: 4px;">
+
+                            <span t-field="o.partner_id.name"/>
+
+                        </div>
+
+
+                        <!-- VENDOR ADDRESS -->
+
+                        <div style="
+                            font-size: 11px;
+                            line-height: 1.5;">
+
+                            <t t-if="o.partner_id.street">
+
+                                <span t-field="o.partner_id.street"/>
+                                <br/>
+
+                            </t>
+
+
+                            <t t-if="o.partner_id.street2">
+
+                                <span t-field="o.partner_id.street2"/>
+                                <br/>
+
+                            </t>
+
+
+                            <t t-if="o.partner_id.city">
+
+                                <span t-field="o.partner_id.city"/>
+
+                            </t>
+
+
+                            <t t-if="o.partner_id.country_id">
+
+                                <br/>
+
+                                <span t-field="o.partner_id.country_id.name"/>
+
+                            </t>
+
+
+                            <t t-if="o.partner_id.vat">
+
+                                <br/>
+
+                                <strong>TIN:</strong>
+
+                                <span t-field="o.partner_id.vat"/>
+
+                            </t>
+
+                        </div>
+
+                    </td>
+
+
+                    <!-- =================================================
+                         DELIVERY
+                         ================================================= -->
+
+                    <td style="
+                        width: 50%;
+                        vertical-align: top;
+                        padding: 12px;">
+
+                        <div style="
+                            font-size: 10px;
+                            font-weight: bold;
+                            color: #777;
+                            text-transform: uppercase;
+                            margin-bottom: 6px;">
+                            Deliver To
+                        </div>
+
+
+                        <!-- COMPANY NAME -->
+
+                        <div style="
+                            font-size: 14px;
+                            font-weight: bold;
+                            margin-bottom: 4px;">
+
+                            <span t-field="o.company_id.name"/>
+
+                        </div>
+
+
+                        <!-- OPERATION -->
+
+                        <div style="
+                            font-size: 11px;
+                            line-height: 1.5;">
+
+                            <t t-if="o.picking_type_id">
+
+                                <strong>Operation:</strong>
+
+                                <span t-field="o.picking_type_id.name"/>
+
+                            </t>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+            </table>
+
         </div>
 
-        <div style="
-            font-size: 24px;
-            font-weight: 700;
-            color: #c0392b;">
-            <span t-field="o.name"/>
-        </div>
-    </div>
-</div>
+    </template>
 
-<!-- VENDOR / DELIVERY -->
-<table style="
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-    border: 1px solid #dddddd;">
-
-    <tr>
-        <!-- VENDOR -->
-        <td style="
-            width: 50%;
-            vertical-align: top;
-            padding: 12px;
-            border-right: 1px solid #dddddd;">
-
-            <div style="
-                font-size: 10px;
-                font-weight: bold;
-                color: #777;
-                text-transform: uppercase;
-                margin-bottom: 6px;">
-                Vendor
-            </div>
-
-            <div style="
-                font-size: 14px;
-                font-weight: bold;
-                color: #c0392b;
-                margin-bottom: 4px;">
-                <span t-field="o.partner_id.name"/>
-            </div>
-
-            <div style="font-size: 11px; line-height: 1.5;">
-                <t t-if="o.partner_id.street">
-                    <span t-field="o.partner_id.street"/><br/>
-                </t>
-
-                <t t-if="o.partner_id.street2">
-                    <span t-field="o.partner_id.street2"/><br/>
-                </t>
-
-                <t t-if="o.partner_id.city">
-                    <span t-field="o.partner_id.city"/>
-                </t>
-
-                <t t-if="o.partner_id.country_id">
-                    <br/>
-                    <span t-field="o.partner_id.country_id.name"/>
-                </t>
-
-                <t t-if="o.partner_id.vat">
-                    <br/>
-                    <strong>TIN:</strong>
-                    <span t-field="o.partner_id.vat"/>
-                </t>
-            </div>
-        </td>
-
-        <!-- DELIVERY -->
-        <td style="
-            width: 50%;
-            vertical-align: top;
-            padding: 12px;">
-
-            <div style="
-                font-size: 10px;
-                font-weight: bold;
-                color: #777;
-                text-transform: uppercase;
-                margin-bottom: 6px;">
-                Deliver To
-            </div>
-
-            <div style="
-                font-size: 14px;
-                font-weight: bold;
-                margin-bottom: 4px;">
-                <span t-field="o.company_id.name"/>
-            </div>
-
-            <div style="font-size: 11px; line-height: 1.5;">
-                <t t-if="o.picking_type_id">
-                    <strong>Operation:</strong>
-                    <span t-field="o.picking_type_id.name"/>
-                </t>
-            </div>
-        </td>
-    </tr>
-</table>
+</odoo>
