@@ -17,13 +17,19 @@
             </div>
         </xpath>
 
-        <!-- ONVESHA VENDOR BILA BOX NA KWA PEMBENI (SAME ROW) -->
+        <!-- ONDOA SHIPPING ADDRESS KABISA, WEKA VENDOR UPANDE WA KULIA BILA BOX -->
         <xpath expr="//div[hasclass('page')]/div[1]" position="replace">
             <div style="margin-bottom: 25px; width: 100%;">
                 <table style="width: 100%; border-collapse: collapse;">
                     <tr>
-                        <!-- VENDOR INFO KABISA BILA BOX -->
+                        <!-- 1. UPANDE WA KUSHOTO UMEACHWA WAZI (HAKUNA SHIPPING ADDRESS) -->
                         <td style="width: 50%; vertical-align: top; padding: 0;">
+                        </td>
+                        
+                        <td style="width: 2%;"></td>
+
+                        <!-- 2. VENDOR ADDRESS BILA BOX (UPANDE WA KULIA PEKE YAKE) -->
+                        <td style="width: 48%; vertical-align: top; padding: 0;">
                             <div style="font-size: 10px; text-transform: uppercase; color: #7f8c8d; font-weight: bold; margin-bottom: 2px; letter-spacing: 0.5px;">
                                 Vendor:
                             </div>
@@ -45,8 +51,6 @@
                                 </t>
                             </div>
                         </td>
-                        <!-- UPANDE WA KULIA UMEACHWA WAZI KAMA ULIVYOTAKA -->
-                        <td style="width: 50%;"></td>
                     </tr>
                 </table>
             </div>
