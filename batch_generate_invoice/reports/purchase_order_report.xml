@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- CUSTOMIZE STANDARD PURCHASE ORDER PRINTOUT -->
+    <!-- CUSTOMIZE STANDARD PURCHASE ORDER / RFQ TO PLACE VENDOR ON THE RIGHT -->
     <template id="report_purchaseorder_document_inherit_batch_generate_invoice"
               inherit_id="purchase.report_purchaseorder_document">
 
@@ -17,17 +17,23 @@
             </div>
         </xpath>
 
-        <!-- ONDOA SHIPPING ADDRESS YOTE NA WEKA BOKISI LA VENDOR PEKE YAKE -->
-        <xpath expr="//div[hasclass('page')]/div[1]" position="replace">
-            <div style="margin-bottom: 25px; width: 100%;">
-                <table style="width: 100%; border-collapse: collapse; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px;">
+        <!-- ONDOA ADDRESS YA KAWAIDA YA ODOO NA WEKA VENDOR UPANDE WA KULIA -->
+        <xpath expr="//t[@t-call='web.address_layout']" position="replace">
+            <div style="margin-top: 15px; margin-bottom: 25px; width: 100%;">
+                <table style="width: 100%; border-collapse: collapse;">
                     <tr>
-                        <!-- VENDOR DETAILS (KAMA ILIVYO KWENYE BATCH INVOICE) -->
-                        <td style="width: 50%; vertical-align: top; padding: 12px; border-right: 1px solid #e9ecef;">
-                            <div style="font-size: 10px; text-transform: uppercase; color: #7f8c8d; font-weight: bold; margin-bottom: 4px; letter-spacing: 0.5px;">
+                        <!-- UPANDE WA KUSHOTO UMEACHWA WAZI (HAKUNA SHIPPING ADDRESS) -->
+                        <td style="width: 50%; vertical-align: top; padding: 0;">
+                        </td>
+                        
+                        <td style="width: 2%;"></td>
+
+                        <!-- VENDOR DETAILS ZIMEHAMISHIA UPANDE WA KULIA BILA BOKISI -->
+                        <td style="width: 48%; vertical-align: top; padding: 0;">
+                            <div style="font-size: 10px; text-transform: uppercase; color: #7f8c8d; font-weight: bold; margin-bottom: 2px; letter-spacing: 0.5px;">
                                 Vendor:
                             </div>
-                            <div style="font-size: 14px; font-weight: bold; color: #c0392b; margin-bottom: 4px;">
+                            <div style="font-size: 13px; font-weight: bold; color: #333333; margin-bottom: 2px;">
                                 <span t-esc="o.partner_id.name or 'N/A'"/>
                             </div>
                             <div style="font-size: 11px; color: #555555; line-height: 1.4;">
@@ -44,10 +50,6 @@
                                     <span style="font-weight: 600; color: #333333;">TIN: <span t-esc="o.partner_id.vat"/></span>
                                 </t>
                             </div>
-                        </td>
-                        
-                        <!-- UPANDE WA KULIA UMEACHWA WAZI -->
-                        <td style="width: 50%; vertical-align: top; padding: 12px;">
                         </td>
                     </tr>
                 </table>
