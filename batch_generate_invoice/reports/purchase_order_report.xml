@@ -17,13 +17,13 @@
             </div>
         </xpath>
 
-        <!-- ONDOA SHIPPING ADDRESS NA WEKA TAARIFA ZA VENDOR TU -->
-        <xpath expr="//div[hasclass('page')]/div[1]" position="replace">
-            <div style="margin-bottom: 25px; width: 100%;">
-                <table style="width: 100%; border-collapse: collapse;">
+        <!-- WEKA SHIPPING ADDRESS JUU, HALAFU BOKISI LA VENDOR LIKAANZE CHINI YAKE KAMA KWENYE PICHA -->
+        <xpath expr="//div[hasclass('page')]/div[1]" position="after">
+            <div style="margin-top: 20px; margin-bottom: 25px; width: 100%;">
+                <table style="width: 100%; border-collapse: collapse; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px;">
                     <tr>
-                        <!-- VENDOR INFORMATION (INAONYESHA VENDOR TU BILA SHIPPING ADDRESS) -->
-                        <td style="width: 50%; vertical-align: top; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 12px;">
+                        <!-- VENDOR INFO KAMA LILIVYOKAA KWENYE BOX UPANDE WA KUSHOTO -->
+                        <td style="width: 50%; vertical-align: top; padding: 12px; border-right: 1px solid #e9ecef;">
                             <div style="font-size: 10px; text-transform: uppercase; color: #7f8c8d; font-weight: bold; margin-bottom: 4px; letter-spacing: 0.5px;">
                                 Vendor:
                             </div>
@@ -45,7 +45,10 @@
                                 </t>
                             </div>
                         </td>
-                        <td style="width: 50%;"></td>
+                        
+                        <!-- UPANDE WA KULIA WA BOKISI UMEACHWA WAZI -->
+                        <td style="width: 50%; vertical-align: top; padding: 12px;">
+                        </td>
                     </tr>
                 </table>
             </div>
