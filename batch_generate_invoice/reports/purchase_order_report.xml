@@ -17,17 +17,17 @@
             </div>
         </xpath>
 
-        <!-- ONDOA SHIPPING ADDRESS NA WEKA TAARIFA ZA VENDOR TU -->
+        <!-- ONVESHA VENDOR BILA BOX NA KWA PEMBENI (SAME ROW) -->
         <xpath expr="//div[hasclass('page')]/div[1]" position="replace">
             <div style="margin-bottom: 25px; width: 100%;">
                 <table style="width: 100%; border-collapse: collapse;">
                     <tr>
-                        <!-- VENDOR INFORMATION (INAONYESHA VENDOR TU BILA SHIPPING ADDRESS) -->
-                        <td style="width: 50%; vertical-align: top; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 12px;">
-                            <div style="font-size: 10px; text-transform: uppercase; color: #7f8c8d; font-weight: bold; margin-bottom: 4px; letter-spacing: 0.5px;">
+                        <!-- VENDOR INFO KABISA BILA BOX -->
+                        <td style="width: 50%; vertical-align: top; padding: 0;">
+                            <div style="font-size: 10px; text-transform: uppercase; color: #7f8c8d; font-weight: bold; margin-bottom: 2px; letter-spacing: 0.5px;">
                                 Vendor:
                             </div>
-                            <div style="font-size: 14px; font-weight: bold; color: #c0392b; margin-bottom: 4px;">
+                            <div style="font-size: 13px; font-weight: bold; color: #333333; margin-bottom: 2px;">
                                 <span t-esc="o.partner_id.name or 'N/A'"/>
                             </div>
                             <div style="font-size: 11px; color: #555555; line-height: 1.4;">
@@ -45,6 +45,7 @@
                                 </t>
                             </div>
                         </td>
+                        <!-- UPANDE WA KULIA UMEACHWA WAZI KAMA ULIVYOTAKA -->
                         <td style="width: 50%;"></td>
                     </tr>
                 </table>
