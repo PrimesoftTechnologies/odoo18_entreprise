@@ -17,12 +17,12 @@
             </div>
         </xpath>
 
-        <!-- WEKA SHIPPING ADDRESS JUU, HALAFU BOKISI LA VENDOR LIKAANZE CHINI YAKE KAMA KWENYE PICHA -->
-        <xpath expr="//div[hasclass('page')]/div[1]" position="after">
-            <div style="margin-top: 20px; margin-bottom: 25px; width: 100%;">
+        <!-- ONDOA SHIPPING ADDRESS YOTE NA WEKA BOKISI LA VENDOR PEKE YAKE -->
+        <xpath expr="//div[hasclass('page')]/div[1]" position="replace">
+            <div style="margin-bottom: 25px; width: 100%;">
                 <table style="width: 100%; border-collapse: collapse; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px;">
                     <tr>
-                        <!-- VENDOR INFO KAMA LILIVYOKAA KWENYE BOX UPANDE WA KUSHOTO -->
+                        <!-- VENDOR DETAILS (KAMA ILIVYO KWENYE BATCH INVOICE) -->
                         <td style="width: 50%; vertical-align: top; padding: 12px; border-right: 1px solid #e9ecef;">
                             <div style="font-size: 10px; text-transform: uppercase; color: #7f8c8d; font-weight: bold; margin-bottom: 4px; letter-spacing: 0.5px;">
                                 Vendor:
@@ -46,7 +46,7 @@
                             </div>
                         </td>
                         
-                        <!-- UPANDE WA KULIA WA BOKISI UMEACHWA WAZI -->
+                        <!-- UPANDE WA KULIA UMEACHWA WAZI -->
                         <td style="width: 50%; vertical-align: top; padding: 12px;">
                         </td>
                     </tr>
