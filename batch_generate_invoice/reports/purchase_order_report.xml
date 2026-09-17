@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- CUSTOMIZE STANDARD PURCHASE ORDER PRINTOUT -->
     <template id="report_purchaseorder_document_inherit_batch_generate_invoice"
               inherit_id="purchase.report_purchaseorder_document">
 
-        <!-- SHOW A CLEAR "PURCHASE ORDER" HEADING WITH THE PO NUMBER -->
         <xpath expr="//div[@id='informations']" position="before">
             <div class="mt-4 mb-2">
                 <h2 style="font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px;">
@@ -17,17 +15,15 @@
             </div>
         </xpath>
 
-        <!-- HAPA HAKUNA TENA BOKISI WALA BACKGROUND -->
         <xpath expr="//div[hasclass('page')]/div[1]" position="replace">
             <div style="margin-bottom: 25px; width: 100%;">
-                <table style="width: 100%; border-collapse: collapse;">
+                <table style="width: 100%; border-collapse: collapse; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px;">
                     <tr>
-                        <!-- VENDOR DETAILS BILA BOX -->
-                        <td style="width: 50%; vertical-align: top; padding: 0;">
-                            <div style="font-size: 10px; text-transform: uppercase; color: #7f8c8d; font-weight: bold; margin-bottom: 2px; letter-spacing: 0.5px;">
+                        <td style="width: 50%; vertical-align: top; padding: 12px; border-right: 1px solid #e9ecef;">
+                            <div style="font-size: 10px; text-transform: uppercase; color: #7f8c8d; font-weight: bold; margin-bottom: 4px; letter-spacing: 0.5px;">
                                 Vendor:
                             </div>
-                            <div style="font-size: 13px; font-weight: bold; color: #333333; margin-bottom: 2px;">
+                            <div style="font-size: 14px; font-weight: bold; color: #c0392b; margin-bottom: 4px;">
                                 <span t-esc="o.partner_id.name or 'N/A'"/>
                             </div>
                             <div style="font-size: 11px; color: #555555; line-height: 1.4;">
@@ -46,15 +42,13 @@
                             </div>
                         </td>
                         
-                        <!-- UPANDE WA KULIA UMEACHWA WAZI -->
-                        <td style="width: 50%; vertical-align: top; padding: 0;">
+                        <td style="width: 50%; vertical-align: top; padding: 12px;">
                         </td>
                     </tr>
                 </table>
             </div>
         </xpath>
 
-        <!-- RENAME "Buyer" TO "Created By" -->
         <xpath expr="//div[@id='informations']//div[@t-if='o.user_id']/strong" position="replace">
             <strong>Created By</strong>
         </xpath>
