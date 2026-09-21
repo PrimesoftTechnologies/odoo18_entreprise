@@ -28,7 +28,6 @@
         <field name="model">mrp.production</field>
         <field name="inherit_id"
                ref="mrp.mrp_production_form_view"/>
-
         <field name="arch"
                type="xml">
 
@@ -47,10 +46,11 @@
                 <field name="can_send_for_inspection" invisible="1"/>
                 <field name="can_inspect" invisible="1"/>
                 <field name="can_request_approval" invisible="1"/>
+                <field name="is_transfer_validated" invisible="1"/>
                 <field name="requested_by" invisible="1"/>
             </xpath>
 
-            <!-- Statusbar Management statusbar_visible="draft,wait_approval,approved,confirmed,wait_validation,close_production,done"-->
+            <!-- Statusbar Management -->
             <xpath expr="//header/field[@name='state']" position="replace">
                 <field name="state"
                        widget="statusbar"
@@ -67,6 +67,19 @@
             <xpath expr="//header//button[@name='action_confirm']" position="attributes">
                 <attribute name="invisible">
                     is_approval_flow_enabled and is_inspection_flow_enabled
+                </attribute>
+            </xpath>
+
+            <!-- Ficha au Zuia vitufe vya Produce All / Mark as Done vionekane mpaka Transfer iwe Validated -->
+            <xpath expr="//header//button[@name='button_mark_done']" position="attributes">
+                <attribute name="invisible">
+                    state != 'confirmed' or (is_approval_flow_enabled and is_inspection_flow_enabled and not is_transfer_validated)
+                </attribute>
+            </xpath>
+
+            <xpath expr="//header//button[@name='action_assign']" position="attributes">
+                <attribute name="invisible">
+                    state != 'confirmed' or (is_approval_flow_enabled and is_inspection_flow_enabled and not is_transfer_validated)
                 </attribute>
             </xpath>
 
@@ -90,7 +103,7 @@
                         invisible="state != 'wait_approval' or not can_approve or not (is_approval_flow_enabled and is_inspection_flow_enabled)"/>
             </xpath>
 
-            <!-- 3. Confirm Button (Inaonekana kwa aliyesubmit tu - Requested By) -->
+            <!-- 3. Custom Confirm Button -->
             <xpath expr="//header" position="inside">
                 <button name="action_custom_confirm"
                         string="Confirm"
@@ -100,10 +113,10 @@
                         invisible="state != 'approved' or not (is_approval_flow_enabled and is_inspection_flow_enabled) or requested_by != uid"/>
             </xpath>
 
-            <!-- 4. Validate Button (Inafanywa na Inspector baada ya Confirmed) -->
+            <!-- 4. Validate Production Button -->
             <xpath expr="//header" position="inside">
                 <button name="action_validate_production"
-                        string="Close for Production"
+                        string="Validate"
                         type="object"
                         class="btn-primary"
                         data-hotkey="v"
