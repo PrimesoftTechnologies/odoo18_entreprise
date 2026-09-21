@@ -44,11 +44,13 @@
                 <field name="is_approval_flow_enabled" invisible="1"/>
                 <field name="is_inspection_flow_enabled" invisible="1"/>
                 <field name="can_approve" invisible="1"/>
+                <field name="can_send_for_inspection" invisible="1"/>
+                <field name="can_inspect" invisible="1"/>
                 <field name="can_request_approval" invisible="1"/>
                 <field name="requested_by" invisible="1"/>
             </xpath>
 
-            <!-- Statusbar Management -->
+            <!-- Statusbar Management statusbar_visible="draft,wait_approval,approved,confirmed,wait_validation,close_production,done"-->
             <xpath expr="//header/field[@name='state']" position="replace">
                 <field name="state"
                        widget="statusbar"
@@ -57,20 +59,8 @@
 
                 <field name="state"
                        widget="statusbar"
-                       statusbar_visible="draft,wait_approval,approved,confirmed,close_production,done"
+                       statusbar_visible="draft,approved,confirmed,done"
                        invisible="not (is_approval_flow_enabled and is_inspection_flow_enabled)"/>
-            </xpath>
-
-            <!-- FICHA Produce / Produce All iweke wazi TU wakati state ipo kwenye confirmed, progress, au to_close (baada ya ku-validate transfer) -->
-            <xpath expr="//header//button[@name='button_mark_done'][1]" position="attributes">
-                <attribute name="invisible">
-                    is_approval_flow_enabled and is_inspection_flow_enabled and state not in ('confirmed', 'progress', 'to_close')
-                </attribute>
-            </xpath>
-            <xpath expr="//header//button[@name='button_mark_done'][2]" position="attributes">
-                <attribute name="invisible">
-                    is_approval_flow_enabled and is_inspection_flow_enabled and state not in ('confirmed', 'progress', 'to_close')
-                </attribute>
             </xpath>
 
             <!-- Standard Odoo Confirm Button -->
@@ -100,7 +90,7 @@
                         invisible="state != 'wait_approval' or not can_approve or not (is_approval_flow_enabled and is_inspection_flow_enabled)"/>
             </xpath>
 
-            <!-- 3. Confirm Button -->
+            <!-- 3. Confirm Button (Inaonekana kwa aliyesubmit tu - Requested By) -->
             <xpath expr="//header" position="inside">
                 <button name="action_custom_confirm"
                         string="Confirm"
@@ -110,14 +100,14 @@
                         invisible="state != 'approved' or not (is_approval_flow_enabled and is_inspection_flow_enabled) or requested_by != uid"/>
             </xpath>
 
-            <!-- 4. Close for Production Button (Inafanywa na Approver mwishoni) -->
+            <!-- 4. Validate Button (Inafanywa na Inspector baada ya Confirmed) -->
             <xpath expr="//header" position="inside">
-                <button name="action_final_close_production"
+                <button name="action_validate_production"
                         string="Close for Production"
                         type="object"
                         class="btn-primary"
-                        data-hotkey="f"
-                        invisible="state != 'close_production' or not can_approve or not (is_approval_flow_enabled and is_inspection_flow_enabled)"/>
+                        data-hotkey="v"
+                        invisible="state != 'wait_validation' or not (can_send_for_inspection or can_inspect) or not (is_approval_flow_enabled and is_inspection_flow_enabled)"/>
             </xpath>
 
             <!-- Reject Button -->
@@ -127,7 +117,7 @@
                         type="object"
                         class="btn-secondary"
                         data-hotkey="j"
-                        invisible="not (is_approval_flow_enabled and is_inspection_flow_enabled) or state not in ('wait_approval', 'approved', 'confirmed')"/>
+                        invisible="not (is_approval_flow_enabled and is_inspection_flow_enabled) or not ((state == 'wait_approval' and can_approve) or (state == 'approved' and can_approve) or (state == 'wait_validation' and can_inspect))"/>
             </xpath>
 
         </field>
