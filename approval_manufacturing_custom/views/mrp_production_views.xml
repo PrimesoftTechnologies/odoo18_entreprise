@@ -63,15 +63,15 @@
                        invisible="not (is_approval_flow_enabled and is_inspection_flow_enabled)"/>
             </xpath>
 
-            <!-- FICHA Produce / Produce All ISONEEKANE wakati state ipo kwenye confirmed (hadi pale transfer itakapovalidishwa) -->
+            <!-- FICHA Produce / Produce All Isionekane zikiwa kwenye Draft, Wait for Approval, Approved, Confirmed, au Wait for Validation -->
             <xpath expr="//header//button[@name='button_mark_done'][1]" position="attributes">
                 <attribute name="invisible">
-                    is_approval_flow_enabled and is_inspection_flow_enabled and state == 'confirmed'
+                    is_approval_flow_enabled and is_inspection_flow_enabled and state in ('draft', 'wait_approval', 'approved', 'confirmed', 'wait_validation')
                 </attribute>
             </xpath>
             <xpath expr="//header//button[@name='button_mark_done'][2]" position="attributes">
                 <attribute name="invisible">
-                    is_approval_flow_enabled and is_inspection_flow_enabled and state == 'confirmed'
+                    is_approval_flow_enabled and is_inspection_flow_enabled and state in ('draft', 'wait_approval', 'approved', 'confirmed', 'wait_validation')
                 </attribute>
             </xpath>
 
