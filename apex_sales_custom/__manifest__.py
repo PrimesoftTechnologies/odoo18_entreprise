@@ -1,6 +1,6 @@
 {
     'name': 'Apex Sales Customizations',
-    'version': '18.0.4.0.0',
+    'version': '18.0.5.0.0',
     'category': 'Sales/Sales',
     'summary': 'Track quantity changes, delete reasons with wizard, and display order revisions on forms and PDF reports.',
     'depends': ['sale'],
