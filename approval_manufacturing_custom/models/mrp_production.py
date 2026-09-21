@@ -38,10 +38,9 @@ class MrpProduction(models.Model):
     can_approve = fields.Boolean(string="Can Approve", compute='_compute_workflow_permissions')
     can_send_for_inspection = fields.Boolean(string="Can Send for Inspection", compute='_compute_workflow_permissions')
     can_inspect = fields.Boolean(string="Can Inspect", compute='_compute_workflow_permissions')
-    can_request_approval = fields.Boolean(string="Can Request Approval", compute='_compute_workflow_permissions')
     
-    # Hii inakagua kama stock transfers/pickings zote zimefanyiwa validate (Done)
-    is_transfer_validated = fields.Boolean(string="Transfer Validated", compute='_compute_transfer_validated')
+    # Hii field inazuia Approver asione kitufe cha submit
+    can_request_approval = fields.Boolean(string="Can Request Approval", compute='_compute_workflow_permissions')
     
     requested_by = fields.Many2one('res.users', string="Requested By", readonly=True, copy=False, tracking=True)
 
@@ -66,19 +65,6 @@ class MrpProduction(models.Model):
             order.is_approval_flow_enabled = str(approval_value).lower() in ('true', '1')
             order.is_inspection_flow_enabled = str(inspection_value).lower() in ('true', '1')
 
-    @api.depends('move_raw_ids', 'move_raw_ids.state', 'picking_ids', 'picking_ids.state')
-    def _compute_transfer_validated(self):
-        for order in self:
-            if not order.move_raw_ids and not order.picking_ids:
-                order.is_transfer_validated = True
-                continue
-            
-            pickings = order.picking_ids.filtered(lambda p: p.state != 'cancel')
-            if pickings:
-                order.is_transfer_validated = all(p.state == 'done' for p in pickings)
-            else:
-                order.is_transfer_validated = all(m.state == 'done' for m in order.move_raw_ids) if order.move_raw_ids else True
-
     @api.depends('company_id', 'company_id.manufacturing_approver_ids', 'company_id.manufacturing_inspector_ids', 'requested_by')
     def _compute_workflow_permissions(self):
         current_user = self.env.user
@@ -90,29 +76,28 @@ class MrpProduction(models.Model):
             order.can_send_for_inspection = (current_user in inspectors)
             order.can_inspect = (current_user in inspectors)
             
+            # Approver haruhusiwi kuomba approval (Hata kama order ipo draft)
             is_approver = current_user in approvers
             order.can_request_approval = not is_approver
 
     def button_mark_done(self):
         for order in self:
-            if order.is_approval_flow_enabled and order.is_inspection_flow_enabled:
-                # Zuia kabisa kama transfer bado haijafanyiwa validate
-                if not order.is_transfer_validated and order.state == 'confirmed':
-                    raise exceptions.UserError(_("You must validate the Stock Transfer before you can proceed with production."))
-                
-                if order.state == 'close_production':
-                    return super(MrpProduction, order).button_mark_done()
-                
-                if order.state in ('confirmed', 'progress', 'to_close'):
-                    order.write({'state': 'wait_validation'})
-                    order._refresh_activity(
-                        order.company_id.manufacturing_inspector_ids,
-                        f"Manufacturing Order {order.name} production is completed and waiting for validation."
-                    )
-                    return True
-                
-                if order.state not in ('close_production', 'wait_validation'):
-                    raise exceptions.UserError(_("You cannot mark this order as Done directly. Please follow the validation workflow."))
+            # Kama tayari ipo kwenye 'close_production', ruhusu Odoo imalize kila kitu (pamoja na backorder wizards)
+            if order.state == 'close_production':
+                return super(MrpProduction, order).button_mark_done()
+            
+            # Wakati wa kumaliza uzalishaji wa kawaida (Produce All / Mark as Done), 
+            # badala ya kuifanya Done rasmi, tunaisimamisha kwenye 'wait_validation'
+            if order.state in ('confirmed', 'progress', 'to_close'):
+                order.write({'state': 'wait_validation'})
+                order._refresh_activity(
+                    order.company_id.manufacturing_inspector_ids,
+                    f"Manufacturing Order {order.name} production is completed and waiting for validation."
+                )
+                return True
+            
+            if order.state not in ('close_production', 'wait_validation'):
+                raise exceptions.UserError(_("You cannot mark this order as Done directly. Please follow the validation workflow."))
                 
         return super(MrpProduction, self).button_mark_done()
 
@@ -177,6 +162,8 @@ class MrpProduction(models.Model):
             if self.env.user not in order.company_id.manufacturing_inspector_ids:
                 raise exceptions.AccessError(_("You are not authorized to validate this order."))
 
+            # Tunaweka state kuwa 'close_production' kisha tunaita button_mark_done 
+            # ili Odoo iweze kuleta Backorder wizard endapo quantity imebadilishwa pungufu.
             order.state = 'close_production'
             return super(MrpProduction, order).button_mark_done()
         return True
@@ -209,7 +196,7 @@ class MrpProductionRejectWizard(models.TransientModel):
     production_id = fields.Many2one('mrp.production', string="Manufacturing Order", required=True)
     reason = fields.Text(string="Reason for Rejection", required=True)
 
-    def action_confirm_reject(self, **kwargs):
+    def action_confirm_reject(self):
         self.ensure_one()
         order = self.production_id
         order.state = 'draft'
