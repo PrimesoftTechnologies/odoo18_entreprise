@@ -69,17 +69,14 @@ class MrpProduction(models.Model):
     @api.depends('move_raw_ids', 'move_raw_ids.state', 'picking_ids', 'picking_ids.state')
     def _compute_transfer_validated(self):
         for order in self:
-            # Kama hakuna raw moves, tunaweka True au tunaangalia pickings
             if not order.move_raw_ids and not order.picking_ids:
                 order.is_transfer_validated = True
                 continue
             
-            # Angalia kama stock pickings zote au raw moves zimefanyika (done)
             pickings = order.picking_ids.filtered(lambda p: p.state != 'cancel')
             if pickings:
                 order.is_transfer_validated = all(p.state == 'done' for p in pickings)
             else:
-                # Kama hakuna picking rasmi lakini kuna raw moves
                 order.is_transfer_validated = all(m.state == 'done' for m in order.move_raw_ids) if order.move_raw_ids else True
 
     @api.depends('company_id', 'company_id.manufacturing_approver_ids', 'company_id.manufacturing_inspector_ids', 'requested_by')
@@ -99,6 +96,10 @@ class MrpProduction(models.Model):
     def button_mark_done(self):
         for order in self:
             if order.is_approval_flow_enabled and order.is_inspection_flow_enabled:
+                # Zuia kabisa kama transfer bado haijafanyiwa validate
+                if not order.is_transfer_validated and order.state == 'confirmed':
+                    raise exceptions.UserError(_("You must validate the Stock Transfer before you can proceed with production."))
+                
                 if order.state == 'close_production':
                     return super(MrpProduction, order).button_mark_done()
                 
