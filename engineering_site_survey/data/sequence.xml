@@ -1,0 +1,9 @@
+<odoo>
+    <record id="seq_engineering_site_survey" model="ir.sequence">
+        <field name="name">Engineering Site Survey</field>
+        <field name="code">engineering.site.survey</field>
+        <field name="prefix">ESS/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>

@@ -1,0 +1,48 @@
+<odoo>
+    <record id="action_report_engineering_site_survey" model="ir.actions.report">
+        <field name="name">Site Survey Report</field>
+        <field name="model">engineering.site.survey</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">engineering_site_survey.report_site_survey_document</field>
+        <field name="report_file">engineering_site_survey.report_site_survey_document</field>
+        <field name="binding_model_id" ref="model_engineering_site_survey"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Site Survey Report - %s' % (object.name)</field>
+    </record>
+
+    <template id="report_site_survey_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Engineering Site Survey Report</h2>
+                        <table class="table table-sm table-borderless">
+                            <tr><td><strong>Reference:</strong></td><td><span t-field="o.name"/></td><td><strong>Customer:</strong></td><td><span t-field="o.partner_id"/></td></tr>
+                            <tr><td><strong>Site / Project:</strong></td><td><span t-field="o.site_project"/></td><td><strong>Location:</strong></td><td><span t-field="o.location"/></td></tr>
+                            <tr><td><strong>Survey Date:</strong></td><td><span t-field="o.actual_survey_date"/></td><td><strong>Engineer:</strong></td><td><span t-field="o.responsible_engineer_id"/></td></tr>
+                            <tr><td><strong>Client Representative:</strong></td><td colspan="3"><span t-field="o.client_representative"/></td></tr>
+                        </table>
+                        <t t-if="o.survey_purpose"><h4>Survey Purpose / Scope</h4><div t-field="o.survey_purpose"/></t>
+                        <t t-if="o.areas_inspected"><h4>Work / Areas Inspected</h4><div t-field="o.areas_inspected"/></t>
+                        <t t-if="o.site_conditions"><h4>Site Conditions</h4><div t-field="o.site_conditions"/></t>
+                        <t t-if="o.technical_findings"><h4>Measurements / Technical Findings</h4><div t-field="o.technical_findings"/></t>
+                        <t t-if="o.existing_infrastructure"><h4>Existing Equipment / Infrastructure</h4><div t-field="o.existing_infrastructure"/></t>
+                        <t t-if="o.issues_identified"><h4>Issues Identified</h4><div t-field="o.issues_identified"/></t>
+                        <t t-if="o.client_requirements"><h4>Client Requirements</h4><div t-field="o.client_requirements"/></t>
+                        <t t-if="o.engineer_observations"><h4>Engineer Observations</h4><div t-field="o.engineer_observations"/></t>
+                        <t t-if="o.recommendations"><h4>Recommendations</h4><div t-field="o.recommendations"/></t>
+                        <t t-if="o.proposed_solution"><h4>Proposed Solution / Scope of Work</h4><div t-field="o.proposed_solution"/></t>
+                        <t t-if="o.materials_required"><h4>Materials / Equipment Required</h4><div t-field="o.materials_required"/></t>
+                        <t t-if="o.safety_observations"><h4>Safety / Risk Observations</h4><div t-field="o.safety_observations"/></t>
+                        <t t-if="o.additional_notes"><h4>Additional Notes</h4><div t-field="o.additional_notes"/></t>
+                        <t t-if="o.conclusion"><h4>Conclusion</h4><div t-field="o.conclusion"/></t>
+                        <br/><br/>
+                        <table class="table table-sm table-borderless">
+                            <tr><td style="width:45%; border-top:1px solid #000;">Engineer Signature / Date</td><td style="width:10%;"></td><td style="width:45%; border-top:1px solid #000;">Client Representative / Date</td></tr>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

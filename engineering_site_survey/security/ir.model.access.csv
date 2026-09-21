@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_engineering_site_survey_user,engineering.site.survey user,model_engineering_site_survey,base.group_user,1,1,1,1
+access_engineering_site_survey_expense_user,engineering.site.survey.expense user,model_engineering_site_survey_expense,base.group_user,1,1,1,1
+access_engineering_site_survey_product_user,engineering.site.survey.product user,model_engineering_site_survey_product,base.group_user,1,1,1,1
+access_engineering_site_survey_fuel_user,engineering.site.survey.fuel user,model_engineering_site_survey_fuel,base.group_user,1,1,1,1
+access_engineering_expense_type_user,engineering.expense.type user,model_engineering_expense_type,base.group_user,1,1,1,1
+access_engineering_site_survey_reject_wizard_user,engineering.site.survey.reject.wizard user,model_engineering_site_survey_reject_wizard,base.group_user,1,1,1,1

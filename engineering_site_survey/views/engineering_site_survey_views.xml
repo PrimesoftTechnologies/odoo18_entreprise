@@ -1,0 +1,240 @@
+<odoo>
+    <!-- Expense Types Views -->
+    <record id="view_engineering_expense_type_list" model="ir.ui.view">
+        <field name="name">engineering.expense.type.list</field>
+        <field name="model">engineering.expense.type</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="is_active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Site Survey Views -->
+    <record id="view_engineering_site_survey_list" model="ir.ui.view">
+        <field name="name">engineering.site.survey.list</field>
+        <field name="model">engineering.site.survey</field>
+        <field name="arch" type="xml">
+            <list decoration-success="state == 'completed'" decoration-danger="state == 'rejected'" decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="site_project"/>
+                <field name="location"/>
+                <field name="responsible_engineer_id"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="due_date"/>
+                <field name="total_requested" sum="Total"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_engineering_site_survey_form" model="ir.ui.view">
+        <field name="name">engineering.site.survey.form</field>
+        <field name="model">engineering.site.survey</field>
+        <field name="arch" type="xml">
+            <form string="Engineering Site Survey">
+                <header>
+                    <!-- Viwanja vya siri vya kutambua ruhusa za mtumiaji -->
+                    <field name="is_approver" invisible="1"/>
+                    <field name="is_responsible_engineer" invisible="1"/>
+                    
+                    <button name="action_submit" type="object" string="Submit" class="btn-primary" invisible="state != 'draft'"/>
+                    
+                    <!-- Vitufe vya Approver -->
+                    <button name="action_approve" type="object" string="Approve" class="btn-primary" invisible="state != 'submitted' or not is_approver"/>
+                    <button name="action_reject" type="object" string="Reject" class="btn-danger" invisible="state != 'submitted' or not is_approver"/>
+                    <button name="action_cancel_approval" type="object" string="Cancel Approval" class="btn-warning" invisible="state != 'approved' or not is_approver"/>
+                    
+                    <!-- Kitufe cha Survey Done: Kinaonekana ikiwa Approved na kwa Responsible Engineer pekee -->
+                    <button name="action_survey_done" type="object" string="Survey Done" class="btn-primary" invisible="state != 'approved' or not is_responsible_engineer"/>
+                    
+                    <button name="action_submit_report" type="object" string="Submit Report" class="btn-primary" invisible="state != 'survey_done'"/>
+                    <button name="action_complete" type="object" string="Complete" class="btn-primary" invisible="state != 'report_submitted'"/>
+                    
+                    <button name="action_cancel" type="object" string="Cancel" invisible="state in ('completed','cancelled','rejected','approved')"/>
+                    <button name="action_reset_draft" type="object" string="Reset to Draft" invisible="state not in ('cancelled','rejected')"/>
+                    
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,survey_done,report_submitted,completed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box"/>
+                    <widget name="web_ribbon" title="Completed" bg_color="text-bg-success" invisible="state != 'completed'"/>
+                    <widget name="web_ribbon" title="Rejected" bg_color="text-bg-danger" invisible="state != 'rejected'"/>
+                    <widget name="web_ribbon" title="Cancelled" bg_color="text-bg-secondary" invisible="state != 'cancelled'"/>
+                    
+                    <!-- Onyo/Ujumbe wa Sababu za Kukataa kama survey imekataliwa -->
+                    <div class="alert alert-danger text-center" role="alert" invisible="state != 'rejected'">
+                        <h4><i class="fa fa-exclamation-triangle"/> Survey Rejected</h4>
+                        <field name="rejection_reason" readonly="1"/>
+                    </div>
+
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="site_project"/>
+                            <field name="location"/>
+                            <field name="contact_person"/>
+                            <field name="contact_phone"/>
+                        </group>
+                        <group>
+                            <field name="responsible_engineer_id"/>
+                            <field name="team_member_ids" widget="many2many_tags"/>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                            <field name="due_date"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Survey Description">
+                            <field name="survey_purpose" placeholder="Describe the purpose and scope of the planned engineering site survey..."/>
+                        </page>
+                        <page string="Expenses">
+                            <group>
+                                <group>
+                                    <field name="expense_request_type"/>
+                                    <field name="number_of_people" invisible="expense_request_type != 'group'"/>
+                                </group>
+                            </group>
+                            <field name="expense_line_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="expense_type_id"/>
+                                    <field name="cost"/>
+                                    <field name="description"/>
+                                    <field name="amount" sum="Total"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Products">
+                            <field name="product_line_ids">
+                                <list editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="description"/>
+                                    <field name="quantity"/>
+                                    <field name="unit_price"/>
+                                    <field name="price_subtotal" sum="Total"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Fuel Cost">
+                            <field name="fuel_line_ids">
+                                <list editable="bottom">
+                                    <field name="vehicle_type"/>
+                                    <field name="fuel_type"/>
+                                    <field name="location_from"/>
+                                    <field name="location_to"/>
+                                    <field name="litres"/>
+                                    <field name="price_per_litre"/>
+                                    <field name="total_amount" sum="Total"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Site Survey Report">
+                            <group>
+                                <field name="actual_survey_date"/>
+                                <field name="client_representative"/>
+                            </group>
+                            <group string="Inspection &amp; Findings">
+                                <field name="areas_inspected"/>
+                                <field name="site_conditions"/>
+                                <field name="technical_findings"/>
+                                <field name="existing_infrastructure"/>
+                                <field name="issues_identified"/>
+                            </group>
+                            <group string="Requirements &amp; Engineering Recommendation">
+                                <field name="client_requirements"/>
+                                <field name="engineer_observations"/>
+                                <field name="recommendations"/>
+                                <field name="proposed_solution"/>
+                                <field name="materials_required"/>
+                                <field name="safety_observations"/>
+                                <field name="additional_notes"/>
+                                <field name="conclusion"/>
+                            </group>
+                        </page>
+                    </notebook>
+                    <group class="oe_subtotal_footer oe_right">
+                        <field name="total_requested" widget="monetary" options="{'currency_field': 'currency_id'}" class="fw-bold fs-5"/>
+                    </group>
+                    <div class="clearfix"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_engineering_site_survey_search" model="ir.ui.view">
+        <field name="name">engineering.site.survey.search</field>
+        <field name="model">engineering.site.survey</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="site_project"/>
+                <field name="responsible_engineer_id"/>
+                <filter string="My Surveys" name="my_surveys" domain="[('responsible_engineer_id.user_id', '=', uid)]"/>
+                <filter string="Draft" name="draft" domain="[('state','=','draft')]"/>
+                <filter string="Submitted" name="submitted" domain="[('state','=','submitted')]"/>
+                <filter string="Approved" name="approved" domain="[('state','=','approved')]"/>
+                <filter string="Rejected" name="rejected" domain="[('state','=','rejected')]"/>
+                <filter string="Completed" name="completed" domain="[('state','=','completed')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Customer" name="group_partner" context="{'group_by':'partner_id'}"/>
+                    <filter string="Engineer" name="group_engineer" context="{'group_by':'responsible_engineer_id'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Settings View -->
+    <record id="res_config_settings_view_form_engineering" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.engineering</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Engineering Survey" string="Engineering Survey" name="engineering_site_survey">
+                    <block title="Approvals" name="engineering_approval_setting_container">
+                        <setting id="survey_approver_setting" title="Default Approver" help="Set the default user responsible for approving site surveys">
+                            <field name="survey_approver_id"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_engineering_site_survey" model="ir.actions.act_window">
+        <field name="name">Site Surveys</field>
+        <field name="res_model">engineering.site.survey</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_engineering_expense_type" model="ir.actions.act_window">
+        <field name="name">Expense Types</field>
+        <field name="res_model">engineering.expense.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_engineering_config_settings" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'engineering_site_survey'}</field>
+    </record>
+
+    <menuitem id="menu_engineering_site_survey_root" name="Engineering Survey" web_icon="engineering_site_survey,static/description/icon.png" sequence="30"/>
+    <menuitem id="menu_engineering_site_survey" name="Request Site Survey" parent="menu_engineering_site_survey_root" action="action_engineering_site_survey" sequence="10"/>
+    
+    <!-- Configuration Menu -->
+    <menuitem id="menu_engineering_config" name="Configuration" parent="menu_engineering_site_survey_root" sequence="100"/>
+    <menuitem id="menu_engineering_config_settings" name="Settings" parent="menu_engineering_config" action="action_engineering_config_settings" sequence="1"/>
+    <menuitem id="menu_engineering_expense_type" name="Expense Types" parent="menu_engineering_config" action="action_engineering_expense_type" sequence="10"/>
+</odoo>
