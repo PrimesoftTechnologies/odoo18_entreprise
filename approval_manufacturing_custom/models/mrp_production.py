@@ -9,7 +9,8 @@ class MrpProduction(models.Model):
             ('wait_approval', 'Wait for Approval'),
             ('approved', 'Approved'),
             ('confirmed', 'Confirmed'),
-            ('wait_validation', 'Wait for Validation'),
+            ('wait_transfer', 'Wait for Transfer'),
+            ('ready_to_produce', 'Ready to Produce'),
             ('close_production', 'Close for Production'),
             ('progress', 'In Progress'),
             ('to_close', 'To Close'),
@@ -23,7 +24,8 @@ class MrpProduction(models.Model):
             'wait_approval': 'cascade',
             'approved': 'cascade',
             'confirmed': 'cascade',
-            'wait_validation': 'cascade',
+            'wait_transfer': 'cascade',
+            'ready_to_produce': 'cascade',
             'close_production': 'cascade',
             'progress': 'cascade',
             'to_close': 'cascade',
@@ -78,22 +80,23 @@ class MrpProduction(models.Model):
             order.can_request_approval = not is_approver
 
     def button_mark_done(self):
+        """Hapa tunaruhusu Odoo ifanye produce/produce all na kuleta backorder wizard ikiwa quantity ni ndogo"""
         for order in self:
             if order.is_approval_flow_enabled and order.is_inspection_flow_enabled:
-                if order.state == 'close_production':
-                    return super(MrpProduction, order).button_mark_done()
-                
-                if order.state in ('confirmed', 'progress', 'to_close'):
-                    order.write({'state': 'wait_validation'})
+                if order.state == 'ready_to_produce':
+                    # Kuruhusu standard Odoo kuendelea (itafanya produce na kuleta backorder wizard kama ipo)
+                    res = super(MrpProduction, order).button_mark_done()
+                    # Baada ya uzalishaji kukamilika, tunaisogeza kwenda close_production ili Approver aifunge
+                    order.state = 'close_production'
                     order._refresh_activity(
-                        order.company_id.manufacturing_inspector_ids,
-                        f"Manufacturing Order {order.name} production is completed and waiting for validation."
+                        order.company_id.manufacturing_approver_ids,
+                        f"Manufacturing Order {order.name} production is done and waiting for final closing."
                     )
-                    return True
-                
-                if order.state not in ('close_production', 'wait_validation'):
-                    raise exceptions.UserError(_("You cannot mark this order as Done directly. Please follow the validation workflow."))
-                    
+                    return res
+                elif order.state == 'close_production':
+                    return super(MrpProduction, order).button_mark_done()
+                else:
+                    raise exceptions.UserError(_("You are not allowed to produce at this stage."))
             return super(MrpProduction, order).button_mark_done()
         return True
 
@@ -142,32 +145,45 @@ class MrpProduction(models.Model):
             order.with_context(skip_activity=True).write({'state': 'draft'})
             
             res = super(MrpProduction, order).action_confirm()
-            order.state = 'confirmed'
+            # Baada ya confirm, tunaiweka kwenye wait_transfer ili kitufe cha Transfer/Validate kitokee
+            order.state = 'wait_transfer'
             order._refresh_activity(
-                order.company_id.manufacturing_inspector_ids,
-                f"Manufacturing Order {order.name} is confirmed. Please proceed with production."
+                order.requested_by if order.requested_by else order.company_id.manufacturing_inspector_ids,
+                f"Manufacturing Order {order.name} is confirmed. Please validate transfer."
             )
             return res
         return True
 
-    def action_validate_production(self):
+    def action_validate_transfer(self):
+        """Hapa ndipo mtumiaji anapobonyeza kitufe cha Validate Transfer baada ya Confirm"""
         for order in self:
-            if order.state != 'wait_validation':
-                raise exceptions.UserError(_("Order is not waiting for validation."))
-            if self.env.user not in order.company_id.manufacturing_inspector_ids:
-                raise exceptions.AccessError(_("You are not authorized to validate this order."))
+            if order.state != 'wait_transfer':
+                raise exceptions.UserError(_("Order is not waiting for transfer validation."))
+            
+            # Baada ya hapa state inakuwa ready_to_produce ambapo vitufe vya Produce All vitajitokeza
+            order.state = 'ready_to_produce'
+            order._refresh_activity(
+                order.requested_by if order.requested_by else order.company_id.manufacturing_inspector_ids,
+                f"Manufacturing Order {order.name} transfer is validated. You can now produce."
+            )
+        return True
 
-            order.state = 'close_production'
+    def action_final_close_production(self):
+        """Hapa ndipo Approver anafunga rasmi oda ya utengenezaji (Close for Production)"""
+        for order in self:
+            if order.state != 'close_production':
+                raise exceptions.UserError(_("Order is not ready for final closing."))
+            if self.env.user not in order.company_id.manufacturing_approver_ids:
+                raise exceptions.AccessError(_("Only Approvers can close the production."))
+
+            # Inaita Odoo mark done/close ya mwisho ili kuweka state kuwa Done rasmi
             return super(MrpProduction, order).button_mark_done()
         return True
 
     def action_open_reject_wizard(self):
         self.ensure_one()
-        if self.state not in ('wait_approval', 'approved', 'confirmed', 'wait_validation'):
+        if self.state not in ('wait_approval', 'approved', 'wait_transfer', 'ready_to_produce'):
             raise exceptions.UserError(_("This Manufacturing Order cannot be rejected at this stage."))
-
-        is_approver = self.env.user in order.company_id.manufacturing_approver_ids if hasattr(self, 'company_id') else False
-        is_inspector = self.env.user in self.company_id.manufacturing_inspector_ids
 
         return {
             'name': _('Reject Manufacturing Order'),

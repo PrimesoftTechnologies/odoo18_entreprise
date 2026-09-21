@@ -59,19 +59,19 @@
 
                 <field name="state"
                        widget="statusbar"
-                       statusbar_visible="draft,wait_approval,approved,confirmed,wait_validation,close_production,done"
+                       statusbar_visible="draft,wait_approval,approved,wait_transfer,ready_to_produce,close_production,done"
                        invisible="not (is_approval_flow_enabled and is_inspection_flow_enabled)"/>
             </xpath>
 
-            <!-- FICHA Produce / Produce All wakati bado haijafika 'wait_validation' au 'close_production' -->
+            <!-- FICHA Produce / Produce All iweke wazi TU wakati state ipo kwenye ready_to_produce -->
             <xpath expr="//header//button[@name='button_mark_done'][1]" position="attributes">
                 <attribute name="invisible">
-                    is_approval_flow_enabled and is_inspection_flow_enabled and state not in ('wait_validation', 'progress', 'to_close')
+                    is_approval_flow_enabled and is_inspection_flow_enabled and state != 'ready_to_produce'
                 </attribute>
             </xpath>
             <xpath expr="//header//button[@name='button_mark_done'][2]" position="attributes">
                 <attribute name="invisible">
-                    is_approval_flow_enabled and is_inspection_flow_enabled and state not in ('wait_validation', 'progress', 'to_close')
+                    is_approval_flow_enabled and is_inspection_flow_enabled and state != 'ready_to_produce'
                 </attribute>
             </xpath>
 
@@ -112,14 +112,24 @@
                         invisible="state != 'approved' or not (is_approval_flow_enabled and is_inspection_flow_enabled) or requested_by != uid"/>
             </xpath>
 
-            <!-- 4. Validate / Close for Production Button -->
+            <!-- 4. Validate Transfer Button (Inaonekana baada ya Confirm ili kuruhusu Produce ionekane ikibonyezwa) -->
             <xpath expr="//header" position="inside">
-                <button name="action_validate_production"
-                        string="Close for Production"
+                <button name="action_validate_transfer"
+                        string="Validate Transfer"
                         type="object"
                         class="btn-primary"
                         data-hotkey="v"
-                        invisible="state != 'wait_validation' or not (can_send_for_inspection or can_inspect) or not (is_approval_flow_enabled and is_inspection_flow_enabled)"/>
+                        invisible="state != 'wait_transfer' or not (is_approval_flow_enabled and is_inspection_flow_enabled)"/>
+            </xpath>
+
+            <!-- 5. Close for Production Button (Inafanywa na Approver mwishoni kabisa) -->
+            <xpath expr="//header" position="inside">
+                <button name="action_final_close_production"
+                        string="Close for Production"
+                        type="object"
+                        class="btn-primary"
+                        data-hotkey="f"
+                        invisible="state != 'close_production' or not can_approve or not (is_approval_flow_enabled and is_inspection_flow_enabled)"/>
             </xpath>
 
             <!-- Reject Button -->
@@ -129,7 +139,7 @@
                         type="object"
                         class="btn-secondary"
                         data-hotkey="j"
-                        invisible="not (is_approval_flow_enabled and is_inspection_flow_enabled) or not ((state == 'wait_approval' and can_approve) or (state == 'approved' and can_approve) or (state == 'wait_validation' and can_inspect))"/>
+                        invisible="not (is_approval_flow_enabled and is_inspection_flow_enabled) or state not in ('wait_approval', 'approved', 'wait_transfer', 'ready_to_produce')"/>
             </xpath>
 
         </field>
