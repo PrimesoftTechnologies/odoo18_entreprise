@@ -67,7 +67,6 @@ class MrpProduction(models.Model):
             order.can_request_approval = (current_user not in approvers)
 
     def button_mark_done(self):
-        """Inaruhusu Odoo ifanye produce/produce all na kuleta backorder wizard, kisha inasubiri Approver kufunga"""
         for order in self:
             if order.is_approval_flow_enabled and order.is_inspection_flow_enabled:
                 if order.state in ('confirmed', 'progress', 'to_close'):
@@ -122,8 +121,8 @@ class MrpProduction(models.Model):
             order.activity_ids.filtered(lambda a: a.res_id == order.id and a.state != 'done').action_done()
             order.with_context(skip_activity=True).write({'state': 'draft'})
             
-            # Inaita standard confirm ya Odoo
             res = super(MrpProduction, order).action_confirm()
+            order.state = 'confirmed'
             return res
         return True
 

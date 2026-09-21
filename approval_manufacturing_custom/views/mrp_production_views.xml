@@ -48,7 +48,7 @@
                 <field name="requested_by" invisible="1"/>
             </xpath>
 
-            <!-- Statusbar Management: Hakuna tena wait_transfer wala ready_to_produce -->
+            <!-- Statusbar Management -->
             <xpath expr="//header/field[@name='state']" position="replace">
                 <field name="state"
                        widget="statusbar"
@@ -61,7 +61,7 @@
                        invisible="not (is_approval_flow_enabled and is_inspection_flow_enabled)"/>
             </xpath>
 
-            <!-- FICHA Produce / Produce All wakati state bado haijafika kwenye Confirmed au Progress (yaani baada ya ku-validate transfer kule kwenye smart button) -->
+            <!-- FICHA Produce / Produce All iweke wazi TU wakati state ipo kwenye confirmed, progress, au to_close (baada ya ku-validate transfer) -->
             <xpath expr="//header//button[@name='button_mark_done'][1]" position="attributes">
                 <attribute name="invisible">
                     is_approval_flow_enabled and is_inspection_flow_enabled and state not in ('confirmed', 'progress', 'to_close')
