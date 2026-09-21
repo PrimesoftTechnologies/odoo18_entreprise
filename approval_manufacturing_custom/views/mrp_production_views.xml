@@ -44,8 +44,6 @@
                 <field name="is_approval_flow_enabled" invisible="1"/>
                 <field name="is_inspection_flow_enabled" invisible="1"/>
                 <field name="can_approve" invisible="1"/>
-                <field name="can_send_for_inspection" invisible="1"/>
-                <field name="can_inspect" invisible="1"/>
                 <field name="can_request_approval" invisible="1"/>
                 <field name="requested_by" invisible="1"/>
             </xpath>
@@ -112,17 +110,7 @@
                         invisible="state != 'approved' or not (is_approval_flow_enabled and is_inspection_flow_enabled) or requested_by != uid"/>
             </xpath>
 
-            <!-- 4. Validate Transfer Button (Inaonekana baada ya Confirm ili kuruhusu Produce ionekane ikibonyezwa) -->
-            <xpath expr="//header" position="inside">
-                <button name="action_validate_transfer"
-                        string="Validate Transfer"
-                        type="object"
-                        class="btn-primary"
-                        data-hotkey="v"
-                        invisible="state != 'wait_transfer' or not (is_approval_flow_enabled and is_inspection_flow_enabled)"/>
-            </xpath>
-
-            <!-- 5. Close for Production Button (Inafanywa na Approver mwishoni kabisa) -->
+            <!-- 4. Close for Production Button (Inafanywa na Approver mwishoni kabisa) -->
             <xpath expr="//header" position="inside">
                 <button name="action_final_close_production"
                         string="Close for Production"
