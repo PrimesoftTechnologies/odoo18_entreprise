@@ -50,7 +50,7 @@
                 <field name="requested_by" invisible="1"/>
             </xpath>
 
-            <!-- Statusbar Management statusbar_visible="draft,wait_approval,approved,confirmed,wait_validation,close_production,done"-->
+            <!-- Statusbar Management -->
             <xpath expr="//header/field[@name='state']" position="replace">
                 <field name="state"
                        widget="statusbar"
@@ -61,6 +61,18 @@
                        widget="statusbar"
                        statusbar_visible="draft,approved,confirmed,done"
                        invisible="not (is_approval_flow_enabled and is_inspection_flow_enabled)"/>
+            </xpath>
+
+            <!-- FICHA Produce / Produce All ISONEEKANE wakati state ipo kwenye confirmed (hadi pale transfer itakapovalidishwa) -->
+            <xpath expr="//header//button[@name='button_mark_done'][1]" position="attributes">
+                <attribute name="invisible">
+                    is_approval_flow_enabled and is_inspection_flow_enabled and state == 'confirmed'
+                </attribute>
+            </xpath>
+            <xpath expr="//header//button[@name='button_mark_done'][2]" position="attributes">
+                <attribute name="invisible">
+                    is_approval_flow_enabled and is_inspection_flow_enabled and state == 'confirmed'
+                </attribute>
             </xpath>
 
             <!-- Standard Odoo Confirm Button -->
@@ -90,7 +102,7 @@
                         invisible="state != 'wait_approval' or not can_approve or not (is_approval_flow_enabled and is_inspection_flow_enabled)"/>
             </xpath>
 
-            <!-- 3. Confirm Button (Inaonekana kwa aliyesubmit tu - Requested By) -->
+            <!-- 3. Confirm Button -->
             <xpath expr="//header" position="inside">
                 <button name="action_custom_confirm"
                         string="Confirm"
@@ -100,7 +112,7 @@
                         invisible="state != 'approved' or not (is_approval_flow_enabled and is_inspection_flow_enabled) or requested_by != uid"/>
             </xpath>
 
-            <!-- 4. Validate Button (Inafanywa na Inspector baada ya Confirmed) -->
+            <!-- 4. Validate Button -->
             <xpath expr="//header" position="inside">
                 <button name="action_validate_production"
                         string="Close for Production"
