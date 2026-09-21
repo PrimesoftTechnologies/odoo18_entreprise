@@ -9,9 +9,9 @@ class MrpProduction(models.Model):
             ('wait_approval', 'Wait for Approval'),
             ('approved', 'Approved'),
             ('confirmed', 'Confirmed'),
-            ('wait_transfer', 'Wait for Transfer'),
-            ('ready_to_produce', 'Ready to Produce'),
             ('close_production', 'Close for Production'),
+            ('progress', 'In Progress'),
+            ('to_close', 'To Close'),
             ('done', 'Done'),
             ('cancel', 'Cancelled'),
             ('reject', 'Rejected'),
@@ -22,9 +22,9 @@ class MrpProduction(models.Model):
             'wait_approval': 'cascade',
             'approved': 'cascade',
             'confirmed': 'cascade',
-            'wait_transfer': 'cascade',
-            'ready_to_produce': 'cascade',
             'close_production': 'cascade',
+            'progress': 'cascade',
+            'to_close': 'cascade',
             'done': 'cascade',
             'cancel': 'cascade',
             'reject': 'cascade',
@@ -67,9 +67,10 @@ class MrpProduction(models.Model):
             order.can_request_approval = (current_user not in approvers)
 
     def button_mark_done(self):
+        """Inaruhusu Odoo ifanye produce/produce all na kuleta backorder wizard, kisha inasubiri Approver kufunga"""
         for order in self:
             if order.is_approval_flow_enabled and order.is_inspection_flow_enabled:
-                if order.state == 'ready_to_produce':
+                if order.state in ('confirmed', 'progress', 'to_close'):
                     res = super(MrpProduction, order).button_mark_done()
                     order.state = 'close_production'
                     order._refresh_activity(
@@ -121,20 +122,10 @@ class MrpProduction(models.Model):
             order.activity_ids.filtered(lambda a: a.res_id == order.id and a.state != 'done').action_done()
             order.with_context(skip_activity=True).write({'state': 'draft'})
             
+            # Inaita standard confirm ya Odoo
             res = super(MrpProduction, order).action_confirm()
-            order.state = 'wait_transfer'
             return res
         return True
-
-    def _check_order(self):
-        """Hapa Odoo inaangalia kama transfer imeshavalidishwa, ikiwa done, inabadilisha state kuwa ready_to_produce ili Produce All ije"""
-        res = super(MrpProduction, self)._check_order()
-        for order in self:
-            if order.is_approval_flow_enabled and order.is_inspection_flow_enabled:
-                if order.state == 'wait_transfer':
-                    if order.picking_ids and all(p.state == 'done' for p in order.picking_ids):
-                        order.state = 'ready_to_produce'
-        return res
 
     def action_final_close_production(self):
         for order in self:

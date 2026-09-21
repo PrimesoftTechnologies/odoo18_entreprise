@@ -48,7 +48,7 @@
                 <field name="requested_by" invisible="1"/>
             </xpath>
 
-            <!-- Statusbar Management -->
+            <!-- Statusbar Management: Hakuna tena wait_transfer wala ready_to_produce -->
             <xpath expr="//header/field[@name='state']" position="replace">
                 <field name="state"
                        widget="statusbar"
@@ -57,19 +57,19 @@
 
                 <field name="state"
                        widget="statusbar"
-                       statusbar_visible="draft,wait_approval,approved,wait_transfer,ready_to_produce,close_production,done"
+                       statusbar_visible="draft,wait_approval,approved,confirmed,close_production,done"
                        invisible="not (is_approval_flow_enabled and is_inspection_flow_enabled)"/>
             </xpath>
 
-            <!-- FICHA Produce / Produce All iweke wazi TU wakati state ipo kwenye ready_to_produce -->
+            <!-- FICHA Produce / Produce All wakati state bado haijafika kwenye Confirmed au Progress (yaani baada ya ku-validate transfer kule kwenye smart button) -->
             <xpath expr="//header//button[@name='button_mark_done'][1]" position="attributes">
                 <attribute name="invisible">
-                    is_approval_flow_enabled and is_inspection_flow_enabled and state != 'ready_to_produce'
+                    is_approval_flow_enabled and is_inspection_flow_enabled and state not in ('confirmed', 'progress', 'to_close')
                 </attribute>
             </xpath>
             <xpath expr="//header//button[@name='button_mark_done'][2]" position="attributes">
                 <attribute name="invisible">
-                    is_approval_flow_enabled and is_inspection_flow_enabled and state != 'ready_to_produce'
+                    is_approval_flow_enabled and is_inspection_flow_enabled and state not in ('confirmed', 'progress', 'to_close')
                 </attribute>
             </xpath>
 
@@ -110,7 +110,7 @@
                         invisible="state != 'approved' or not (is_approval_flow_enabled and is_inspection_flow_enabled) or requested_by != uid"/>
             </xpath>
 
-            <!-- 4. Close for Production Button (Inafanywa na Approver mwishoni kabisa) -->
+            <!-- 4. Close for Production Button (Inafanywa na Approver mwishoni) -->
             <xpath expr="//header" position="inside">
                 <button name="action_final_close_production"
                         string="Close for Production"
@@ -127,7 +127,7 @@
                         type="object"
                         class="btn-secondary"
                         data-hotkey="j"
-                        invisible="not (is_approval_flow_enabled and is_inspection_flow_enabled) or state not in ('wait_approval', 'approved', 'wait_transfer', 'ready_to_produce')"/>
+                        invisible="not (is_approval_flow_enabled and is_inspection_flow_enabled) or state not in ('wait_approval', 'approved', 'confirmed')"/>
             </xpath>
 
         </field>
