@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_timber_log,timber.log,model_timber_log,group_timber_user,1,1,1,1
+access_timber_log_measurement,timber.log.measurement,model_timber_log_measurement,group_timber_user,1,1,1,1
+access_timber_processing,timber.processing,model_timber_processing,group_timber_user,1,1,1,1
+access_timber_board,timber.board,model_timber_board,group_timber_user,1,1,1,1
+access_timber_dashboard,timber.dashboard,model_timber_dashboard,group_timber_user,1,1,1,1
+access_timber_expense,timber.expense,model_timber_expense,group_timber_user,1,1,1,1
+access_timber_expense_report_wizard,timber.expense.report.wizard,model_timber_expense_report_wizard,group_timber_user,1,1,1,1

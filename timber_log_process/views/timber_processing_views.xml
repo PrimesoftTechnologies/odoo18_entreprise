@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Processing Form View -->
+    <record id="view_timber_processing_form" model="ir.ui.view">
+        <field name="name">timber.processing.form</field>
+        <field name="model">timber.processing</field>
+        <field name="arch" type="xml">
+            <form string="Sawing Processing">
+                <header>
+                    <button name="action_start" string="Start Sawing" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_done" string="Complete Sawing" type="object" class="btn-success" invisible="state != 'in_progress'"/>
+                    <button name="action_create_sale_order" string="Create Sale" type="object" class="btn-info" icon="fa-shopping-cart" invisible="state != 'done'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,in_progress,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="log_id"/>
+                            <field name="date_processed"/>
+                            <field name="user_id"/>
+                            <!-- Uwanja wa sale_by utaonekana tu pindi hali inapokuwa 'done' -->
+                            <field name="sale_by" widget="radio" invisible="state != 'done'"/>
+                        </group>
+                        <group>
+                            <field name="input_cbm"/>
+                            <field name="output_cbm"/>
+                            <field name="waste_cbm"/>
+                            <field name="waste_percentage"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Produced Boards">
+                            <field name="board_ids">
+                                <list editable="bottom" decoration-success="status == 'available'" decoration-muted="status == 'sold'">
+                                    <field name="name" readonly="status == 'sold'"/>
+                                    <field name="width" readonly="status == 'sold'"/>
+                                    <field name="thickness" readonly="status == 'sold'"/>
+                                    <field name="length" readonly="status == 'sold'"/>
+                                    <field name="cbm" readonly="1"/>
+                                    <field name="status" readonly="1"/>
+                                </list>
+                            </field>
+                            
+                            <!-- Hapa sasa tunatumia total_board_cbm badala ya output_cbm kwenye Grand Total Board CBM -->
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="total_board_cbm" string="Grand Total Board CBM" class="oe_subtotal_footer_separator"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Processing List View -->
+    <record id="view_timber_processing_tree" model="ir.ui.view">
+        <field name="name">timber.processing.list</field>
+        <field name="model">timber.processing</field>
+        <field name="arch" type="xml">
+            <list string="Sawing Processing Orders">
+                <field name="name"/>
+                <field name="log_id"/>
+                <field name="date_processed"/>
+                <field name="input_cbm" sum="Total Input CBM"/>
+                <field name="output_cbm" sum="Total Output CBM"/>
+                <field name="waste_cbm" sum="Total Waste CBM"/>
+                <field name="waste_percentage"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Processing Action -->
+    <record id="action_timber_processing" model="ir.actions.act_window">
+        <field name="name">Sawing Orders</field>
+        <field name="res_model">timber.processing</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">Create your first sawing order here.</p>
+        </field>
+    </record>
+
+    <!-- ========================================== -->
+    <!-- PRODUCTION REPORT VIEWS (Read-Only)        -->
+    <!-- ========================================== -->
+    <record id="view_timber_processing_report_pivot" model="ir.ui.view">
+        <field name="name">timber.processing.report.pivot</field>
+        <field name="model">timber.processing</field>
+        <field name="arch" type="xml">
+            <pivot string="Production Report">
+                <field name="date_processed" interval="month" type="col"/>
+                <field name="input_cbm" type="measure" string="Input (CBM)"/>
+                <field name="output_cbm" type="measure" string="Finished Timber (CBM)"/>
+                <field name="waste_cbm" type="measure" string="Waste (CBM)"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_timber_processing_report_tree" model="ir.ui.view">
+        <field name="name">timber.processing.report.list</field>
+        <field name="model">timber.processing</field>
+        <field name="arch" type="xml">
+            <list string="Production Report" create="false" edit="false" delete="false">
+                <field name="name"/>
+                <field name="log_id"/>
+                <field name="date_processed"/>
+                <field name="input_cbm" sum="Total Input"/>
+                <field name="output_cbm" sum="Total Finished Timber"/>
+                <field name="waste_cbm" sum="Total Waste"/>
+                <field name="waste_percentage"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_timber_production_report" model="ir.actions.act_window">
+        <field name="name">Production Report</field>
+        <field name="res_model">timber.processing</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('view_timber_processing_report_tree')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('view_timber_processing_report_pivot')})]"/>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">No production reports available yet.</p>
+        </field>
+    </record>
+</odoo>

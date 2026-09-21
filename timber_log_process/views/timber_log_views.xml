@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Measurement List View -->
+    <record id="view_timber_log_measurement_tree" model="ir.ui.view">
+        <field name="name">timber.log.measurement.list</field>
+        <field name="model">timber.log.measurement</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="circumference"/>
+                <field name="length"/>
+                <field name="cbm" sum="Total CBM"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Log Form View -->
+    <record id="view_timber_log_form" model="ir.ui.view">
+        <field name="name">timber.log.form</field>
+        <field name="model">timber.log</field>
+        <field name="arch" type="xml">
+            <form string="Timber Log">
+                <header>
+                    <button name="action_receive" string="Confirm Receipt" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_process" string="Send to Sawing" type="object" class="btn-secondary" invisible="state != 'received'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,received,processing,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="wood_type"/>
+                            <field name="vendor_id"/>
+                            <field name="purchase_order_id"/>
+                            <field name="receipt_id"/>
+                        </group>
+                        <group>
+                            <field name="date_received"/>
+                            <field name="location_id"/>
+                            <field name="user_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Log Measurements">
+                            <field name="measurement_ids" context="{'tree_view_ref': 'timber_log_process.view_timber_log_measurement_tree'}"/>
+                            
+                            <!-- Grand Total LOG CBM -->
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="total_cbm" string="Grand Total LOG CBM" class="oe_subtotal_footer_separator"/>
+                            </group>
+                        </page>
+                        
+                        <!-- Tab ya Gharama na Matumizi -->
+                        <page string="Costs &amp; Expenses">
+                            <group>
+                                <group string="Purchase Information">
+                                    <field name="purchase_amount" widget="monetary"/>
+                                </group>
+                                <group string="Operational Expenses">
+                                    <field name="fuel_cost" widget="monetary"/>
+                                    <field name="transport_cost" widget="monetary"/>
+                                    <field name="food_cost" widget="monetary"/>
+                                    <field name="other_cost" widget="monetary"/>
+                                </group>
+                            </group>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="total_expense" widget="monetary"/>
+                                <field name="grand_total_cost" widget="monetary" class="oe_subtotal_footer_separator"/>
+                            </group>
+                        </page>
+
+                        <!-- Tab ya Transit Pass (TP Details) -->
+                        <page string="Transit Pass (TP Details)">
+                            <group>
+                                <group string="General TP Information">
+                                    <field name="tp_number"/>
+                                    <field name="tp_office_seal"/>
+                                    <field name="tp_number_ref"/>
+                                    <field name="tp_due_date"/>
+                                    <field name="tp_purchaser"/>
+                                    <field name="tp_licence_type"/>
+                                </group>
+                                <group string="Origin &amp; Produce Details">
+                                    <field name="tp_produce_desc"/>
+                                    <field name="tp_species_size"/>
+                                    <field name="tp_quantity"/>
+                                    <field name="tp_forest_origin"/>
+                                    <field name="tp_town_district"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="Transport &amp; Logistics">
+                                    <field name="tp_transport_mode"/>
+                                    <field name="tp_vehicle_no"/>
+                                    <field name="tp_estimated_distance"/>
+                                    <field name="tp_expired_date"/>
+                                    <field name="tp_registration_no"/>
+                                </group>
+                                <group string="Officer &amp; Authority Details">
+                                    <field name="tp_marker_name"/>
+                                    <field name="tp_designation"/>
+                                    <field name="tp_station"/>
+                                    <field name="tp_indicator_a"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                
+                <!-- Odoo Chatter Tag -->
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Log List View -->
+    <record id="view_timber_log_tree" model="ir.ui.view">
+        <field name="name">timber.log.list</field>
+        <field name="model">timber.log</field>
+        <field name="arch" type="xml">
+            <list string="Timber Logs">
+                <field name="name"/>
+                <field name="wood_type"/>
+                <field name="vendor_id"/>
+                <field name="date_received"/>
+                <field name="tp_number"/>
+                <field name="total_cbm" sum="Total CBM"/>
+                <field name="grand_total_cost" sum="Grand Total"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'" decoration-info="state == 'received'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Log Action -->
+    <record id="action_timber_log" model="ir.actions.act_window">
+        <field name="name">All Logs</field>
+        <field name="res_model">timber.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">Register your first timber log here.</p>
+        </field>
+    </record>
+
+    <!-- ========================================== -->
+    <!-- LOG STOCK & RECEIVED REPORT (Read-Only)    -->
+    <!-- ========================================== -->
+    <record id="view_timber_log_report_pivot" model="ir.ui.view">
+        <field name="name">timber.log.report.pivot</field>
+        <field name="model">timber.log</field>
+        <field name="arch" type="xml">
+            <pivot string="Log Stock Report">
+                <field name="date_received" interval="month" type="col"/>
+                <field name="wood_type" type="row"/>
+                <field name="total_cbm" type="measure" string="Received CBM"/>
+                <field name="available_board_cbm" type="measure" string="Available Board CBM"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_timber_log_report_tree" model="ir.ui.view">
+        <field name="name">timber.log.report.list</field>
+        <field name="model">timber.log</field>
+        <field name="arch" type="xml">
+            <list string="Log Stock &amp; Received Report" create="false" edit="false" delete="false">
+                <field name="name" string="Log Reference"/>
+                <field name="wood_type"/>
+                <field name="date_received" string="Received Date"/>
+                <field name="total_cbm" string="Received CBM (Initial)" sum="Total Received CBM"/>
+                <field name="available_board_cbm" string="Available Board CBM" sum="Total Available Stock CBM" decoration-success="available_board_cbm > 0"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'" decoration-info="state == 'processing'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_timber_log_report" model="ir.actions.act_window">
+        <field name="name">Log Reports</field>
+        <field name="res_model">timber.log</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('view_timber_log_report_tree')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('view_timber_log_report_pivot')})]"/>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">No log reports available yet.</p>
+        </field>
+    </record>
+</odoo>

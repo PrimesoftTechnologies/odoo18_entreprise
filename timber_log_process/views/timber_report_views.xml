@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ========================================== -->
+    <!-- 1. LOG REPORT (Ripoti ya Magogo)           -->
+    <!-- ========================================== -->
+    <template id="report_timber_log_document">
+        <t t-call="web.external_layout">
+            <t t-set="o" t-value="o.with_context(lang=o.user_id.lang)"/>
+            <div class="page" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; font-size: 12px;">
+                
+                <table style="width: 100%; margin-bottom: 15px; border-collapse: collapse; border-bottom: 2px solid #4f46e5; padding-bottom: 5px;">
+                    <tr>
+                        <td style="width: 100%; vertical-align: middle; text-align: right; padding-bottom: 5px;">
+                            <h2 style="color: #4f46e5; font-weight: bold; margin: 0; font-size: 16px;">TIMBER MANAGEMENT SYSTEM</h2>
+                            <p style="margin: 2px 0 0 0; color: #666; font-size: 10px;">Official Log Intake &amp; Measurements Report</p>
+                            <p style="margin: 2px 0 0 0; font-size: 10px; color: #555;">
+                                Print Date: <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M')"/>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+
+                <table style="width: 100%; background-color: #f8f9fa; padding: 10px; border-radius: 5px; border: 1px solid #e5e7eb; margin-bottom: 15px;">
+                    <tr>
+                        <td style="width: 33%; vertical-align: top; padding: 6px;">
+                            <strong>Log Number:</strong> <span t-field="o.name"/><br/>
+                            <strong>Wood Type:</strong> <span t-field="o.wood_type"/>
+                        </td>
+                        <td style="width: 33%; vertical-align: top; padding: 6px;">
+                            <strong>Total CBM:</strong> <span t-field="o.total_cbm"/> CBM<br/>
+                            <strong>Purchase Amount:</strong> <span t-field="o.purchase_amount"/>
+                        </td>
+                        <td style="width: 33%; vertical-align: top; padding: 6px;">
+                            <strong>Status:</strong> <span t-field="o.state"/><br/>
+                            <strong>Date Received:</strong> <span t-field="o.date_received"/>
+                        </td>
+                    </tr>
+                </table>
+
+                <h5 style="color: #1e293b; font-weight: bold; margin-top: 10px; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; font-size: 13px;">
+                    Dimensions &amp; Measurements Details
+                </h5>
+                <table class="table table-sm mt-2" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #4f46e5; color: white;">
+                            <th style="padding: 6px; text-align: left; color: white;">Measurement Ref</th>
+                            <th style="padding: 6px; text-align: center; color: white;">Circumference (cm)</th>
+                            <th style="padding: 6px; text-align: center; color: white;">Length (cm)</th>
+                            <th style="padding: 6px; text-align: right; color: white;">CBM</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="o.measurement_ids" t-as="m">
+                            <tr style="border-bottom: 1px solid #e5e7eb;">
+                                <td style="padding: 6px;"><span t-field="m.name"/></td>
+                                <td style="padding: 6px; text-align: center;"><span t-field="m.circumference"/></td>
+                                <td style="padding: 6px; text-align: center;"><span t-field="m.length"/></td>
+                                <td style="padding: 6px; text-align: right; font-weight: bold;"><span t-field="m.cbm"/></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <table style="width: 100%; margin-top: 40px; border-collapse: collapse;">
+                    <tr>
+                        <td style="width: 50%; vertical-align: top;"><p>Prepared By: ___________________________</p></td>
+                        <td style="width: 50%; vertical-align: top; text-align: right;"><p>Authorized Signature: ___________________________</p></td>
+                    </tr>
+                </table>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_timber_log">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="timber_log_process.report_timber_log_document" t-lang="o.user_id.lang"/>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_timber_log" model="ir.actions.report">
+        <field name="name">Log Report (PDF)</field>
+        <field name="model">timber.log</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">timber_log_process.report_timber_log</field>
+        <field name="report_file">timber_log_process.report_timber_log</field>
+        <field name="binding_model_id" ref="model_timber_log"/>
+        <field name="binding_type">report</field>
+    </record>
+
+
+    <!-- ========================================== -->
+    <!-- 2. PRODUCTION / SAWING REPORT              -->
+    <!-- ========================================== -->
+    <template id="report_timber_processing_document">
+        <t t-call="web.external_layout">
+            <t t-set="o" t-value="o.with_context(lang=o.env.user.lang)"/>
+            <div class="page" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; font-size: 12px;">
+                
+                <table style="width: 100%; margin-bottom: 15px; border-collapse: collapse; border-bottom: 2px solid #059669; padding-bottom: 5px;">
+                    <tr>
+                        <td style="width: 100%; vertical-align: middle; text-align: right; padding-bottom: 5px;">
+                            <h2 style="color: #059669; font-weight: bold; margin: 0; font-size: 16px;">TIMBER PRODUCTION &amp; SAWING REPORT</h2>
+                            <p style="margin: 2px 0 0 0; color: #666; font-size: 10px;">Sawing Order &amp; Yield Conversion Details</p>
+                            <p style="margin: 2px 0 0 0; font-size: 10px; color: #555;">
+                                Print Date: <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M')"/>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+
+                <table style="width: 100%; background-color: #f0fdf4; padding: 10px; border-radius: 5px; border: 1px solid #bbf7d0; margin-bottom: 15px;">
+                    <tr>
+                        <td style="width: 33%; vertical-align: top; padding: 6px;">
+                            <strong>Processing Ref:</strong> <span t-field="o.name"/><br/>
+                            <strong>Status:</strong> <span t-field="o.state"/>
+                        </td>
+                        <td style="width: 33%; vertical-align: top; padding: 6px;">
+                            <strong>Input CBM:</strong> <span t-field="o.input_cbm"/> CBM<br/>
+                            <strong>Output CBM:</strong> <span t-field="o.output_cbm"/> CBM
+                        </td>
+                        <td style="width: 33%; vertical-align: top; padding: 6px;">
+                            <strong>Waste CBM:</strong> <span t-field="o.waste_cbm"/> CBM<br/>
+                            <strong>Date:</strong> <span t-field="o.create_date"/>
+                        </td>
+                    </tr>
+                </table>
+
+                <table style="width: 100%; margin-top: 40px; border-collapse: collapse;">
+                    <tr>
+                        <td style="width: 50%; vertical-align: top;"><p>Sawing Supervisor: ___________________________</p></td>
+                        <td style="width: 50%; vertical-align: top; text-align: right;"><p>Manager Approval: ___________________________</p></td>
+                    </tr>
+                </table>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_timber_processing">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="timber_log_process.report_timber_processing_document" t-lang="o.env.user.lang"/>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_timber_processing" model="ir.actions.report">
+        <field name="name">Production Report (PDF)</field>
+        <field name="model">timber.processing</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">timber_log_process.report_timber_processing</field>
+        <field name="report_file">timber_log_process.report_timber_processing</field>
+        <field name="binding_model_id" ref="model_timber_processing"/>
+        <field name="binding_type">report</field>
+    </record>
+
+
+    <!-- ========================================== -->
+    <!-- 3. TIMBER BOARD / STOCK REPORT             -->
+    <!-- ========================================== -->
+    <template id="report_timber_board_document">
+        <t t-call="web.external_layout">
+            <t t-set="o" t-value="o.with_context(lang=o.env.user.lang)"/>
+            <div class="page" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; font-size: 12px;">
+                
+                <table style="width: 100%; margin-bottom: 15px; border-collapse: collapse; border-bottom: 2px solid #d97706; padding-bottom: 5px;">
+                    <tr>
+                        <td style="width: 100%; vertical-align: middle; text-align: right; padding-bottom: 5px;">
+                            <h2 style="color: #d97706; font-weight: bold; margin: 0; font-size: 16px;">TIMBER BOARD &amp; STOCK REPORT</h2>
+                            <p style="margin: 2px 0 0 0; color: #666; font-size: 10px;">Individual Board Dimensions &amp; Inventory Details</p>
+                            <p style="margin: 2px 0 0 0; font-size: 10px; color: #555;">
+                                Print Date: <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M')"/>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+
+                <table style="width: 100%; background-color: #fffbeb; padding: 10px; border-radius: 5px; border: 1px solid #fde68a; margin-bottom: 15px;">
+                    <tr>
+                        <td style="width: 50%; vertical-align: top; padding: 6px;">
+                            <strong>Board Ref:</strong> <span t-field="o.name"/><br/>
+                            <strong>Thickness:</strong> <span t-field="o.thickness"/> cm
+                        </td>
+                        <td style="width: 50%; vertical-align: top; padding: 6px;">
+                            <strong>Width:</strong> <span t-field="o.width"/> cm<br/>
+                            <strong>Length:</strong> <span t-field="o.length"/> m<br/>
+                            <strong>CBM:</strong> <span t-field="o.cbm"/> CBM
+                        </td>
+                    </tr>
+                </table>
+
+                <table style="width: 100%; margin-top: 40px; border-collapse: collapse;">
+                    <tr>
+                        <td style="width: 50%; vertical-align: top;"><p>Checked By: ___________________________</p></td>
+                        <td style="width: 50%; vertical-align: top; text-align: right;"><p>Storekeeper Sign: ___________________________</p></td>
+                    </tr>
+                </table>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_timber_board">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="timber_log_process.report_timber_board_document" t-lang="o.env.user.lang"/>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_timber_board" model="ir.actions.report">
+        <field name="name">Board Stock Report (PDF)</field>
+        <field name="model">timber.board</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">timber_log_process.report_timber_board</field>
+        <field name="report_file">timber_log_process.report_timber_board</field>
+        <field name="binding_model_id" ref="model_timber_board"/>
+        <field name="binding_type">report</field>
+    </record>
+
+
+    <!-- ========================================== -->
+    <!-- 4. FINANCIALS & EXPENSES SUMMARY REPORT    -->
+    <!-- ========================================== -->
+    <template id="report_timber_expense_template">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; font-size: 12px;">
+                    
+                    <table style="width: 100%; margin-bottom: 15px; border-collapse: collapse; border-bottom: 2px solid #dc2626; padding-bottom: 5px;">
+                        <tr>
+                            <td style="width: 100%; vertical-align: middle; text-align: right; padding-bottom: 5px;">
+                                <h2 style="color: #dc2626; font-weight: bold; margin: 0; font-size: 16px;">FINANCIALS &amp; EXPENSES SUMMARY</h2>
+                                <p style="margin: 2px 0 0 0; color: #666; font-size: 10px;">
+                                    Scope: <span t-esc="data.get('target_type').capitalize()"/> 
+                                    <t t-if="data.get('target_type') == 'specific'"> | Log ID: <span t-esc="data.get('log_id')"/></t>
+                                </p>
+                                <p style="margin: 2px 0; font-size: 10px; color: #555;">
+                                    Period: <span t-esc="data.get('date_from') or 'Beginning'"/> to <span t-esc="data.get('date_to') or 'Present'"/> | 
+                                    Print Date: <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M')"/>
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <table class="table table-sm mt-3" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background-color: #dc2626; color: white;">
+                                <th style="padding: 6px; text-align: left; color: white;">Log Ref</th>
+                                <th style="padding: 6px; text-align: left; color: white;">Date Received</th>
+                                <th style="padding: 6px; text-align: left; color: white;">Status</th>
+                                <th style="padding: 6px; text-align: right; color: white;">Total Expense</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="expenses" t-as="exp">
+                                <tr style="border-bottom: 1px solid #e5e7eb;">
+                                    <td style="padding: 6px;"><span t-field="exp.name"/></td>
+                                    <td style="padding: 6px;"><span t-field="exp.date_received"/></td>
+                                    <td style="padding: 6px;"><span t-field="exp.state"/></td>
+                                    <td style="padding: 6px; text-align: right;"><span t-field="exp.total_expense"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+
+                    <div style="margin-top: 20px; text-align: right; font-size: 14px; font-weight: bold; color: #dc2626;">
+                        Total Expenses: <span t-esc="'%.2f' % total_amount"/> <span t-esc="currency_id.symbol"/>
+                    </div>
+
+                    <table style="width: 100%; margin-top: 40px; border-collapse: collapse;">
+                        <tr>
+                            <td style="width: 50%; vertical-align: top;"><p>Prepared By: ___________________________</p></td>
+                            <td style="width: 50%; vertical-align: top; text-align: right;"><p>Manager Approval: ___________________________</p></td>
+                        </tr>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_timber_expense" model="ir.actions.report">
+        <field name="name">Expense Summary PDF</field>
+        <field name="model">timber.expense.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">timber_log_process.report_timber_expense_template</field>
+        <field name="report_file">timber_log_process.report_timber_expense_template</field>
+        <field name="binding_model_id" ref="model_timber_expense_report_wizard"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

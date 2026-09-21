@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Module Category for Timber Management -->
+    <record id="module_category_timber" model="ir.module.category">
+        <field name="name">Timber Management</field>
+        <field name="sequence">15</field>
+    </record>
+
+    <!-- Timber User Group -->
+    <record id="group_timber_user" model="res.groups">
+        <field name="name">Timber User</field>
+        <field name="category_id" ref="module_category_timber"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!-- Timber Manager Group -->
+    <record id="group_timber_manager" model="res.groups">
+        <field name="name">Timber Manager</field>
+        <field name="category_id" ref="module_category_timber"/>
+        <!-- Tumeongeza base.group_system ili Manager aweze kuhifadhi Configuration Settings bila shida -->
+        <field name="implied_ids" eval="[(4, ref('group_timber_user')), (4, ref('base.group_system'))]"/>
+    </record>
+</odoo>
