@@ -132,7 +132,7 @@
 
 
     <!-- =========================================================
-         PAYOUT FORM
+         PAYOUT FORM (ODOO 18 CHATTER)
          ========================================================= -->
 
     <record id="view_salon_commission_payout_form" model="ir.ui.view">
@@ -248,12 +248,8 @@
 
                 </sheet>
 
-                <!-- CHATTER -->
-                <div class="oe_chatter">
-                    <field name="message_follower_ids"/>
-                    <field name="activity_ids"/>
-                    <field name="message_ids"/>
-                </div>
+                <!-- ODOO 18 CHATTER -->
+                <chatter/>
 
             </form>
 
@@ -324,8 +320,8 @@
                     </group>
                 </sheet>
 
-                <!-- CHATTER -->
-                </chatter>
+                <!-- ODOO 18 CHATTER -->
+                <chatter/>
             </form>
         </field>
     </record>
@@ -383,8 +379,8 @@
                     </group>
                 </sheet>
 
-                <!-- CHATTER -->
-                </chatter>
+                <!-- ODOO 18 CHATTER -->
+                <chatter/>
             </form>
         </field>
     </record>
