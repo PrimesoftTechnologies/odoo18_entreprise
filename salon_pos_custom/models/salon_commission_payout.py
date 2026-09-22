@@ -210,7 +210,7 @@ class SalonPosReportSummary(models.Model):
     ], string="Status", default='draft', tracking=True)
 
     _sql_constraints = [
-        ('user_date_uniq', 'unique (user_id, date)', 'Muhtasari wa mauzo na matumizi kwa tarehe hii tayari upo kwa ajili ya cashier huyu!')
+        ('user_date_uniq', 'unique (user_id, date)', 'The sales and usage summary for this date already exists for this cashier!')
     ]
 
     @api.depends("date", "user_id", "expense_line_ids.total_expense")
