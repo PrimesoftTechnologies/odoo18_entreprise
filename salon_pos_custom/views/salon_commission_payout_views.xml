@@ -101,7 +101,8 @@
                     <group>
                         <group>
                             <field name="name"/>
-                            <field name="shop_mode" widget="radio" readonly="state == 'closed'"/>
+                            <!-- Imabadilishwa kutoka widget="radio" kwenda Dropdown ya kawaida -->
+                            <field name="shop_mode" readonly="state == 'closed'"/>
                             <field name="config_id" options="{'no_create': True}" invisible="shop_mode != 'specific'" required="shop_mode == 'specific'" readonly="state == 'closed'"/>
                             <field name="date" readonly="state == 'closed'"/>
                             <field name="user_id" readonly="state == 'closed'"/>
