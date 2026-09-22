@@ -244,6 +244,8 @@ class SalonPosReportSummary(models.Model):
                 domain.append(("id", "!=", record.id))
 
             last_summary = self.env["salon.pos.report.summary"].search(domain, order="date desc, id desc", limit=1)
+            
+            # Hakikisha opening cash inachukua Net Cash in Hand halisi ya siku iliyopita
             opening = last_summary.net_cash_in_hand if last_summary else 0.0
 
             pos_domain = [
