@@ -1,6 +1,5 @@
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
-from datetime import timedelta
 
 
 class SalonCommissionPayout(models.Model):
@@ -23,11 +22,14 @@ class SalonCommissionPayout(models.Model):
         tracking=True
     )
 
-    date = fields.Date(
-        string="Date",
-        required=True,
-        default=fields.Date.context_today,
-        tracking=True
+    date_from = fields.Date(
+        string="Start Date",
+        required=True
+    )
+
+    date_to = fields.Date(
+        string="End Date",
+        required=True
     )
 
     currency_id = fields.Many2one(
@@ -74,7 +76,7 @@ class SalonCommissionPayout(models.Model):
     # GROSS COMMISSION
     # =========================================================
 
-    @api.depends("employee_id", "date")
+    @api.depends("employee_id")
     def _compute_gross_commission(self):
         for record in self:
 
@@ -90,6 +92,8 @@ class SalonCommissionPayout(models.Model):
             if record.id and not isinstance(record.id, models.NewId):
                 domain.append(("id", "!=", record.id))
 
+            # Get latest PAID payout only.
+            # Cancelled payouts are ignored.
             last_payout = self.env["salon.commission.payout"].search(
                 domain,
                 order="id desc",
@@ -97,29 +101,29 @@ class SalonCommissionPayout(models.Model):
             )
 
             if last_payout:
+
+                # Carry forward previous paid NET commission
                 record.gross_commission = last_payout.net_commission
+
             else:
-                pos_domain = [
+
+                # First payout:
+                # Get all commission from POS order lines
+                lines = self.env["pos.order.line"].search([
                     ("employee_id", "=", record.employee_id.id),
                     ("commission_amount", ">", 0)
-                ]
-
-                if record.date:
-                    date_datetime = fields.Datetime.to_datetime(record.date) + timedelta(days=1)
-                    pos_domain.append(("order_id.date_order", "<", date_datetime))
-
-                lines = self.env["pos.order.line"].search(pos_domain)
+                ])
 
                 record.gross_commission = sum(
                     lines.mapped("commission_amount")
                 )
 
     # =========================================================
-    # ONCHANGE EMPLOYEE OR DATE
+    # ONCHANGE EMPLOYEE
     # =========================================================
 
-    @api.onchange("employee_id", "date")
-    def _onchange_employee_date(self):
+    @api.onchange("employee_id")
+    def _onchange_employee(self):
 
         for record in self:
 
@@ -135,6 +139,7 @@ class SalonCommissionPayout(models.Model):
                 if origin_id and not isinstance(origin_id, models.NewId):
                     domain.append(("id", "!=", origin_id))
 
+                # Get latest PAID payout only
                 last_payout = self.env["salon.commission.payout"].search(
                     domain,
                     order="id desc",
@@ -142,27 +147,27 @@ class SalonCommissionPayout(models.Model):
                 )
 
                 if last_payout:
+
+                    # Carry forward previous NET amount
                     record.gross_commission = last_payout.net_commission
+
                 else:
-                    pos_domain = [
+
+                    # First payout
+                    lines = self.env["pos.order.line"].search([
                         ("employee_id", "=", record.employee_id.id),
                         ("commission_amount", ">", 0)
-                    ]
-
-                    if record.date:
-                        date_datetime = fields.Datetime.to_datetime(record.date) + timedelta(days=1)
-                        pos_domain.append(("order_id.date_order", "<", date_datetime))
-
-                    lines = self.env["pos.order.line"].search(pos_domain)
+                    ])
 
                     record.gross_commission = sum(
                         lines.mapped("commission_amount")
                     )
 
-                if not record.advance_deduction:
-                    record.advance_deduction = 0.0
+                # New payout starts with zero deduction
+                record.advance_deduction = 0.0
 
             else:
+
                 record.gross_commission = 0.0
                 record.advance_deduction = 0.0
 
@@ -182,6 +187,7 @@ class SalonCommissionPayout(models.Model):
     def _compute_net_commission(self):
 
         for record in self:
+
             record.net_commission = (
                 record.gross_commission
                 - record.advance_deduction
@@ -195,6 +201,7 @@ class SalonCommissionPayout(models.Model):
     def create(self, vals):
 
         if vals.get("name", "New") == "New":
+
             vals["name"] = (
                 self.env["ir.sequence"].next_by_code(
                     "salon.commission.payout"
