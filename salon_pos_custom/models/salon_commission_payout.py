@@ -255,19 +255,17 @@ class SalonPosReportSummary(models.Model):
         
         next_date = self.date + timedelta(days=1) if self.date else fields.Date.today()
         
-        # Angalia kama siku inayofuata tayari ina muhtasari
         existing_next = self.env['salon.pos.report.summary'].search([
             ('user_id', '=', self.user_id.id),
             ('date', '=', next_date)
         ], limit=1)
 
         if existing_next:
-            action = self.env["ir.actions.actions"]._for_xml_id("action_salon_pos_summary")
+            action = self.env["ir.actions.actions"]._for_xml_id("salon_pos_custom.action_salon_pos_summary")
             action['res_id'] = existing_next.id
             action['views'] = [(False, 'form')]
             return action
 
-        # Unda mpya kwa ajili ya kesho
         new_summary = self.env['salon.pos.report.summary'].create({
             'date': next_date,
             'user_id': self.user_id.id,
@@ -281,3 +279,8 @@ class SalonPosReportSummary(models.Model):
             'view_mode': 'form',
             'target': 'current',
         }
+
+    def action_print_summary_report(self):
+        """Inaprinti ripoti ya PDF yenye maelezo ya Gross Sales na Expenses zilizopunguzwa"""
+        self.ensure_one()
+        return self.env.ref('salon_pos_custom.action_report_salon_pos_summary').report_action(self)

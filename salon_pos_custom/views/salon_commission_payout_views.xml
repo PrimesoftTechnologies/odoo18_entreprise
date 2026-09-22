@@ -76,6 +76,7 @@
             <list string="Sales &amp; Expenses Summary">
                 <field name="date"/>
                 <field name="user_id"/>
+                <field name="gross_sales" sum="Total Gross Sales" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="total_expenses" sum="Total Expenses" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="net_cash_in_hand" sum="Total Net Cash" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="state" widget="badge" decoration-success="state == 'closed'" decoration-info="state == 'draft'"/>
@@ -91,6 +92,7 @@
             <form string="Sales &amp; Expenses Summary">
                 <header>
                     <button name="action_close_expense" string="Close Expense" type="object" class="btn-warning" invisible="state == 'closed'" confirm="Are you sure you want to close the accounts for this day and start the next day?"/>
+                    <button name="action_print_summary_report" string="Print Closing Report" type="object" class="btn-primary" invisible="state != 'closed'"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,closed"/>
                 </header>
                 <sheet>
@@ -111,7 +113,6 @@
 
                     <notebook>
                         <page string="Daily Expenses">
-                            <!-- IMESAHIHISHWA: Imeondolewa 'attrs' na kuwekwa 'readonly' ya moja kwa moja -->
                             <field name="expense_line_ids" readonly="state == 'closed'">
                                 <list editable="bottom">
                                     <field name="name"/>
@@ -140,5 +141,83 @@
         action="action_salon_pos_summary"
         sequence="51"
     />
+
+
+    <!-- =========================================================
+         QWEB PDF REPORT DEFINITION & TEMPLATE
+         ========================================================= -->
+    <record id="action_report_salon_pos_summary" model="ir.actions.report">
+        <field name="name">Daily Closing Report</field>
+        <field name="model">salon.pos.report.summary</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">salon_pos_custom.report_salon_pos_summary_template</field>
+        <field name="report_file">salon_pos_custom.report_salon_pos_summary_template</field>
+        <field name="binding_model_id" ref="model_salon_pos_report_summary"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_salon_pos_summary_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Daily Sales &amp; Expense Closing Report</h2>
+                        <div class="row mt32 mb32">
+                            <div class="col-6">
+                                <strong>Date:</strong> <span t-field="doc.date"/><br/>
+                                <strong>Cashier:</strong> <span t-field="doc.user_id.name"/><br/>
+                                <strong>Status:</strong> <span t-field="doc.state"/>
+                            </div>
+                        </div>
+
+                        <table class="table table-sm mt48">
+                            <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Opening Cash (Pesa ya Kuanzia)</strong></td>
+                                    <td class="text-end"><span t-field="doc.opening_cash"/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Gross Sales (Mauzo ya POS)</strong></td>
+                                    <td class="text-end"><span t-field="doc.gross_sales"/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Total Expenses (Matumizi yaliyopunguzwa)</strong></td>
+                                    <td class="text-end">- <span t-field="doc.total_expenses"/></td>
+                                </tr>
+                                <tr class="border-black">
+                                    <td><strong>Net Cash in Hand (Pesa Halisi Kwenye Kasha)</strong></td>
+                                    <td class="text-end"><strong><span t-field="doc.net_cash_in_hand"/></strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h3 class="mt32">Expense Breakdown (Orodha ya Matumizi)</h3>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Expense Details</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="doc.expense_line_ids" t-as="line">
+                                    <tr>
+                                        <td><span t-field="line.name"/></td>
+                                        <td class="text-end"><span t-field="line.total_expense"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
 
 </odoo>
