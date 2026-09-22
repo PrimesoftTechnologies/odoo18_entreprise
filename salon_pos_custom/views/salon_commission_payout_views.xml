@@ -67,7 +67,7 @@
 
 
     <!-- =========================================================
-         SALES & EXPENSES SUMMARY (MENU MOJA YA MAUZO NA MATUMIZI)
+         SALES & EXPENSES SUMMARY (LIST & FORM)
          ========================================================= -->
     <record id="view_salon_pos_summary_tree" model="ir.ui.view">
         <field name="name">salon.pos.report.summary.list</field>
@@ -76,9 +76,11 @@
             <list string="Sales &amp; Expenses Summary">
                 <field name="date"/>
                 <field name="user_id"/>
-                <field name="gross_sales" sum="Total Gross Sales"/>
-                <field name="total_expenses" sum="Total Expenses"/>
-                <field name="net_cash_in_hand" sum="Total Net Cash"/>
+                <!-- Nimeweka widget monetary na currency ili zihesabike na kuonyesha jumla sahihi -->
+                <field name="gross_sales" sum="Total Gross Sales" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="total_expenses" sum="Total Expenses" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="net_cash_in_hand" sum="Total Net Cash" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="currency_id" column_invisible="1"/>
             </list>
         </field>
     </record>
@@ -103,7 +105,6 @@
                         </group>
                     </group>
 
-                    <!-- TAB YA KUWEKA MATUMIZI HAPA HAPA -->
                     <notebook>
                         <page string="Daily Expenses">
                             <field name="expense_line_ids">

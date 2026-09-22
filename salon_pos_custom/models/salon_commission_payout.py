@@ -161,23 +161,22 @@ class SalonCommissionPayout(models.Model):
             if record.state != "draft":
                 continue
             if record.net_commission < 0:
-                ValidationError("Net Commission cannot be negative.")
+                raise ValidationError("Net Commission cannot be negative.")
             record.write({"state": "paid"})
 
     def action_cancel(self):
         for record in self:
             if record.state != "paid":
-                ValidationError("Only Paid payouts can be cancelled.")
+                raise ValidationError("Only Paid payouts can be cancelled.")
             record.write({"state": "cancelled"})
 
     def unlink(self):
         for record in self:
             if record.state == "paid":
-                ValidationError("You cannot delete a Paid Commission Payout.")
+                raise ValidationError("You cannot delete a Paid Commission Payout.")
         return super().unlink()
 
 
-# Jedwali la mistari ya matumizi ndani ya Summary
 class SalonDailyExpenseLine(models.Model):
     _name = "salon.daily.expense.line"
     _description = "Daily Expense Line"
@@ -188,7 +187,6 @@ class SalonDailyExpenseLine(models.Model):
     currency_id = fields.Many2one("res.currency", related="summary_id.currency_id", store=True)
 
 
-# Jedwali kuu la Muhtasari wa Pesa (Menu Moja)
 class SalonPosReportSummary(models.Model):
     _name = "salon.pos.report.summary"
     _description = "POS Sales and Expense Summary"
@@ -205,6 +203,11 @@ class SalonPosReportSummary(models.Model):
     net_cash_in_hand = fields.Monetary(string="Net Cash (Pesa Halisi)", compute="_compute_net_cash", store=True, currency_field="currency_id")
     currency_id = fields.Many2one("res.currency", default=lambda self: self.env.company.currency_id)
 
+    # Hii inazuia fomu mbili za tarehe moja kwa cashier yuleyule kutengenezwa
+    _sql_constraints = [
+        ('user_date_uniq', 'unique (user_id, date)', 'Muhtasari wa mauzo na matumizi kwa tarehe hii tayari upo kwa ajili ya cashier huyu!')
+    ]
+
     @api.depends("date", "user_id", "expense_line_ids.total_expense")
     def _compute_net_cash(self):
         for record in self:
@@ -214,7 +217,6 @@ class SalonPosReportSummary(models.Model):
                 record.net_cash_in_hand = 0.0
                 continue
 
-            # 1. Pata mauzo ya POS
             pos_orders = self.env["pos.order"].search([
                 ("user_id", "=", record.user_id.id),
                 ("date_order", ">=", str(record.date) + " 00:00:00"),
@@ -222,11 +224,8 @@ class SalonPosReportSummary(models.Model):
                 ("state", "in", ["paid", "done", "invoiced"])
             ])
             gross = sum(pos_orders.mapped("amount_total"))
-
-            # 2. Jumla ya matumizi yaliyoandikwa kwenye tab ya chini
             exp_total = sum(record.expense_line_ids.mapped("total_expense"))
 
-            # 3. Hesabu matokeo
             record.gross_sales = gross
             record.total_expenses = exp_total
             record.net_cash_in_hand = gross - exp_total
