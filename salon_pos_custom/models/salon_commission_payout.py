@@ -1,5 +1,6 @@
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
+from datetime import timedelta
 
 
 class SalonCommissionPayout(models.Model):
@@ -22,14 +23,11 @@ class SalonCommissionPayout(models.Model):
         tracking=True
     )
 
-    date_from = fields.Date(
-        string="Start Date",
-        required=True
-    )
-
-    date_to = fields.Date(
-        string="End Date",
-        required=True
+    date = fields.Date(
+        string="Date",
+        required=True,
+        default=fields.Date.context_today,
+        tracking=True
     )
 
     currency_id = fields.Many2one(
@@ -76,7 +74,7 @@ class SalonCommissionPayout(models.Model):
     # GROSS COMMISSION
     # =========================================================
 
-    @api.depends("employee_id")
+    @api.depends("employee_id", "date")
     def _compute_gross_commission(self):
         for record in self:
 
@@ -92,8 +90,6 @@ class SalonCommissionPayout(models.Model):
             if record.id and not isinstance(record.id, models.NewId):
                 domain.append(("id", "!=", record.id))
 
-            # Get latest PAID payout only.
-            # Cancelled payouts are ignored.
             last_payout = self.env["salon.commission.payout"].search(
                 domain,
                 order="id desc",
@@ -101,30 +97,29 @@ class SalonCommissionPayout(models.Model):
             )
 
             if last_payout:
-
-                # Carry forward previous paid NET commission
                 record.gross_commission = last_payout.net_commission
-
             else:
-
-                # First payout:
-                # Get all commission from POS order lines
-                lines = self.env["pos.order.line"].search([
+                pos_domain = [
                     ("employee_id", "=", record.employee_id.id),
                     ("commission_amount", ">", 0)
-                ])
+                ]
+
+                if record.date:
+                    date_datetime = fields.Datetime.to_datetime(record.date) + timedelta(days=1)
+                    pos_domain.append(("order_id.date_order", "<", date_datetime))
+
+                lines = self.env["pos.order.line"].search(pos_domain)
 
                 record.gross_commission = sum(
                     lines.mapped("commission_amount")
                 )
 
     # =========================================================
-    # ONCHANGE EMPLOYEE
+    # ONCHANGE EMPLOYEE OR DATE
     # =========================================================
 
-    @api.onchange("employee_id")
-    def _onchange_employee(self):
-
+    @api.onchange("employee_id", "date")
+    def _onchange_employee_date(self):
         for record in self:
 
             if record.employee_id:
@@ -139,7 +134,6 @@ class SalonCommissionPayout(models.Model):
                 if origin_id and not isinstance(origin_id, models.NewId):
                     domain.append(("id", "!=", origin_id))
 
-                # Get latest PAID payout only
                 last_payout = self.env["salon.commission.payout"].search(
                     domain,
                     order="id desc",
@@ -147,27 +141,26 @@ class SalonCommissionPayout(models.Model):
                 )
 
                 if last_payout:
-
-                    # Carry forward previous NET amount
                     record.gross_commission = last_payout.net_commission
-
                 else:
-
-                    # First payout
-                    lines = self.env["pos.order.line"].search([
+                    pos_domain = [
                         ("employee_id", "=", record.employee_id.id),
                         ("commission_amount", ">", 0)
-                    ])
+                    ]
+
+                    if record.date:
+                        date_datetime = fields.Datetime.to_datetime(record.date) + timedelta(days=1)
+                        pos_domain.append(("order_id.date_order", "<", date_datetime))
+
+                    lines = self.env["pos.order.line"].search(pos_domain)
 
                     record.gross_commission = sum(
                         lines.mapped("commission_amount")
                     )
 
-                # New payout starts with zero deduction
                 record.advance_deduction = 0.0
 
             else:
-
                 record.gross_commission = 0.0
                 record.advance_deduction = 0.0
 
@@ -185,9 +178,7 @@ class SalonCommissionPayout(models.Model):
         "advance_deduction"
     )
     def _compute_net_commission(self):
-
         for record in self:
-
             record.net_commission = (
                 record.gross_commission
                 - record.advance_deduction
@@ -199,16 +190,13 @@ class SalonCommissionPayout(models.Model):
 
     @api.model
     def create(self, vals):
-
         if vals.get("name", "New") == "New":
-
             vals["name"] = (
                 self.env["ir.sequence"].next_by_code(
                     "salon.commission.payout"
                 )
                 or "New"
             )
-
         return super().create(vals)
 
     # =========================================================
@@ -216,17 +204,13 @@ class SalonCommissionPayout(models.Model):
     # =========================================================
 
     def action_mark_paid(self):
-
         for record in self:
-
             if record.state != "draft":
                 continue
-
             if record.net_commission < 0:
                 raise ValidationError(
                     "Net Commission cannot be negative."
                 )
-
             record.write({
                 "state": "paid"
             })
@@ -236,14 +220,11 @@ class SalonCommissionPayout(models.Model):
     # =========================================================
 
     def action_cancel(self):
-
         for record in self:
-
             if record.state != "paid":
                 raise ValidationError(
                     "Only Paid payouts can be cancelled."
                 )
-
             record.write({
                 "state": "cancelled"
             })
@@ -253,9 +234,7 @@ class SalonCommissionPayout(models.Model):
     # =========================================================
 
     def unlink(self):
-
         for record in self:
-
             if record.state == "paid":
                 raise ValidationError(
                     "You cannot delete a Paid Commission Payout.\n\n"
@@ -263,5 +242,45 @@ class SalonCommissionPayout(models.Model):
                     "If this payout was entered by mistake, use Cancelled "
                     "instead of deleting it."
                 )
-
         return super().unlink()
+
+
+class SalonDailyExpense(models.Model):
+    _name = "salon.daily.expense"
+    _description = "Daily Expense POS"
+    _inherit = ["mail.thread", "mail.activity.mixin"]
+
+    name = fields.Char(
+        string="Description",
+        required=True,
+        tracking=True,
+        help="Description or reason for the expense."
+    )
+
+    total_expense = fields.Monetary(
+        string="Total Expense",
+        required=True,
+        currency_field="currency_id",
+        tracking=True
+    )
+
+    currency_id = fields.Many2one(
+        "res.currency",
+        string="Currency",
+        default=lambda self: self.env.company.currency_id
+    )
+
+    user_id = fields.Many2one(
+        "res.users",
+        string="Employee (Cashier)",
+        required=True,
+        default=lambda self: self.env.user,
+        tracking=True
+    )
+
+    date = fields.Date(
+        string="Date",
+        required=True,
+        default=fields.Date.context_today,
+        tracking=True
+    )

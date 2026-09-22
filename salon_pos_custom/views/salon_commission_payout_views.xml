@@ -17,9 +17,7 @@
 
                 <field name="employee_id"/>
 
-                <field name="date_from"/>
-
-                <field name="date_to"/>
+                <field name="date"/>
 
                 <!-- =============================================
                      TOTAL GROSS COMMISSION
@@ -76,9 +74,7 @@
 
                 <field name="state"/>
 
-                <field name="date_from"/>
-
-                <field name="date_to"/>
+                <field name="date"/>
 
                 <separator/>
 
@@ -122,9 +118,9 @@
                     />
 
                     <filter
-                        name="group_by_date_from"
-                        string="Start Date"
-                        context="{'group_by': 'date_from'}"
+                        name="group_by_date"
+                        string="Date"
+                        context="{'group_by': 'date'}"
                     />
 
                 </group>
@@ -219,12 +215,7 @@
                             />
 
                             <field
-                                name="date_from"
-                                readonly="state != 'draft'"
-                            />
-
-                            <field
-                                name="date_to"
+                                name="date"
                                 readonly="state != 'draft'"
                             />
 
@@ -237,7 +228,7 @@
 
                             <field
                                 name="gross_commission"
-                                readonly="1"
+                                readonly="state != 'draft'"
                             />
 
                             <field
@@ -264,7 +255,7 @@
 
 
     <!-- =========================================================
-         ACTION
+         ACTION & MENU: COMMISSION PAYOUT
          ========================================================= -->
 
     <record id="action_salon_commission_payout"
@@ -281,17 +272,67 @@
 
     </record>
 
-
-    <!-- =========================================================
-         MENU
-         ========================================================= -->
-
     <menuitem
         id="menu_salon_commission_payout"
         name="Advance Commission Payouts"
         parent="point_of_sale.menu_point_of_sale"
         action="action_salon_commission_payout"
         sequence="50"
+    />
+
+
+    <!-- =========================================================
+         DAILY EXPENSES VIEWS & ACTION
+         ========================================================= -->
+
+    <record id="view_salon_daily_expense_tree" model="ir.ui.view">
+        <field name="name">salon.daily.expense.list</field>
+        <field name="model">salon.daily.expense</field>
+        <field name="arch" type="xml">
+            <list string="Daily Expenses">
+                <field name="date"/>
+                <field name="name"/>
+                <field name="user_id"/>
+                <field name="total_expense" sum="Total Expenses"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_salon_daily_expense_form" model="ir.ui.view">
+        <field name="name">salon.daily.expense.form</field>
+        <field name="model">salon.daily.expense</field>
+        <field name="arch" type="xml">
+            <form string="Daily Expense">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="user_id" options="{'no_create': True}"/>
+                            <field name="total_expense"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_salon_daily_expense" model="ir.actions.act_window">
+        <field name="name">Daily Expenses</field>
+        <field name="res_model">salon.daily.expense</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Imewekwa sequence 51 ili ikae moja kwa moja chini ya Advance Commission Payouts -->
+    <menuitem
+        id="menu_salon_daily_expense"
+        name="Daily Expenses"
+        parent="point_of_sale.menu_point_of_sale"
+        action="action_salon_daily_expense"
+        sequence="51"
     />
 
 </odoo>
