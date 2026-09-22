@@ -7,7 +7,7 @@
         - Tax Identification Number (TIN)
         - National Social Security Fund (NSSF) Number
     """,
-    'author': 'Derrick Kings',
+    'author': 'Derrick King',
     'website': 'https://www.pcl.co.tz',
     'category': 'Human Resources',
     'depends': ['hr','hr_contract'],
