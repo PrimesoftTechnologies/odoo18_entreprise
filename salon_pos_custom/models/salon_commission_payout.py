@@ -196,16 +196,16 @@ class SalonPosReportSummary(models.Model):
     date = fields.Date(string="Date", default=fields.Date.context_today, required=True, tracking=True)
     user_id = fields.Many2one("res.users", string="Cashier", default=lambda self: self.env.user, required=True, tracking=True)
     
-    # Duka / POS Shop mahususi
-    config_id = fields.Many2one("pos.config", string="POS Shop / Register", required=True, tracking=True, 
-                                default=lambda self: self.env['pos.config'].search([], limit=1))
+    # POS Shop / Register is now optional (required=False)
+    config_id = fields.Many2one("pos.config", string="POS Shop / Register", required=False, tracking=True,
+                                help="Leave empty to calculate for all shops combined, or select a specific shop.")
 
     expense_line_ids = fields.One2many("salon.daily.expense.line", "summary_id", string="Daily Expenses")
 
-    opening_cash = fields.Monetary(string="Opening Cash (Pesa ya Kuanzia)", compute="_compute_net_cash", store=True, currency_field="currency_id")
-    gross_sales = fields.Monetary(string="Gross Sales (Mauzo)", compute="_compute_net_cash", store=True, currency_field="currency_id")
-    total_expenses = fields.Monetary(string="Total Expenses (Matumizi)", compute="_compute_net_cash", store=True, currency_field="currency_id")
-    net_cash_in_hand = fields.Monetary(string="Net Cash (Pesa Halisi)", compute="_compute_net_cash", store=True, currency_field="currency_id")
+    opening_cash = fields.Monetary(string="Opening Cash", compute="_compute_net_cash", store=True, currency_field="currency_id")
+    gross_sales = fields.Monetary(string="Gross Sales", compute="_compute_net_cash", store=True, currency_field="currency_id")
+    total_expenses = fields.Monetary(string="Total Expenses", compute="_compute_net_cash", store=True, currency_field="currency_id")
+    net_cash_in_hand = fields.Monetary(string="Net Cash in Hand", compute="_compute_net_cash", store=True, currency_field="currency_id")
     currency_id = fields.Many2one("res.currency", default=lambda self: self.env.company.currency_id)
     
     state = fields.Selection([
@@ -213,38 +213,41 @@ class SalonPosReportSummary(models.Model):
         ('closed', 'Closed')
     ], string="Status", default='draft', tracking=True)
 
-    _sql_constraints = [
-        ('config_date_uniq', 'unique (config_id, date)', 'Muhtasari wa mauzo na matumizi kwa duka hili na tarehe hii tayari upo!')
-    ]
-
     @api.depends("date", "config_id", "expense_line_ids.total_expense")
     def _compute_net_cash(self):
         for record in self:
-            if not record.date or not record.config_id:
+            if not record.date:
                 record.opening_cash = 0.0
                 record.gross_sales = 0.0
                 record.total_expenses = 0.0
                 record.net_cash_in_hand = 0.0
                 continue
 
-            # Kutafuta salio la kufungulia (Opening Cash) kutoka siku iliyotangulia kwa duka hili hili pekee
+            # Base domain for previous summary lookup
             domain = [
-                ("config_id", "=", record.config_id.id),
                 ("date", "<", record.date),
             ]
+            if record.config_id:
+                domain.append(("config_id", "=", record.config_id.id))
+            else:
+                domain.append(("config_id", "=", False))
+
             if record.id and not isinstance(record.id, models.NewId):
                 domain.append(("id", "!=", record.id))
 
             last_summary = self.env["salon.pos.report.summary"].search(domain, order="date desc, id desc", limit=1)
             opening = last_summary.net_cash_in_hand if last_summary else 0.0
 
-            # Vuta mauzo ya POS kwa duka hili (config_id) pekee kwa tarehe husika
-            pos_orders = self.env["pos.order"].search([
-                ("config_id", "=", record.config_id.id),
+            # Base domain for POS orders
+            pos_domain = [
                 ("date_order", ">=", str(record.date) + " 00:00:00"),
                 ("date_order", "<=", str(record.date) + " 23:59:59"),
                 ("state", "in", ["paid", "done", "invoiced"])
-            ])
+            ]
+            if record.config_id:
+                pos_domain.append(("config_id", "=", record.config_id.id))
+
+            pos_orders = self.env["pos.order"].search(pos_domain)
             gross = sum(pos_orders.mapped("amount_total"))
 
             exp_total = sum(record.expense_line_ids.mapped("total_expense"))
@@ -255,16 +258,21 @@ class SalonPosReportSummary(models.Model):
             record.net_cash_in_hand = (opening + gross) - exp_total
 
     def action_close_expense(self):
-        """Inafunga hesabu za duka hili kwa siku ya leo na kufungua fomu mpya ya kesho kwa duka hili hili"""
+        """Closes today's summary and creates the next day's record for the same shop configuration (or all shops)"""
         self.ensure_one()
         self.write({'state': 'closed'})
         
         next_date = self.date + timedelta(days=1) if self.date else fields.Date.today()
         
-        existing_next = self.env['salon.pos.report.summary'].search([
-            ('config_id', '=', self.config_id.id),
+        search_domain = [
             ('date', '=', next_date)
-        ], limit=1)
+        ]
+        if self.config_id:
+            search_domain.append(('config_id', '=', self.config_id.id))
+        else:
+            search_domain.append(('config_id', '=', False))
+
+        existing_next = self.env['salon.pos.report.summary'].search(search_domain, limit=1)
 
         if existing_next:
             action = self.env["ir.actions.actions"]._for_xml_id("salon_pos_custom.action_salon_pos_summary")
@@ -274,7 +282,7 @@ class SalonPosReportSummary(models.Model):
 
         new_summary = self.env['salon.pos.report.summary'].create({
             'date': next_date,
-            'config_id': self.config_id.id,
+            'config_id': self.config_id.id if self.config_id else False,
             'user_id': self.user_id.id,
         })
 

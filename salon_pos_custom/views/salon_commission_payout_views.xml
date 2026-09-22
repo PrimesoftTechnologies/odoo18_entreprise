@@ -92,7 +92,7 @@
         <field name="arch" type="xml">
             <form string="Sales &amp; Expenses Summary">
                 <header>
-                    <button name="action_close_expense" string="Close Expense" type="object" class="btn-warning" invisible="state == 'closed'" confirm="Je, una uhakika unataka kufunga hesabu za duka hili kwa siku hii?"/>
+                    <button name="action_close_expense" string="Close Expense" type="object" class="btn-warning" invisible="state == 'closed'" confirm="Are you sure you want to close the accounts for this day?"/>
                     <button name="action_print_summary_report" string="Print Closing Report" type="object" class="btn-primary" invisible="state != 'closed'"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,closed"/>
                 </header>
@@ -166,7 +166,9 @@
                         <h2>Daily Sales &amp; Expense Closing Report</h2>
                         <div class="row mt32 mb32">
                             <div class="col-6">
-                                <strong>POS Shop / Register:</strong> <span t-field="doc.config_id.name"/><br/>
+                                <strong>POS Shop / Register:</strong> 
+                                <span t-if="doc.config_id" t-field="doc.config_id.name"/>
+                                <span t-else="">All Shops (Combined)</span><br/>
                                 <strong>Date:</strong> <span t-field="doc.date"/><br/>
                                 <strong>Cashier:</strong> <span t-field="doc.user_id.name"/><br/>
                                 <strong>Status:</strong> <span t-field="doc.state"/>
@@ -182,25 +184,25 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td><strong>Opening Cash (Pesa ya Kuanzia)</strong></td>
+                                    <td><strong>Opening Cash</strong></td>
                                     <td class="text-end"><span t-field="doc.opening_cash"/></td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Gross Sales (Mauzo ya POS)</strong></td>
+                                    <td><strong>Gross Sales</strong></td>
                                     <td class="text-end"><span t-field="doc.gross_sales"/></td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Total Expenses (Matumizi yaliyopunguzwa)</strong></td>
+                                    <td><strong>Total Expenses</strong></td>
                                     <td class="text-end">- <span t-field="doc.total_expenses"/></td>
                                 </tr>
                                 <tr class="border-black">
-                                    <td><strong>Net Cash in Hand (Pesa Halisi Kwenye Kasha)</strong></td>
+                                    <td><strong>Net Cash in Hand</strong></td>
                                     <td class="text-end"><strong><span t-field="doc.net_cash_in_hand"/></strong></td>
                                 </tr>
                             </tbody>
                         </table>
 
-                        <h3 class="mt32">Expense Breakdown (Orodha ya Matumizi)</h3>
+                        <h3 class="mt32">Expense Breakdown</h3>
                         <table class="table table-sm">
                             <thead>
                                 <tr>
