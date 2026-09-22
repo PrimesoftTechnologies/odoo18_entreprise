@@ -212,6 +212,10 @@
                                         <td class="text-end"><span t-field="line.total_expense"/></td>
                                     </tr>
                                 </t>
+                                <tr class="border-black">
+                                    <td><strong>Grand Total Expenses</strong></td>
+                                    <td class="text-end"><strong><span t-field="doc.total_expenses"/></strong></td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
