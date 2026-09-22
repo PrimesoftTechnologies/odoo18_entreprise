@@ -247,6 +247,7 @@
                     </group>
 
                 </sheet>
+                </chatter>
 
             </form>
 
@@ -316,6 +317,7 @@
                         </group>
                     </group>
                 </sheet>
+                </chatter>
             </form>
         </field>
     </record>
