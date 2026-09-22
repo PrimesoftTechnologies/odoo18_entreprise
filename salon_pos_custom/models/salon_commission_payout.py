@@ -197,9 +197,10 @@ class SalonPosReportSummary(models.Model):
     user_id = fields.Many2one("res.users", string="Cashier", default=lambda self: self.env.user, required=True, tracking=True)
     
     shop_mode = fields.Selection([
+        ('select', 'Select POS Shop'),
         ('all', 'All POS Shops Combined'),
         ('specific', 'Specific POS Shop')
-    ], string="Scope", default='all', required=True, tracking=True)
+    ], string="Scope", default='select', required=True, tracking=True)
 
     config_id = fields.Many2one("pos.config", string="POS Shop / Register", required=False, tracking=True)
 
