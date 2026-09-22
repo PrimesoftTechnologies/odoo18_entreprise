@@ -90,7 +90,7 @@
         <field name="arch" type="xml">
             <form string="Sales &amp; Expenses Summary">
                 <header>
-                    <button name="action_close_expense" string="Close Expense" type="object" class="btn-warning" invisible="state == 'closed'" confirm="Je, una uhakika unataka kufunga hesabu za siku hii na kuanzisha siku inayofuata?"/>
+                    <button name="action_close_expense" string="Close Expense" type="object" class="btn-warning" invisible="state == 'closed'" confirm="Are you sure you want to close the accounts for this day and start the next day?"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,closed"/>
                 </header>
                 <sheet>
