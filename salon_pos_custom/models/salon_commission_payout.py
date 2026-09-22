@@ -196,9 +196,13 @@ class SalonPosReportSummary(models.Model):
     date = fields.Date(string="Date", default=fields.Date.context_today, required=True, tracking=True)
     user_id = fields.Many2one("res.users", string="Cashier", default=lambda self: self.env.user, required=True, tracking=True)
     
-    # POS Shop / Register is now optional (required=False)
-    config_id = fields.Many2one("pos.config", string="POS Shop / Register", required=False, tracking=True,
-                                help="Leave empty to calculate for all shops combined, or select a specific shop.")
+    # Explicit option to choose between All Shops or Specific Shop
+    shop_mode = fields.Selection([
+        ('all', 'All POS Shops Combined'),
+        ('specific', 'Specific POS Shop')
+    ], string="Scope", default='all', required=True, tracking=True)
+
+    config_id = fields.Many2one("pos.config", string="POS Shop / Register", required=False, tracking=True)
 
     expense_line_ids = fields.One2many("salon.daily.expense.line", "summary_id", string="Daily Expenses")
 
@@ -213,7 +217,12 @@ class SalonPosReportSummary(models.Model):
         ('closed', 'Closed')
     ], string="Status", default='draft', tracking=True)
 
-    @api.depends("date", "config_id", "expense_line_ids.total_expense")
+    @api.onchange('shop_mode')
+    def _onchange_shop_mode(self):
+        if self.shop_mode == 'all':
+            self.config_id = False
+
+    @api.depends("date", "shop_mode", "config_id", "expense_line_ids.total_expense")
     def _compute_net_cash(self):
         for record in self:
             if not record.date:
@@ -227,10 +236,11 @@ class SalonPosReportSummary(models.Model):
             domain = [
                 ("date", "<", record.date),
             ]
-            if record.config_id:
+            if record.shop_mode == 'specific' and record.config_id:
                 domain.append(("config_id", "=", record.config_id.id))
+                domain.append(("shop_mode", "=", "specific"))
             else:
-                domain.append(("config_id", "=", False))
+                domain.append(("shop_mode", "=", "all"))
 
             if record.id and not isinstance(record.id, models.NewId):
                 domain.append(("id", "!=", record.id))
@@ -244,7 +254,7 @@ class SalonPosReportSummary(models.Model):
                 ("date_order", "<=", str(record.date) + " 23:59:59"),
                 ("state", "in", ["paid", "done", "invoiced"])
             ]
-            if record.config_id:
+            if record.shop_mode == 'specific' and record.config_id:
                 pos_domain.append(("config_id", "=", record.config_id.id))
 
             pos_orders = self.env["pos.order"].search(pos_domain)
@@ -258,19 +268,17 @@ class SalonPosReportSummary(models.Model):
             record.net_cash_in_hand = (opening + gross) - exp_total
 
     def action_close_expense(self):
-        """Closes today's summary and creates the next day's record for the same shop configuration (or all shops)"""
         self.ensure_one()
         self.write({'state': 'closed'})
         
         next_date = self.date + timedelta(days=1) if self.date else fields.Date.today()
         
         search_domain = [
-            ('date', '=', next_date)
+            ('date', '=', next_date),
+            ('shop_mode', '=', self.shop_mode)
         ]
-        if self.config_id:
+        if self.shop_mode == 'specific' and self.config_id:
             search_domain.append(('config_id', '=', self.config_id.id))
-        else:
-            search_domain.append(('config_id', '=', False))
 
         existing_next = self.env['salon.pos.report.summary'].search(search_domain, limit=1)
 
@@ -282,7 +290,8 @@ class SalonPosReportSummary(models.Model):
 
         new_summary = self.env['salon.pos.report.summary'].create({
             'date': next_date,
-            'config_id': self.config_id.id if self.config_id else False,
+            'shop_mode': self.shop_mode,
+            'config_id': self.config_id.id if self.shop_mode == 'specific' else False,
             'user_id': self.user_id.id,
         })
 

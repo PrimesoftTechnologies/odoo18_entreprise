@@ -75,6 +75,7 @@
         <field name="arch" type="xml">
             <list string="Sales &amp; Expenses Summary">
                 <field name="date"/>
+                <field name="shop_mode"/>
                 <field name="config_id"/>
                 <field name="user_id"/>
                 <field name="gross_sales" sum="Total Gross Sales" widget="monetary" options="{'currency_field': 'currency_id'}"/>
@@ -100,7 +101,8 @@
                     <group>
                         <group>
                             <field name="name"/>
-                            <field name="config_id" options="{'no_create': True}" readonly="state == 'closed'"/>
+                            <field name="shop_mode" widget="radio" readonly="state == 'closed'"/>
+                            <field name="config_id" options="{'no_create': True}" invisible="shop_mode != 'specific'" required="shop_mode == 'specific'" readonly="state == 'closed'"/>
                             <field name="date" readonly="state == 'closed'"/>
                             <field name="user_id" readonly="state == 'closed'"/>
                         </group>
@@ -166,9 +168,9 @@
                         <h2>Daily Sales &amp; Expense Closing Report</h2>
                         <div class="row mt32 mb32">
                             <div class="col-6">
-                                <strong>POS Shop / Register:</strong> 
-                                <span t-if="doc.config_id" t-field="doc.config_id.name"/>
-                                <span t-else="">All Shops (Combined)</span><br/>
+                                <strong>Scope:</strong> 
+                                <span t-if="doc.shop_mode == 'all'">All POS Shops Combined</span>
+                                <span t-else="">Specific POS Shop (<span t-field="doc.config_id.name"/>)</span><br/>
                                 <strong>Date:</strong> <span t-field="doc.date"/><br/>
                                 <strong>Cashier:</strong> <span t-field="doc.user_id.name"/><br/>
                                 <strong>Status:</strong> <span t-field="doc.state"/>
