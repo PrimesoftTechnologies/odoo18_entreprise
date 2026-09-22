@@ -90,7 +90,6 @@
         <field name="arch" type="xml">
             <form string="Sales &amp; Expenses Summary">
                 <header>
-                    <!-- Kitufe cha Orange cha Close Expense -->
                     <button name="action_close_expense" string="Close Expense" type="object" class="btn-warning" invisible="state == 'closed'" confirm="Je, una uhakika unataka kufunga hesabu za siku hii na kuanzisha siku inayofuata?"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,closed"/>
                 </header>
@@ -112,7 +111,8 @@
 
                     <notebook>
                         <page string="Daily Expenses">
-                            <field name="expense_line_ids" attrs="{'readonly': [('state', '=', 'closed')]}">
+                            <!-- IMESAHIHISHWA: Imeondolewa 'attrs' na kuwekwa 'readonly' ya moja kwa moja -->
+                            <field name="expense_line_ids" readonly="state == 'closed'">
                                 <list editable="bottom">
                                     <field name="name"/>
                                     <field name="total_expense" sum="Total"/>
