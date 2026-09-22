@@ -196,7 +196,6 @@ class SalonPosReportSummary(models.Model):
     date = fields.Date(string="Date", default=fields.Date.context_today, required=True, tracking=True)
     user_id = fields.Many2one("res.users", string="Cashier", default=lambda self: self.env.user, required=True, tracking=True)
     
-    # Explicit option to choose between All Shops or Specific Shop
     shop_mode = fields.Selection([
         ('all', 'All POS Shops Combined'),
         ('specific', 'Specific POS Shop')
@@ -232,7 +231,6 @@ class SalonPosReportSummary(models.Model):
                 record.net_cash_in_hand = 0.0
                 continue
 
-            # Base domain for previous summary lookup
             domain = [
                 ("date", "<", record.date),
             ]
@@ -248,7 +246,6 @@ class SalonPosReportSummary(models.Model):
             last_summary = self.env["salon.pos.report.summary"].search(domain, order="date desc, id desc", limit=1)
             opening = last_summary.net_cash_in_hand if last_summary else 0.0
 
-            # Base domain for POS orders
             pos_domain = [
                 ("date_order", ">=", str(record.date) + " 00:00:00"),
                 ("date_order", "<=", str(record.date) + " 23:59:59"),
@@ -270,39 +267,10 @@ class SalonPosReportSummary(models.Model):
     def action_close_expense(self):
         self.ensure_one()
         self.write({'state': 'closed'})
-        
-        next_date = self.date + timedelta(days=1) if self.date else fields.Date.today()
-        
-        search_domain = [
-            ('date', '=', next_date),
-            ('shop_mode', '=', self.shop_mode)
-        ]
-        if self.shop_mode == 'specific' and self.config_id:
-            search_domain.append(('config_id', '=', self.config_id.id))
 
-        existing_next = self.env['salon.pos.report.summary'].search(search_domain, limit=1)
-
-        if existing_next:
-            action = self.env["ir.actions.actions"]._for_xml_id("salon_pos_custom.action_salon_pos_summary")
-            action['res_id'] = existing_next.id
-            action['views'] = [(False, 'form')]
-            return action
-
-        new_summary = self.env['salon.pos.report.summary'].create({
-            'date': next_date,
-            'shop_mode': self.shop_mode,
-            'config_id': self.config_id.id if self.shop_mode == 'specific' else False,
-            'user_id': self.user_id.id,
-        })
-
-        return {
-            'type': 'ir.actions.act_window',
-            'name': 'Sales & Expense Summary',
-            'res_model': 'salon.pos.report.summary',
-            'res_id': new_summary.id,
-            'view_mode': 'form',
-            'target': 'current',
-        }
+    def action_reset_to_draft(self):
+        self.ensure_one()
+        self.write({'state': 'draft'})
 
     def action_print_summary_report(self):
         self.ensure_one()

@@ -94,6 +94,8 @@
             <form string="Sales &amp; Expenses Summary">
                 <header>
                     <button name="action_close_expense" string="Close Expense" type="object" class="btn-warning" invisible="state == 'closed'" confirm="Are you sure you want to close the accounts for this day?"/>
+                    <!-- Kitufe kipya cha kurudisha kwenye draft iwapo fomu imefungwa -->
+                    <button name="action_reset_to_draft" string="Reset to Draft" type="object" class="btn-secondary" invisible="state != 'closed'" confirm="Are you sure you want to reopen this summary for updates?"/>
                     <button name="action_print_summary_report" string="Print Closing Report" type="object" class="btn-primary" invisible="state != 'closed'"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,closed"/>
                 </header>
@@ -101,7 +103,7 @@
                     <group>
                         <group>
                             <field name="name"/>
-                            <!-- Imabadilishwa kutoka widget="radio" kwenda Dropdown ya kawaida -->
+                            <!-- Dropdown ya kuchagua mode -->
                             <field name="shop_mode" readonly="state == 'closed'"/>
                             <field name="config_id" options="{'no_create': True}" invisible="shop_mode != 'specific'" required="shop_mode == 'specific'" readonly="state == 'closed'"/>
                             <field name="date" readonly="state == 'closed'"/>
