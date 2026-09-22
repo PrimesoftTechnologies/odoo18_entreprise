@@ -1,6 +1,6 @@
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
-from datetime import timedelta
+from datetime import timedelta, date
 
 
 class SalonCommissionPayout(models.Model):
@@ -203,6 +203,11 @@ class SalonPosReportSummary(models.Model):
     total_expenses = fields.Monetary(string="Total Expenses (Matumizi)", compute="_compute_net_cash", store=True, currency_field="currency_id")
     net_cash_in_hand = fields.Monetary(string="Net Cash (Pesa Halisi)", compute="_compute_net_cash", store=True, currency_field="currency_id")
     currency_id = fields.Many2one("res.currency", default=lambda self: self.env.company.currency_id)
+    
+    state = fields.Selection([
+        ('draft', 'Open'),
+        ('closed', 'Closed')
+    ], string="Status", default='draft', tracking=True)
 
     _sql_constraints = [
         ('user_date_uniq', 'unique (user_id, date)', 'Muhtasari wa mauzo na matumizi kwa tarehe hii tayari upo kwa ajili ya cashier huyu!')
@@ -218,7 +223,6 @@ class SalonPosReportSummary(models.Model):
                 record.net_cash_in_hand = 0.0
                 continue
 
-            # 1. Pata Opening Cash kutoka siku iliyopita
             domain = [
                 ("user_id", "=", record.user_id.id),
                 ("date", "<", record.date),
@@ -229,7 +233,6 @@ class SalonPosReportSummary(models.Model):
             last_summary = self.env["salon.pos.report.summary"].search(domain, order="date desc, id desc", limit=1)
             opening = last_summary.net_cash_in_hand if last_summary else 0.0
 
-            # 2. Pata mauzo ya POS ya siku husika
             pos_orders = self.env["pos.order"].search([
                 ("user_id", "=", record.user_id.id),
                 ("date_order", ">=", str(record.date) + " 00:00:00"),
@@ -238,11 +241,43 @@ class SalonPosReportSummary(models.Model):
             ])
             gross = sum(pos_orders.mapped("amount_total"))
 
-            # 3. Jumla ya matumizi ya siku hiyo
             exp_total = sum(record.expense_line_ids.mapped("total_expense"))
 
-            # 4. Kokotoa matokeo
             record.opening_cash = opening
             record.gross_sales = gross
             record.total_expenses = exp_total
             record.net_cash_in_hand = (opening + gross) - exp_total
+
+    def action_close_expense(self):
+        """Inafunga hesabu za siku ya leo na kufungua fomu mpya ya kesho ikiwa na Opening Cash ya leo"""
+        self.ensure_one()
+        self.write({'state': 'closed'})
+        
+        next_date = self.date + timedelta(days=1) if self.date else fields.Date.today()
+        
+        # Angalia kama siku inayofuata tayari ina muhtasari
+        existing_next = self.env['salon.pos.report.summary'].search([
+            ('user_id', '=', self.user_id.id),
+            ('date', '=', next_date)
+        ], limit=1)
+
+        if existing_next:
+            action = self.env["ir.actions.actions"]._for_xml_id("action_salon_pos_summary")
+            action['res_id'] = existing_next.id
+            action['views'] = [(False, 'form')]
+            return action
+
+        # Unda mpya kwa ajili ya kesho
+        new_summary = self.env['salon.pos.report.summary'].create({
+            'date': next_date,
+            'user_id': self.user_id.id,
+        })
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Sales & Expense Summary',
+            'res_model': 'salon.pos.report.summary',
+            'res_id': new_summary.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }

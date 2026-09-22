@@ -76,9 +76,9 @@
             <list string="Sales &amp; Expenses Summary">
                 <field name="date"/>
                 <field name="user_id"/>
-                <!-- Gross sales imeondolewa kwenye list kama ulivyoomba -->
                 <field name="total_expenses" sum="Total Expenses" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="net_cash_in_hand" sum="Total Net Cash" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="state" widget="badge" decoration-success="state == 'closed'" decoration-info="state == 'draft'"/>
                 <field name="currency_id" column_invisible="1"/>
             </list>
         </field>
@@ -89,12 +89,17 @@
         <field name="model">salon.pos.report.summary</field>
         <field name="arch" type="xml">
             <form string="Sales &amp; Expenses Summary">
+                <header>
+                    <!-- Kitufe cha Orange cha Close Expense -->
+                    <button name="action_close_expense" string="Close Expense" type="object" class="btn-warning" invisible="state == 'closed'" confirm="Je, una uhakika unataka kufunga hesabu za siku hii na kuanzisha siku inayofuata?"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,closed"/>
+                </header>
                 <sheet>
                     <group>
                         <group>
                             <field name="name"/>
-                            <field name="date"/>
-                            <field name="user_id"/>
+                            <field name="date" readonly="state == 'closed'"/>
+                            <field name="user_id" readonly="state == 'closed'"/>
                         </group>
                         <group>
                             <field name="opening_cash"/>
@@ -107,7 +112,7 @@
 
                     <notebook>
                         <page string="Daily Expenses">
-                            <field name="expense_line_ids">
+                            <field name="expense_line_ids" attrs="{'readonly': [('state', '=', 'closed')]}">
                                 <list editable="bottom">
                                     <field name="name"/>
                                     <field name="total_expense" sum="Total"/>
