@@ -198,12 +198,12 @@ class SalonPosReportSummary(models.Model):
     
     expense_line_ids = fields.One2many("salon.daily.expense.line", "summary_id", string="Daily Expenses")
 
+    opening_cash = fields.Monetary(string="Opening Cash (Pesa ya Kuanzia)", compute="_compute_net_cash", store=True, currency_field="currency_id")
     gross_sales = fields.Monetary(string="Gross Sales (Mauzo)", compute="_compute_net_cash", store=True, currency_field="currency_id")
     total_expenses = fields.Monetary(string="Total Expenses (Matumizi)", compute="_compute_net_cash", store=True, currency_field="currency_id")
     net_cash_in_hand = fields.Monetary(string="Net Cash (Pesa Halisi)", compute="_compute_net_cash", store=True, currency_field="currency_id")
     currency_id = fields.Many2one("res.currency", default=lambda self: self.env.company.currency_id)
 
-    # Inazuia fomu mbili za tarehe moja kwa cashier yuleyule kujirudia
     _sql_constraints = [
         ('user_date_uniq', 'unique (user_id, date)', 'Muhtasari wa mauzo na matumizi kwa tarehe hii tayari upo kwa ajili ya cashier huyu!')
     ]
@@ -212,11 +212,24 @@ class SalonPosReportSummary(models.Model):
     def _compute_net_cash(self):
         for record in self:
             if not record.date or not record.user_id:
+                record.opening_cash = 0.0
                 record.gross_sales = 0.0
                 record.total_expenses = 0.0
                 record.net_cash_in_hand = 0.0
                 continue
 
+            # 1. Pata Opening Cash kutoka siku iliyopita
+            domain = [
+                ("user_id", "=", record.user_id.id),
+                ("date", "<", record.date),
+            ]
+            if record.id and not isinstance(record.id, models.NewId):
+                domain.append(("id", "!=", record.id))
+
+            last_summary = self.env["salon.pos.report.summary"].search(domain, order="date desc, id desc", limit=1)
+            opening = last_summary.net_cash_in_hand if last_summary else 0.0
+
+            # 2. Pata mauzo ya POS ya siku husika
             pos_orders = self.env["pos.order"].search([
                 ("user_id", "=", record.user_id.id),
                 ("date_order", ">=", str(record.date) + " 00:00:00"),
@@ -224,8 +237,12 @@ class SalonPosReportSummary(models.Model):
                 ("state", "in", ["paid", "done", "invoiced"])
             ])
             gross = sum(pos_orders.mapped("amount_total"))
+
+            # 3. Jumla ya matumizi ya siku hiyo
             exp_total = sum(record.expense_line_ids.mapped("total_expense"))
 
+            # 4. Kokotoa matokeo
+            record.opening_cash = opening
             record.gross_sales = gross
             record.total_expenses = exp_total
-            record.net_cash_in_hand = gross - exp_total
+            record.net_cash_in_hand = (opening + gross) - exp_total

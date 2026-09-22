@@ -76,6 +76,7 @@
             <list string="Sales &amp; Expenses Summary">
                 <field name="date"/>
                 <field name="user_id"/>
+                <!-- Gross sales imeondolewa kwenye list kama ulivyoomba -->
                 <field name="total_expenses" sum="Total Expenses" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="net_cash_in_hand" sum="Total Net Cash" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="currency_id" column_invisible="1"/>
@@ -96,6 +97,7 @@
                             <field name="user_id"/>
                         </group>
                         <group>
+                            <field name="opening_cash"/>
                             <field name="gross_sales"/>
                             <field name="total_expenses"/>
                             <field name="net_cash_in_hand" class="oe_subtotal_footer_separator"/>
