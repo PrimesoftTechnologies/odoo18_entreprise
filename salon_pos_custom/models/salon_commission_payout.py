@@ -203,7 +203,7 @@ class SalonPosReportSummary(models.Model):
     net_cash_in_hand = fields.Monetary(string="Net Cash (Pesa Halisi)", compute="_compute_net_cash", store=True, currency_field="currency_id")
     currency_id = fields.Many2one("res.currency", default=lambda self: self.env.company.currency_id)
 
-    # Hii inazuia fomu mbili za tarehe moja kwa cashier yuleyule kutengenezwa
+    # Inazuia fomu mbili za tarehe moja kwa cashier yuleyule kujirudia
     _sql_constraints = [
         ('user_date_uniq', 'unique (user_id, date)', 'Muhtasari wa mauzo na matumizi kwa tarehe hii tayari upo kwa ajili ya cashier huyu!')
     ]

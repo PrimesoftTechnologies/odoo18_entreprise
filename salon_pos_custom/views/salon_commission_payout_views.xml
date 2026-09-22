@@ -76,7 +76,6 @@
             <list string="Sales &amp; Expenses Summary">
                 <field name="date"/>
                 <field name="user_id"/>
-                <!-- Nimeweka widget monetary na currency ili zihesabike na kuonyesha jumla sahihi -->
                 <field name="gross_sales" sum="Total Gross Sales" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="total_expenses" sum="Total Expenses" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="net_cash_in_hand" sum="Total Net Cash" widget="monetary" options="{'currency_field': 'currency_id'}"/>
