@@ -284,3 +284,48 @@ class SalonDailyExpense(models.Model):
         default=fields.Date.context_today,
         tracking=True
     )
+
+
+class SalonPosReportSummary(models.Model):
+    _name = "salon.pos.report.summary"
+    _description = "POS Sales and Expense Summary"
+    _inherit = ["mail.thread", "mail.activity.mixin"]
+
+    name = fields.Char(string="Reference", default=lambda self: "Daily Summary")
+    date = fields.Date(string="Date", default=fields.Date.context_today, required=True)
+    user_id = fields.Many2one("res.users", string="Cashier", default=lambda self: self.env.user, required=True)
+    
+    gross_sales = fields.Monetary(string="Gross Sales (Mauzo)", compute="_compute_net_cash", store=True)
+    total_expenses = fields.Monetary(string="Total Expenses (Matumizi)", compute="_compute_net_cash", store=True)
+    net_cash_in_hand = fields.Monetary(string="Net Cash (Pesa Halisi)", compute="_compute_net_cash", store=True)
+    currency_id = fields.Many2one("res.currency", default=lambda self: self.env.company.currency_id)
+
+    @api.depends("date", "user_id")
+    def _compute_net_cash(self):
+        for record in self:
+            if not record.date or not record.user_id:
+                record.gross_sales = 0.0
+                record.total_expenses = 0.0
+                record.net_cash_in_hand = 0.0
+                continue
+
+            # 1. Pata jumla ya mauzo ya POS kwa tarehe na mtumiaji/cashier huyo
+            pos_orders = self.env["pos.order"].search([
+                ("user_id", "=", record.user_id.id),
+                ("date_order", ">=", str(record.date) + " 00:00:00"),
+                ("date_order", "<=", str(record.date) + " 23:59:59"),
+                ("state", "in", ["paid", "done", "invoiced"])
+            ])
+            gross = sum(pos_orders.mapped("amount_total"))
+
+            # 2. Pata jumla ya matumizi ya siku hiyo kwa mtumiaji huyo
+            expenses = self.env["salon.daily.expense"].search([
+                ("user_id", "=", record.user_id.id),
+                ("date", "=", record.date)
+            ])
+            exp_total = sum(expenses.mapped("total_expense"))
+
+            # 3. Hesabu mauzo halisi ukiondoa matumizi
+            record.gross_sales = gross
+            record.total_expenses = exp_total
+            record.net_cash_in_hand = gross - exp_total
