@@ -196,6 +196,10 @@ class SalonPosReportSummary(models.Model):
     date = fields.Date(string="Date", default=fields.Date.context_today, required=True, tracking=True)
     user_id = fields.Many2one("res.users", string="Cashier", default=lambda self: self.env.user, required=True, tracking=True)
     
+    # Duka / POS Shop mahususi
+    config_id = fields.Many2one("pos.config", string="POS Shop / Register", required=True, tracking=True, 
+                                default=lambda self: self.env['pos.config'].search([], limit=1))
+
     expense_line_ids = fields.One2many("salon.daily.expense.line", "summary_id", string="Daily Expenses")
 
     opening_cash = fields.Monetary(string="Opening Cash (Pesa ya Kuanzia)", compute="_compute_net_cash", store=True, currency_field="currency_id")
@@ -210,21 +214,22 @@ class SalonPosReportSummary(models.Model):
     ], string="Status", default='draft', tracking=True)
 
     _sql_constraints = [
-        ('user_date_uniq', 'unique (user_id, date)', 'The sales and usage summary for this date already exists for this cashier!')
+        ('config_date_uniq', 'unique (config_id, date)', 'Muhtasari wa mauzo na matumizi kwa duka hili na tarehe hii tayari upo!')
     ]
 
-    @api.depends("date", "user_id", "expense_line_ids.total_expense")
+    @api.depends("date", "config_id", "expense_line_ids.total_expense")
     def _compute_net_cash(self):
         for record in self:
-            if not record.date or not record.user_id:
+            if not record.date or not record.config_id:
                 record.opening_cash = 0.0
                 record.gross_sales = 0.0
                 record.total_expenses = 0.0
                 record.net_cash_in_hand = 0.0
                 continue
 
+            # Kutafuta salio la kufungulia (Opening Cash) kutoka siku iliyotangulia kwa duka hili hili pekee
             domain = [
-                ("user_id", "=", record.user_id.id),
+                ("config_id", "=", record.config_id.id),
                 ("date", "<", record.date),
             ]
             if record.id and not isinstance(record.id, models.NewId):
@@ -233,8 +238,9 @@ class SalonPosReportSummary(models.Model):
             last_summary = self.env["salon.pos.report.summary"].search(domain, order="date desc, id desc", limit=1)
             opening = last_summary.net_cash_in_hand if last_summary else 0.0
 
+            # Vuta mauzo ya POS kwa duka hili (config_id) pekee kwa tarehe husika
             pos_orders = self.env["pos.order"].search([
-                ("user_id", "=", record.user_id.id),
+                ("config_id", "=", record.config_id.id),
                 ("date_order", ">=", str(record.date) + " 00:00:00"),
                 ("date_order", "<=", str(record.date) + " 23:59:59"),
                 ("state", "in", ["paid", "done", "invoiced"])
@@ -249,14 +255,14 @@ class SalonPosReportSummary(models.Model):
             record.net_cash_in_hand = (opening + gross) - exp_total
 
     def action_close_expense(self):
-        """Inafunga hesabu za siku ya leo na kufungua fomu mpya ya kesho ikiwa na Opening Cash ya leo"""
+        """Inafunga hesabu za duka hili kwa siku ya leo na kufungua fomu mpya ya kesho kwa duka hili hili"""
         self.ensure_one()
         self.write({'state': 'closed'})
         
         next_date = self.date + timedelta(days=1) if self.date else fields.Date.today()
         
         existing_next = self.env['salon.pos.report.summary'].search([
-            ('user_id', '=', self.user_id.id),
+            ('config_id', '=', self.config_id.id),
             ('date', '=', next_date)
         ], limit=1)
 
@@ -268,6 +274,7 @@ class SalonPosReportSummary(models.Model):
 
         new_summary = self.env['salon.pos.report.summary'].create({
             'date': next_date,
+            'config_id': self.config_id.id,
             'user_id': self.user_id.id,
         })
 
@@ -281,6 +288,5 @@ class SalonPosReportSummary(models.Model):
         }
 
     def action_print_summary_report(self):
-        """Inaprinti ripoti ya PDF yenye maelezo ya Gross Sales na Expenses zilizopunguzwa"""
         self.ensure_one()
         return self.env.ref('salon_pos_custom.action_report_salon_pos_summary').report_action(self)

@@ -75,6 +75,7 @@
         <field name="arch" type="xml">
             <list string="Sales &amp; Expenses Summary">
                 <field name="date"/>
+                <field name="config_id"/>
                 <field name="user_id"/>
                 <field name="gross_sales" sum="Total Gross Sales" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="total_expenses" sum="Total Expenses" widget="monetary" options="{'currency_field': 'currency_id'}"/>
@@ -91,7 +92,7 @@
         <field name="arch" type="xml">
             <form string="Sales &amp; Expenses Summary">
                 <header>
-                    <button name="action_close_expense" string="Close Expense" type="object" class="btn-warning" invisible="state == 'closed'" confirm="Are you sure you want to close the accounts for this day and start the next day?"/>
+                    <button name="action_close_expense" string="Close Expense" type="object" class="btn-warning" invisible="state == 'closed'" confirm="Je, una uhakika unataka kufunga hesabu za duka hili kwa siku hii?"/>
                     <button name="action_print_summary_report" string="Print Closing Report" type="object" class="btn-primary" invisible="state != 'closed'"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,closed"/>
                 </header>
@@ -99,6 +100,7 @@
                     <group>
                         <group>
                             <field name="name"/>
+                            <field name="config_id" options="{'no_create': True}" readonly="state == 'closed'"/>
                             <field name="date" readonly="state == 'closed'"/>
                             <field name="user_id" readonly="state == 'closed'"/>
                         </group>
@@ -164,6 +166,7 @@
                         <h2>Daily Sales &amp; Expense Closing Report</h2>
                         <div class="row mt32 mb32">
                             <div class="col-6">
+                                <strong>POS Shop / Register:</strong> <span t-field="doc.config_id.name"/><br/>
                                 <strong>Date:</strong> <span t-field="doc.date"/><br/>
                                 <strong>Cashier:</strong> <span t-field="doc.user_id.name"/><br/>
                                 <strong>Status:</strong> <span t-field="doc.state"/>
