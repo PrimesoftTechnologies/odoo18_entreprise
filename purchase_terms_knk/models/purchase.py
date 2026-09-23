@@ -30,9 +30,20 @@ class PurchaseOrder(models.Model):
 
     @api.model
     def _default_note(self):
-        if self.env.user.company_id.use_purchase_order_note:
-            return self.env.user.company_id.purchase_order_note
-        else:
-            return ''
+        company = self.env.company
+        if company.use_purchase_order_note:
+            return company.purchase_order_note or ''
+        return ''
 
     notes = fields.Text('Terms and Conditions', default=_default_note)
+
+    @api.onchange('company_id')
+    def _onchange_company_id_note(self):
+        """ Hii inahakikisha terms zinabadilika au kuonekana kwa usahihi 
+            kulingana na kampuni iliyochaguliwa kwenye RFQ/PO.
+        """
+        for order in self:
+            if order.company_id and order.company_id.use_purchase_order_note:
+                order.notes = order.company_id.purchase_order_note or ''
+            else:
+                order.notes = ''
