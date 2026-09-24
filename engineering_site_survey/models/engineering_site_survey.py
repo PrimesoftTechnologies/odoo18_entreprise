@@ -646,9 +646,14 @@ class EngineeringSiteSurvey(models.Model):
         lead_vals = {
             'name': (
                 f"Lead from Survey: "
-                f"{self.name} - {self.partner_id.name}"
+                f"{self.name}"
+                + (
+                    f" - {self.partner_id.name}"
+                    if self.partner_id
+                    else ''
+                )
             ),
-            'partner_id': self.partner_id.id,
+            'partner_id': self.partner_id.id if self.partner_id else False,
             'contact_name': self.contact_person,
             'phone': self.contact_phone,
             'survey_id': self.id,
@@ -707,7 +712,7 @@ class EngineeringSiteSurvey(models.Model):
             'name': (
                 f"Helpdesk Ticket from Survey: {self.name}"
             ),
-            'partner_id': self.partner_id.id,
+            'partner_id': self.partner_id.id if self.partner_id else False,
             'survey_id': self.id,
             'description': (
                 f"<p>Created from Completed Site Survey: "
@@ -766,7 +771,11 @@ class EngineeringSiteSurvey(models.Model):
             ],
             'context': {
                 'default_survey_id': self.id,
-                'default_partner_id': self.partner_id.id
+                'default_partner_id': (
+                    self.partner_id.id
+                    if self.partner_id
+                    else False
+                )
             },
         }
 
@@ -783,7 +792,11 @@ class EngineeringSiteSurvey(models.Model):
             ],
             'context': {
                 'default_survey_id': self.id,
-                'default_partner_id': self.partner_id.id
+                'default_partner_id': (
+                    self.partner_id.id
+                    if self.partner_id
+                    else False
+                )
             },
         }
 
@@ -1046,17 +1059,13 @@ class CrmLead(models.Model):
     def action_create_engineering_survey(self):
         self.ensure_one()
 
-        if not self.partner_id:
-            raise UserError(
-                _(
-                    'Please select a Customer on this Lead '
-                    'before creating an Engineering Site Survey.'
-                )
-            )
-
         if not self.survey_id:
             survey_vals = {
-                'partner_id': self.partner_id.id,
+                'partner_id': (
+                    self.partner_id.id
+                    if self.partner_id
+                    else False
+                ),
                 'location': (
                     self.street
                     or self.city
@@ -1064,8 +1073,11 @@ class CrmLead(models.Model):
                 ),
                 'contact_person': (
                     self.contact_name
-                    or self.partner_id.name
-                    or ''
+                    or (
+                        self.partner_id.name
+                        if self.partner_id
+                        else ''
+                    )
                 ),
                 'contact_phone': (
                     self.phone
@@ -1081,15 +1093,16 @@ class CrmLead(models.Model):
 
             self.survey_id = new_survey.id
 
+        else:
+            new_survey = self.survey_id
+
         return {
-            'effect': {
-                'fadeout': 'slow',
-                'message': _(
-                    'Engineering Site Survey successfully created '
-                    'in Draft status!'
-                ),
-                'type': 'rainbow_man',
-            }
+            'type': 'ir.actions.act_window',
+            'name': _('Engineering Site Survey'),
+            'res_model': 'engineering.site.survey',
+            'view_mode': 'form',
+            'res_id': new_survey.id,
+            'target': 'current',
         }
 
     def action_reset_engineering_survey(self):
