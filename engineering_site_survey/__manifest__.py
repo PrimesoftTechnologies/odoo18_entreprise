@@ -1,6 +1,6 @@
 {
     'name': 'Engineering Site Survey',
-    'version': '18.0.1.0.0',
+    'version': '18.0.3.0.0',
     'summary': 'Plan engineering site surveys, accommodation, payment requests and survey reports',
     'category': 'Services/Project',
     'author': 'Primesoft Technologies Limited',
