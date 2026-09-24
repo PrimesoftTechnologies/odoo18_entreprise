@@ -1053,16 +1053,26 @@ class CrmLead(models.Model):
     def action_create_engineering_survey(self):
         self.ensure_one()
 
-        # Angalia kama partner_id ipo, la sivyo jaribu kutafuta kupitia partner_name
+        # Angalia partner_id au tumia partner_name iliyopo
         partner_id = self.partner_id.id if self.partner_id else False
 
+        # Kama hakuna partner_id lakini kuna partner_name (Company Name), itafute au iunde kimyakimya
         if not partner_id and self.partner_name:
             existing_partner = self.env['res.partner'].search([('name', '=', self.partner_name)], limit=1)
             if existing_partner:
                 partner_id = existing_partner.id
+            else:
+                new_partner = self.env['res.partner'].create({
+                    'name': self.partner_name,
+                    'company_type': 'company',
+                    'phone': self.phone or self.mobile or '',
+                    'street': self.street or '',
+                    'city': self.city or '',
+                })
+                partner_id = new_partner.id
 
         if not partner_id:
-            raise UserError(_('Tafadhali chagua Mteja (Customer) au jaza jina sahihi la kampuni kwenye Lead kabla ya kutengeneza Site Survey.'))
+            raise UserError(_('Tafadhali jaza jina la Kampuni (Company Name) kwenye Lead kabla ya kutengeneza Site Survey.'))
 
         if not self.survey_id:
             survey_vals = {
@@ -1074,11 +1084,8 @@ class CrmLead(models.Model):
                 ),
                 'contact_person': (
                     self.contact_name
-                    or (
-                        self.partner_id.name
-                        if self.partner_id
-                        else (self.partner_name or '')
-                    )
+                    or self.partner_name
+                    or ''
                 ),
                 'contact_phone': (
                     self.phone
