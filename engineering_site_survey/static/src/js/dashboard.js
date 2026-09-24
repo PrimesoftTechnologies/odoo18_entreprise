@@ -12,9 +12,15 @@ export class EngineeringDashboard extends Component {
         this.state = useState({
             draft_count: 0,
             pending_count: 0,
+            rejected_count: 0,
+            survey_done_count: 0,
+            report_submitted_count: 0,
             completed_count: 0,
             total_count: 0,
             total_amount: 0,
+            lead_count: 0,
+            ticket_count: 0,
+            engineer_data: [],
             currency_code: "",
             currency_symbol: "",
             from_date: "",
@@ -41,13 +47,44 @@ export class EngineeringDashboard extends Component {
             );
 
             if (result) {
-                this.state.draft_count = result.draft_count;
-                this.state.pending_count = result.pending_count;
-                this.state.completed_count = result.completed_count;
-                this.state.total_count = result.total_count;
-                this.state.total_amount = result.total_amount;
-                this.state.currency_code = result.currency_code;
-                this.state.currency_symbol = result.currency_symbol;
+                this.state.draft_count =
+                    result.draft_count || 0;
+
+                this.state.pending_count =
+                    result.pending_count || 0;
+
+                this.state.rejected_count =
+                    result.rejected_count || 0;
+
+                this.state.survey_done_count =
+                    result.survey_done_count || 0;
+
+                this.state.report_submitted_count =
+                    result.report_submitted_count || 0;
+
+                this.state.completed_count =
+                    result.completed_count || 0;
+
+                this.state.total_count =
+                    result.total_count || 0;
+
+                this.state.total_amount =
+                    result.total_amount || 0;
+
+                this.state.lead_count =
+                    result.lead_count || 0;
+
+                this.state.ticket_count =
+                    result.ticket_count || 0;
+
+                this.state.engineer_data =
+                    result.engineer_data || [];
+
+                this.state.currency_code =
+                    result.currency_code || "";
+
+                this.state.currency_symbol =
+                    result.currency_symbol || "";
             }
         } catch (error) {
             console.error(
@@ -57,8 +94,94 @@ export class EngineeringDashboard extends Component {
         }
     }
 
+    get maxActivityCount() {
+        return Math.max(
+            this.state.lead_count,
+            this.state.ticket_count,
+            1
+        );
+    }
+
+    get leadBarHeight() {
+        if (!this.state.lead_count) {
+            return 0;
+        }
+
+        return (
+            this.state.lead_count /
+            this.maxActivityCount
+        ) * 170;
+    }
+
+    get ticketBarHeight() {
+        if (!this.state.ticket_count) {
+            return 0;
+        }
+
+        return (
+            this.state.ticket_count /
+            this.maxActivityCount
+        ) * 170;
+    }
+
+    get leadBarY() {
+        return 200 - this.leadBarHeight;
+    }
+
+    get ticketBarY() {
+        return 200 - this.ticketBarHeight;
+    }
+
+    get leadValueY() {
+        return Math.max(
+            20,
+            this.leadBarY - 10
+        );
+    }
+
+    get ticketValueY() {
+        return Math.max(
+            20,
+            this.ticketBarY - 10
+        );
+    }
+
+    get maxEngineerCount() {
+        return Math.max(
+            ...this.state.engineer_data.map(
+                engineer => engineer.count
+            ),
+            1
+        );
+    }
+
+    getEngineerBarHeight(count) {
+        if (!count) {
+            return 0;
+        }
+
+        return (
+            count /
+            this.maxEngineerCount
+        ) * 170;
+    }
+
+    getEngineerBarY(count) {
+        return 200 -
+            this.getEngineerBarHeight(count);
+    }
+
+    getEngineerValueY(count) {
+        return Math.max(
+            20,
+            this.getEngineerBarY(count) - 10
+        );
+    }
+
     formatAmount(amount) {
-        return Number(amount || 0).toLocaleString("en-US", {
+        return Number(
+            amount || 0
+        ).toLocaleString("en-US", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
         });
@@ -101,9 +224,25 @@ export class EngineeringDashboard extends Component {
                 [
                     "submitted",
                     "approved",
-                    "survey_done",
-                    "report_submitted",
                 ],
+            ]);
+        } else if (stage === "rejected") {
+            domain.push([
+                "state",
+                "=",
+                "rejected",
+            ]);
+        } else if (stage === "survey_done") {
+            domain.push([
+                "state",
+                "=",
+                "survey_done",
+            ]);
+        } else if (stage === "report_submitted") {
+            domain.push([
+                "state",
+                "=",
+                "report_submitted",
             ]);
         } else if (stage === "completed") {
             domain.push([
@@ -127,7 +266,8 @@ export class EngineeringDashboard extends Component {
     }
 }
 
-EngineeringDashboard.template = "engineering_dashboard_template";
+EngineeringDashboard.template =
+    "engineering_dashboard_template";
 
 registry
     .category("actions")

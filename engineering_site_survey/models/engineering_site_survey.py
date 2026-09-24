@@ -19,8 +19,15 @@ class EngineeringExpenseType(models.Model):
     _description = 'Engineering Expense Type'
     _order = 'name'
 
-    name = fields.Char(string='Expense Type Name', required=True)
-    is_active = fields.Boolean(string='Active', default=True)
+    name = fields.Char(
+        string='Expense Type Name',
+        required=True
+    )
+
+    is_active = fields.Boolean(
+        string='Active',
+        default=True
+    )
 
 
 class EngineeringSiteSurveyProduct(models.Model):
@@ -33,13 +40,18 @@ class EngineeringSiteSurveyProduct(models.Model):
         required=True,
         ondelete='cascade'
     )
+
     product_id = fields.Many2one(
         'product.product',
         string='Product',
         required=True,
         tracking=True
     )
-    description = fields.Char(string='Description')
+
+    description = fields.Char(
+        string='Description'
+    )
+
     currency_id = fields.Many2one(
         related='survey_id.currency_id',
         store=True,
@@ -66,16 +78,38 @@ class EngineeringSiteSurveyFuel(models.Model):
     vehicle_type = fields.Selection([
         ('individual', 'Individual'),
         ('company', 'Company Vehicle'),
-    ], string='Vehicle Type', default='company', required=True, tracking=True)
+    ],
+        string='Vehicle Type',
+        default='company',
+        required=True,
+        tracking=True
+    )
 
     fuel_type = fields.Selection([
         ('diesel', 'Diesel'),
         ('petrol', 'Petrol'),
-    ], string='Fuel Type', default='diesel', required=True, tracking=True)
+    ],
+        string='Fuel Type',
+        default='diesel',
+        required=True,
+        tracking=True
+    )
 
-    location_from = fields.Char(string='From', required=True)
-    location_to = fields.Char(string='To', required=True)
-    litres = fields.Float(string='Litres', default=0.0, required=True)
+    location_from = fields.Char(
+        string='From',
+        required=True
+    )
+
+    location_to = fields.Char(
+        string='To',
+        required=True
+    )
+
+    litres = fields.Float(
+        string='Litres',
+        default=0.0,
+        required=True
+    )
 
     price_per_litre = fields.Monetary(
         string='Price per Litre',
@@ -100,7 +134,10 @@ class EngineeringSiteSurveyFuel(models.Model):
     @api.depends('litres', 'price_per_litre')
     def _compute_total_amount(self):
         for line in self:
-            line.total_amount = line.litres * line.price_per_litre
+            line.total_amount = (
+                line.litres *
+                line.price_per_litre
+            )
 
 
 class EngineeringSiteSurvey(models.Model):
@@ -113,6 +150,7 @@ class EngineeringSiteSurvey(models.Model):
         approver_id = self.env['ir.config_parameter'].sudo().get_param(
             'engineering_site_survey.survey_approver_id'
         )
+
         return int(approver_id) if approver_id else False
 
     name = fields.Char(
@@ -134,18 +172,25 @@ class EngineeringSiteSurvey(models.Model):
     site_project = fields.Many2one(
         'project.project',
         string='Site / Project',
-        required=True,
         tracking=True
     )
 
-    location = fields.Char(string='Location', tracking=True)
-    contact_person = fields.Char(string='Site Contact Person')
-    contact_phone = fields.Char(string='Contact Number')
+    location = fields.Char(
+        string='Location',
+        tracking=True
+    )
+
+    contact_person = fields.Char(
+        string='Site Contact Person'
+    )
+
+    contact_phone = fields.Char(
+        string='Contact Number'
+    )
 
     responsible_engineer_id = fields.Many2one(
         'hr.employee',
         string='Responsible Engineer',
-        required=True,
         tracking=True
     )
 
@@ -156,7 +201,9 @@ class EngineeringSiteSurvey(models.Model):
         tracking=True
     )
 
-    is_approver = fields.Boolean(compute='_compute_is_approver')
+    is_approver = fields.Boolean(
+        compute='_compute_is_approver'
+    )
 
     is_responsible_engineer = fields.Boolean(
         compute='_compute_is_responsible_engineer'
@@ -185,7 +232,10 @@ class EngineeringSiteSurvey(models.Model):
             if rec.responsible_engineer_id:
                 emp = rec.responsible_engineer_id
 
-                if getattr(emp, 'user_id', False) and emp.user_id == current_user:
+                if (
+                    getattr(emp, 'user_id', False)
+                    and emp.user_id == current_user
+                ):
                     is_eng = True
 
                 elif (
@@ -199,7 +249,8 @@ class EngineeringSiteSurvey(models.Model):
                 elif (
                     emp.name
                     and current_user.name
-                    and emp.name.strip().lower() == current_user.name.strip().lower()
+                    and emp.name.strip().lower()
+                    == current_user.name.strip().lower()
                 ):
                     is_eng = True
 
@@ -209,7 +260,10 @@ class EngineeringSiteSurvey(models.Model):
                 elif getattr(emp, 'id', None) == current_user.id:
                     is_eng = True
 
-            if current_user._is_admin() or current_user.has_group('base.group_system'):
+            if (
+                current_user._is_admin()
+                or current_user.has_group('base.group_system')
+            ):
                 is_eng = True
 
             rec.is_responsible_engineer = is_eng
@@ -224,13 +278,11 @@ class EngineeringSiteSurvey(models.Model):
 
     start_date = fields.Datetime(
         string='Planned Start',
-        required=True,
         tracking=True
     )
 
     end_date = fields.Datetime(
         string='Planned End',
-        required=True,
         tracking=True
     )
 
@@ -429,14 +481,20 @@ class EngineeringSiteSurvey(models.Model):
         string='Conclusion'
     )
 
-    @api.depends('expense_line_ids', 'expense_line_ids.amount')
+    @api.depends(
+        'expense_line_ids',
+        'expense_line_ids.amount'
+    )
     def _compute_expense_total(self):
         for rec in self:
             rec.expense_total = sum(
                 rec.expense_line_ids.mapped('amount')
             )
 
-    @api.depends('fuel_line_ids', 'fuel_line_ids.total_amount')
+    @api.depends(
+        'fuel_line_ids',
+        'fuel_line_ids.total_amount'
+    )
     def _compute_fuel_total(self):
         for rec in self:
             rec.fuel_total = sum(
@@ -459,7 +517,10 @@ class EngineeringSiteSurvey(models.Model):
                 rec.fuel_line_ids.mapped('total_amount')
             )
 
-            rec.total_requested = total_expenses + total_fuel
+            rec.total_requested = (
+                total_expenses +
+                total_fuel
+            )
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -499,7 +560,9 @@ class EngineeringSiteSurvey(models.Model):
                 _('You are not authorized to approve this survey.')
             )
 
-        self.write({'state': 'approved'})
+        self.write({
+            'state': 'approved'
+        })
 
     def action_cancel_approval(self):
         self.ensure_one()
@@ -513,7 +576,9 @@ class EngineeringSiteSurvey(models.Model):
                 _('You are not authorized to cancel this approval.')
             )
 
-        self.write({'state': 'submitted'})
+        self.write({
+            'state': 'submitted'
+        })
 
     def action_reject(self):
         approver_id = self.env['ir.config_parameter'].sudo().get_param(
@@ -537,7 +602,9 @@ class EngineeringSiteSurvey(models.Model):
         }
 
     def action_survey_done(self):
-        self.write({'state': 'survey_done'})
+        self.write({
+            'state': 'survey_done'
+        })
 
     def action_submit_report(self):
         for rec in self:
@@ -549,13 +616,19 @@ class EngineeringSiteSurvey(models.Model):
                     )
                 )
 
-        self.write({'state': 'report_submitted'})
+        self.write({
+            'state': 'report_submitted'
+        })
 
     def action_complete(self):
-        self.write({'state': 'completed'})
+        self.write({
+            'state': 'completed'
+        })
 
     def action_cancel(self):
-        self.write({'state': 'cancelled'})
+        self.write({
+            'state': 'cancelled'
+        })
 
     def action_reset_draft(self):
         self.write({
@@ -590,7 +663,10 @@ class EngineeringSiteSurvey(models.Model):
         }
 
         self.env['crm.lead'].create(lead_vals)
-        self.write({'lead_created': True})
+
+        self.write({
+            'lead_created': True
+        })
 
         return {
             'effect': {
@@ -608,7 +684,9 @@ class EngineeringSiteSurvey(models.Model):
         if self.lead_ids:
             self.lead_ids.unlink()
 
-        self.write({'lead_created': False})
+        self.write({
+            'lead_created': False
+        })
 
         return {
             'effect': {
@@ -643,7 +721,10 @@ class EngineeringSiteSurvey(models.Model):
         }
 
         self.env['helpdesk.ticket'].create(ticket_vals)
-        self.write({'ticket_created': True})
+
+        self.write({
+            'ticket_created': True
+        })
 
         return {
             'effect': {
@@ -661,7 +742,9 @@ class EngineeringSiteSurvey(models.Model):
         if self.ticket_ids:
             self.ticket_ids.unlink()
 
-        self.write({'ticket_created': False})
+        self.write({
+            'ticket_created': False
+        })
 
         return {
             'effect': {
@@ -732,22 +815,51 @@ class EngineeringSiteSurvey(models.Model):
         surveys = self.search(domain)
 
         draft_count = len(
-            surveys.filtered(lambda r: r.state == 'draft')
+            surveys.filtered(
+                lambda r: r.state == 'draft'
+            )
         )
 
         pending_count = len(
             surveys.filtered(
                 lambda r: r.state in (
                     'submitted',
-                    'approved',
+                    'approved'
+                )
+            )
+        )
+
+        rejected_count = len(
+            surveys.filtered(
+                lambda r: r.state == 'rejected'
+            )
+        )
+
+        verified_count = len(
+            surveys.filtered(
+                lambda r: r.state in (
                     'survey_done',
                     'report_submitted'
                 )
             )
         )
 
+        survey_done_count = len(
+            surveys.filtered(
+                lambda r: r.state == 'survey_done'
+            )
+        )
+
+        report_submitted_count = len(
+            surveys.filtered(
+                lambda r: r.state == 'report_submitted'
+            )
+        )
+
         completed_count = len(
-            surveys.filtered(lambda r: r.state == 'completed')
+            surveys.filtered(
+                lambda r: r.state == 'completed'
+            )
         )
 
         total_count = len(surveys)
@@ -756,25 +868,64 @@ class EngineeringSiteSurvey(models.Model):
             surveys.mapped('total_requested')
         )
 
+        lead_count = sum(
+            surveys.mapped('lead_count')
+        )
+
+        ticket_count = sum(
+            surveys.mapped('ticket_count')
+        )
+
+        engineer_data = []
+
+        engineers = surveys.mapped(
+            'responsible_engineer_id'
+        )
+
+        for engineer in engineers:
+            engineer_data.append({
+                'id': engineer.id,
+                'name': engineer.name,
+                'count': len(
+                    surveys.filtered(
+                        lambda r: (
+                            r.responsible_engineer_id.id
+                            == engineer.id
+                        )
+                    )
+                ),
+            })
+
         currencies = surveys.mapped('currency_id')
 
         if len(currencies) == 1:
             currency = currencies[0]
             currency_code = currency.name
-            currency_symbol = currency.symbol or currency.name
+            currency_symbol = (
+                currency.symbol or currency.name
+            )
         else:
             currency = self.env.company.currency_id
             currency_code = currency.name
-            currency_symbol = currency.symbol or currency.name
+            currency_symbol = (
+                currency.symbol or currency.name
+            )
 
         return {
             'draft_count': draft_count,
             'pending_count': pending_count,
+            'rejected_count': rejected_count,
+            'verified_count': verified_count,
+            'survey_done_count': survey_done_count,
+            'report_submitted_count': report_submitted_count,
             'completed_count': completed_count,
             'total_count': total_count,
             'total_amount': total_amount,
             'currency_code': currency_code,
             'currency_symbol': currency_symbol,
+            'lead_count': lead_count,
+            'ticket_count': ticket_count,
+            'engineer_data': engineer_data,
         }
 
 
@@ -783,7 +934,9 @@ class EngineeringSiteSurveyExpense(models.Model):
     _description = 'Engineering Site Survey Expense'
     _order = 'sequence, id'
 
-    sequence = fields.Integer(default=10)
+    sequence = fields.Integer(
+        default=10
+    )
 
     survey_id = fields.Many2one(
         'engineering.site.survey',
@@ -835,7 +988,8 @@ class EngineeringSiteSurveyExpense(models.Model):
                 and line.survey_id.number_of_people > 0
             ):
                 line.amount = (
-                    line.cost * line.survey_id.number_of_people
+                    line.cost *
+                    line.survey_id.number_of_people
                 )
             else:
                 line.amount = line.cost
@@ -877,6 +1031,82 @@ class CrmLead(models.Model):
         string='Site Survey',
         readonly=True
     )
+
+    survey_count = fields.Integer(
+        compute='_compute_survey_count',
+        string='Survey Count'
+    )
+
+    @api.depends('survey_id')
+    def _compute_survey_count(self):
+        for lead in self:
+            lead.survey_count = (
+                1 if lead.survey_id else 0
+            )
+
+    def action_create_engineering_survey(self):
+        self.ensure_one()
+
+        if not self.survey_id:
+            survey_vals = {
+                'partner_id': (
+                    self.partner_id.id
+                    if self.partner_id
+                    else False
+                ),
+                'location': (
+                    self.street
+                    or self.city
+                    or ''
+                ),
+                'contact_person': (
+                    self.contact_name
+                    or (
+                        self.partner_id.name
+                        if self.partner_id
+                        else ''
+                    )
+                ),
+                'contact_phone': (
+                    self.phone
+                    or self.mobile
+                    or ''
+                ),
+                'state': 'draft',
+            }
+
+            new_survey = self.env[
+                'engineering.site.survey'
+            ].create(survey_vals)
+
+            self.survey_id = new_survey.id
+
+        return {
+            'effect': {
+                'fadeout': 'slow',
+                'message': _(
+                    'Engineering Site Survey successfully created '
+                    'in Draft status!'
+                ),
+                'type': 'rainbow_man',
+            }
+        }
+
+    def action_reset_engineering_survey(self):
+        self.ensure_one()
+
+        if self.survey_id:
+            self.survey_id = False
+
+        return {
+            'effect': {
+                'fadeout': 'slow',
+                'message': _(
+                    'Site Survey successfully reset!'
+                ),
+                'type': 'rainbow_man',
+            }
+        }
 
 
 class HelpdeskTicket(models.Model):

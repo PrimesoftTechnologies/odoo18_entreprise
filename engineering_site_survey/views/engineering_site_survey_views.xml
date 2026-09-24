@@ -56,10 +56,10 @@
                     <button name="action_submit_report" type="object" string="Submit Report" class="btn-primary" invisible="state != 'survey_done'"/>
                     <button name="action_complete" type="object" string="Complete" class="btn-primary" invisible="state != 'report_submitted'"/>
 
-                    <button name="action_continue_lead" type="object" string="Continue as Lead" class="btn-secondary" invisible="state != 'completed' or lead_created"/>
+                    <button name="action_continue_lead" type="object" string="Create Lead" class="btn-secondary" invisible="state != 'completed' or lead_created"/>
                     <button name="action_reset_lead" type="object" string="Reset Lead" class="btn-warning" invisible="state != 'completed' or not lead_created"/>
                     
-                    <button name="action_help_desk" type="object" string="Need Help Desk" class="btn-secondary" invisible="state != 'completed' or ticket_created"/>
+                    <button name="action_help_desk" type="object" string="Create Complain" class="btn-secondary" invisible="state != 'completed' or ticket_created"/>
                     <button name="action_reset_help_desk" type="object" string="Reset Help Desk" class="btn-warning" invisible="state != 'completed' or not ticket_created"/>
 
                     <button name="action_cancel" type="object" string="Cancel" invisible="state in ('completed','cancelled','rejected','approved')"/>
@@ -192,6 +192,32 @@
                 </sheet>
                 <chatter/>
             </form>
+        </field>
+    </record>
+
+    <!-- CRM LEAD FORM INHERIT VIEW -->
+    <record id="crm_lead_view_form_inherit_engineering" model="ir.ui.view">
+        <field name="name">crm.lead.form.inherit.engineering</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_create_engineering_survey" 
+                        string="New Site Survey" 
+                        type="object" 
+                        class="btn-primary" 
+                        invisible="survey_id"/>
+                <button name="action_reset_engineering_survey" 
+                        string="Reset Site Survey" 
+                        type="object" 
+                        class="btn-warning" 
+                        invisible="not survey_id"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_create_engineering_survey" type="object" class="oe_stat_button" icon="fa-clipboard" invisible="not survey_id">
+                    <field name="survey_count" widget="statinfo" string="Site Survey"/>
+                </button>
+            </xpath>
         </field>
     </record>
 
