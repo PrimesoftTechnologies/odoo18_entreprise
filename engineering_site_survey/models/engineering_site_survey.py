@@ -640,7 +640,10 @@ class EngineeringSiteSurvey(models.Model):
 
         if not self.partner_id:
             raise UserError(
-                _('Please select a Customer on this Site Survey before creating a Lead.')
+                _(
+                    'Please select a Customer on this Site Survey '
+                    'before creating a Lead.'
+                )
             )
 
         lead_vals = {
@@ -705,7 +708,10 @@ class EngineeringSiteSurvey(models.Model):
 
         if not self.partner_id:
             raise UserError(
-                _('Please select a Customer on this Site Survey before creating a Helpdesk Ticket.')
+                _(
+                    'Please select a Customer on this Site Survey '
+                    'before creating a Helpdesk Ticket.'
+                )
             )
 
         ticket_vals = {
@@ -1053,17 +1059,34 @@ class CrmLead(models.Model):
     def action_create_engineering_survey(self):
         self.ensure_one()
 
-        if not self.partner_id:
+        customer = self.partner_id
+
+        if not customer and self.company_name:
+            customer = self.env['res.partner'].search([
+                ('name', '=ilike', self.company_name),
+                ('is_company', '=', True),
+            ], limit=1)
+
+            if not customer:
+                customer = self.env['res.partner'].create({
+                    'name': self.company_name,
+                    'is_company': True,
+                    'company_type': 'company',
+                })
+
+            self.partner_id = customer.id
+
+        if not customer:
             raise UserError(
                 _(
-                    'Please select a Customer on this Lead '
-                    'before creating an Engineering Site Survey.'
+                    'Please select a Customer or enter a Company Name '
+                    'on this Lead before creating an Engineering Site Survey.'
                 )
             )
 
         if not self.survey_id:
             survey_vals = {
-                'partner_id': self.partner_id.id,
+                'partner_id': customer.id,
                 'location': (
                     self.street
                     or self.city
@@ -1071,7 +1094,7 @@ class CrmLead(models.Model):
                 ),
                 'contact_person': (
                     self.contact_name
-                    or self.partner_id.name
+                    or customer.name
                 ),
                 'contact_phone': (
                     self.phone
