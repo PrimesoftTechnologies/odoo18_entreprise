@@ -134,7 +134,10 @@ class EngineeringSiteSurveyFuel(models.Model):
     @api.depends('litres', 'price_per_litre')
     def _compute_total_amount(self):
         for line in self:
-            line.total_amount = line.litres * line.price_per_litre
+            line.total_amount = (
+                line.litres *
+                line.price_per_litre
+            )
 
 
 class EngineeringSiteSurvey(models.Model):
@@ -147,6 +150,7 @@ class EngineeringSiteSurvey(models.Model):
         approver_id = self.env['ir.config_parameter'].sudo().get_param(
             'engineering_site_survey.survey_approver_id'
         )
+
         return int(approver_id) if approver_id else False
 
     name = fields.Char(
@@ -214,7 +218,8 @@ class EngineeringSiteSurvey(models.Model):
 
         for rec in self:
             rec.is_approver = bool(
-                approver_id and int(approver_id) == current_user.id
+                approver_id
+                and int(approver_id) == current_user.id
             )
 
     @api.depends('responsible_engineer_id')
@@ -512,15 +517,16 @@ class EngineeringSiteSurvey(models.Model):
                 rec.fuel_line_ids.mapped('total_amount')
             )
 
-            rec.total_requested = total_expenses + total_fuel
+            rec.total_requested = (
+                total_expenses +
+                total_fuel
+            )
 
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
             if vals.get('name', _('New')) == _('New'):
-                vals['name'] = self.env[
-                    'ir.sequence'
-                ].next_by_code(
+                vals['name'] = self.env['ir.sequence'].next_by_code(
                     'engineering.site.survey'
                 ) or _('New')
 
@@ -638,14 +644,6 @@ class EngineeringSiteSurvey(models.Model):
                 _('CRM module is not installed or loaded.')
             )
 
-        if not self.partner_id:
-            raise UserError(
-                _(
-                    'Please select a Customer on this Site Survey '
-                    'before creating a Lead.'
-                )
-            )
-
         lead_vals = {
             'name': (
                 f"Lead from Survey: "
@@ -704,14 +702,6 @@ class EngineeringSiteSurvey(models.Model):
         if 'helpdesk.ticket' not in self.env:
             raise UserError(
                 _('Helpdesk module is not installed or loaded.')
-            )
-
-        if not self.partner_id:
-            raise UserError(
-                _(
-                    'Please select a Customer on this Site Survey '
-                    'before creating a Helpdesk Ticket.'
-                )
             )
 
         ticket_vals = {
@@ -906,9 +896,7 @@ class EngineeringSiteSurvey(models.Model):
                 ),
             })
 
-        currencies = surveys.mapped(
-            'currency_id'
-        )
+        currencies = surveys.mapped('currency_id')
 
         if len(currencies) == 1:
             currency = currencies[0]
@@ -1059,17 +1047,13 @@ class CrmLead(models.Model):
     def action_create_engineering_survey(self):
         self.ensure_one()
 
-        if not self.partner_id:
-            raise UserError(
-                _(
-                    'Please select a Customer on this Lead '
-                    'before creating an Engineering Site Survey.'
-                )
-            )
-
         if not self.survey_id:
             survey_vals = {
-                'partner_id': self.partner_id.id,
+                'partner_id': (
+                    self.partner_id.id
+                    if self.partner_id
+                    else False
+                ),
                 'location': (
                     self.street
                     or self.city
@@ -1077,7 +1061,11 @@ class CrmLead(models.Model):
                 ),
                 'contact_person': (
                     self.contact_name
-                    or self.partner_id.name
+                    or (
+                        self.partner_id.name
+                        if self.partner_id
+                        else ''
+                    )
                 ),
                 'contact_phone': (
                     self.phone
@@ -1093,16 +1081,15 @@ class CrmLead(models.Model):
 
             self.survey_id = new_survey.id
 
-        else:
-            new_survey = self.survey_id
-
         return {
-            'type': 'ir.actions.act_window',
-            'name': _('Engineering Site Survey'),
-            'res_model': 'engineering.site.survey',
-            'view_mode': 'form',
-            'res_id': new_survey.id,
-            'target': 'current',
+            'effect': {
+                'fadeout': 'slow',
+                'message': _(
+                    'Engineering Site Survey successfully created '
+                    'in Draft status!'
+                ),
+                'type': 'rainbow_man',
+            }
         }
 
     def action_reset_engineering_survey(self):
