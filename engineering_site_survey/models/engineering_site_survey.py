@@ -648,14 +648,18 @@ class EngineeringSiteSurvey(models.Model):
             'name': (
                 f"Lead from Survey: "
                 f"{self.name} - {self.partner_id.name}"
+                + (f" ({self.contact_person})" if self.contact_person else "")
             ),
             'partner_id': self.partner_id.id,
-            'contact_name': self.contact_person,
+            'contact_name': self.contact_person or '',
+            'partner_name': self.partner_id.name if self.partner_id else '',
             'phone': self.contact_phone,
             'survey_id': self.id,
             'description': (
                 f"<p>Generated from Engineering Site Survey: "
                 f"<b>{self.name}</b></p>"
+                f"<p>Customer / Company: {self.partner_id.name or ''}</p>"
+                f"<p>Customer Name: {self.contact_person or ''}</p>"
                 f"<p>Location: {self.location or ''}</p>"
                 f"<p>Proposed Solution: "
                 f"{self.proposed_solution or ''}</p>"
