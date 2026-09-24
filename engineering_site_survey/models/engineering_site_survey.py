@@ -1047,13 +1047,17 @@ class CrmLead(models.Model):
     def action_create_engineering_survey(self):
         self.ensure_one()
 
+        if not self.partner_id:
+            raise UserError(
+                _(
+                    'Please select a Customer on this Lead '
+                    'before creating an Engineering Site Survey.'
+                )
+            )
+
         if not self.survey_id:
             survey_vals = {
-                'partner_id': (
-                    self.partner_id.id
-                    if self.partner_id
-                    else False
-                ),
+                'partner_id': self.partner_id.id,
                 'location': (
                     self.street
                     or self.city
@@ -1061,11 +1065,8 @@ class CrmLead(models.Model):
                 ),
                 'contact_person': (
                     self.contact_name
-                    or (
-                        self.partner_id.name
-                        if self.partner_id
-                        else ''
-                    )
+                    or self.partner_id.name
+                    or ''
                 ),
                 'contact_phone': (
                     self.phone
