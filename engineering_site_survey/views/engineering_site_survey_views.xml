@@ -1,5 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- Expense Types Views -->
+
+    <!-- EXPENSE TYPE LIST VIEW -->
     <record id="view_engineering_expense_type_list" model="ir.ui.view">
         <field name="name">engineering.expense.type.list</field>
         <field name="model">engineering.expense.type</field>
@@ -11,7 +13,7 @@
         </field>
     </record>
 
-    <!-- Site Survey Views -->
+    <!-- SITE SURVEY LIST VIEW -->
     <record id="view_engineering_site_survey_list" model="ir.ui.view">
         <field name="name">engineering.site.survey.list</field>
         <field name="model">engineering.site.survey</field>
@@ -31,47 +33,69 @@
         </field>
     </record>
 
+    <!-- SITE SURVEY FORM VIEW -->
     <record id="view_engineering_site_survey_form" model="ir.ui.view">
         <field name="name">engineering.site.survey.form</field>
         <field name="model">engineering.site.survey</field>
         <field name="arch" type="xml">
             <form string="Engineering Site Survey">
                 <header>
-                    <!-- Viwanja vya siri vya kutambua ruhusa za mtumiaji -->
                     <field name="is_approver" invisible="1"/>
                     <field name="is_responsible_engineer" invisible="1"/>
-                    
+                    <field name="lead_created" invisible="1"/>
+                    <field name="ticket_created" invisible="1"/>
+
                     <button name="action_submit" type="object" string="Submit" class="btn-primary" invisible="state != 'draft'"/>
-                    
-                    <!-- Vitufe vya Approver -->
+
                     <button name="action_approve" type="object" string="Approve" class="btn-primary" invisible="state != 'submitted' or not is_approver"/>
                     <button name="action_reject" type="object" string="Reject" class="btn-danger" invisible="state != 'submitted' or not is_approver"/>
                     <button name="action_cancel_approval" type="object" string="Cancel Approval" class="btn-warning" invisible="state != 'approved' or not is_approver"/>
-                    
-                    <!-- Kitufe cha Survey Done: Kinaonekana ikiwa Approved na kwa Responsible Engineer pekee -->
+
                     <button name="action_survey_done" type="object" string="Survey Done" class="btn-primary" invisible="state != 'approved' or not is_responsible_engineer"/>
-                    
+
                     <button name="action_submit_report" type="object" string="Submit Report" class="btn-primary" invisible="state != 'survey_done'"/>
                     <button name="action_complete" type="object" string="Complete" class="btn-primary" invisible="state != 'report_submitted'"/>
+
+                    <button name="action_continue_lead" type="object" string="Continue as Lead" class="btn-secondary" invisible="state != 'completed' or lead_created"/>
+                    <button name="action_reset_lead" type="object" string="Reset Lead" class="btn-warning" invisible="state != 'completed' or not lead_created"/>
                     
+                    <button name="action_help_desk" type="object" string="Need Help Desk" class="btn-secondary" invisible="state != 'completed' or ticket_created"/>
+                    <button name="action_reset_help_desk" type="object" string="Reset Help Desk" class="btn-warning" invisible="state != 'completed' or not ticket_created"/>
+
                     <button name="action_cancel" type="object" string="Cancel" invisible="state in ('completed','cancelled','rejected','approved')"/>
                     <button name="action_reset_draft" type="object" string="Reset to Draft" invisible="state not in ('cancelled','rejected')"/>
-                    
+
                     <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,survey_done,report_submitted,completed"/>
                 </header>
+
                 <sheet>
-                    <div class="oe_button_box" name="button_box"/>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_leads" type="object" class="oe_stat_button" icon="fa-star">
+                            <field name="lead_count" widget="statinfo" string="Leads"/>
+                        </button>
+                        <button name="action_view_tickets" type="object" class="oe_stat_button" icon="fa-life-ring">
+                            <field name="ticket_count" widget="statinfo" string="Helpdesk"/>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-money" style="pointer-events: none;">
+                            <field name="total_requested" widget="statinfo" options="{'currency_field': 'currency_id'}" string="Total Request"/>
+                        </button>
+                    </div>
+
                     <widget name="web_ribbon" title="Completed" bg_color="text-bg-success" invisible="state != 'completed'"/>
                     <widget name="web_ribbon" title="Rejected" bg_color="text-bg-danger" invisible="state != 'rejected'"/>
                     <widget name="web_ribbon" title="Cancelled" bg_color="text-bg-secondary" invisible="state != 'cancelled'"/>
-                    
-                    <!-- Onyo/Ujumbe wa Sababu za Kukataa kama survey imekataliwa -->
+
                     <div class="alert alert-danger text-center" role="alert" invisible="state != 'rejected'">
                         <h4><i class="fa fa-exclamation-triangle"/> Survey Rejected</h4>
                         <field name="rejection_reason" readonly="1"/>
                     </div>
 
-                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+
                     <group>
                         <group>
                             <field name="partner_id"/>
@@ -80,6 +104,7 @@
                             <field name="contact_person"/>
                             <field name="contact_phone"/>
                         </group>
+
                         <group>
                             <field name="responsible_engineer_id"/>
                             <field name="team_member_ids" widget="many2many_tags"/>
@@ -89,9 +114,10 @@
                             <field name="currency_id" groups="base.group_multi_currency"/>
                         </group>
                     </group>
+
                     <notebook>
                         <page string="Survey Description">
-                            <field name="survey_purpose" placeholder="Describe the purpose and scope of the planned engineering site survey..."/>
+                            <field name="survey_purpose" placeholder="Describe the purpose and scope..."/>
                         </page>
                         <page string="Expenses">
                             <group>
@@ -106,18 +132,19 @@
                                     <field name="expense_type_id"/>
                                     <field name="cost"/>
                                     <field name="description"/>
-                                    <field name="amount" sum="Total"/>
+                                    <field name="amount"/>
                                 </list>
                             </field>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="expense_total" string="Grand Total" widget="monetary" options="{'currency_field': 'currency_id'}" class="fw-bold fs-5"/>
+                            </group>
+                            <div class="clearfix"/>
                         </page>
                         <page string="Products">
                             <field name="product_line_ids">
                                 <list editable="bottom">
                                     <field name="product_id"/>
                                     <field name="description"/>
-                                    <field name="quantity"/>
-                                    <field name="unit_price"/>
-                                    <field name="price_subtotal" sum="Total"/>
                                 </list>
                             </field>
                         </page>
@@ -133,6 +160,10 @@
                                     <field name="total_amount" sum="Total"/>
                                 </list>
                             </field>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="fuel_total" string="Grand Total" widget="monetary" options="{'currency_field': 'currency_id'}" class="fw-bold fs-5"/>
+                            </group>
+                            <div class="clearfix"/>
                         </page>
                         <page string="Site Survey Report">
                             <group>
@@ -158,16 +189,13 @@
                             </group>
                         </page>
                     </notebook>
-                    <group class="oe_subtotal_footer oe_right">
-                        <field name="total_requested" widget="monetary" options="{'currency_field': 'currency_id'}" class="fw-bold fs-5"/>
-                    </group>
-                    <div class="clearfix"/>
                 </sheet>
                 <chatter/>
             </form>
         </field>
     </record>
 
+    <!-- SEARCH VIEW -->
     <record id="view_engineering_site_survey_search" model="ir.ui.view">
         <field name="name">engineering.site.survey.search</field>
         <field name="model">engineering.site.survey</field>
@@ -192,7 +220,7 @@
         </field>
     </record>
 
-    <!-- Settings View -->
+    <!-- SETTINGS VIEW -->
     <record id="res_config_settings_view_form_engineering" model="ir.ui.view">
         <field name="name">res.config.settings.view.form.inherit.engineering</field>
         <field name="model">res.config.settings</field>
@@ -201,7 +229,7 @@
             <xpath expr="//form" position="inside">
                 <app data-string="Engineering Survey" string="Engineering Survey" name="engineering_site_survey">
                     <block title="Approvals" name="engineering_approval_setting_container">
-                        <setting id="survey_approver_setting" title="Default Approver" help="Set the default user responsible for approving site surveys">
+                        <setting id="survey_approver_setting" title="Default Approver" help="Set default user">
                             <field name="survey_approver_id"/>
                         </setting>
                     </block>
@@ -210,10 +238,11 @@
         </field>
     </record>
 
+    <!-- ACTIONS -->
     <record id="action_engineering_site_survey" model="ir.actions.act_window">
         <field name="name">Site Surveys</field>
         <field name="res_model">engineering.site.survey</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">list,form,kanban,graph,pivot</field>
     </record>
 
     <record id="action_engineering_expense_type" model="ir.actions.act_window">
@@ -227,14 +256,28 @@
         <field name="res_model">res.config.settings</field>
         <field name="view_mode">form</field>
         <field name="target">inline</field>
-        <field name="context">{'module' : 'engineering_site_survey'}</field>
+        <field name="context">{'module': 'engineering_site_survey'}</field>
     </record>
 
+    <!-- CLIENT ACTION YA DASHBOARD -->
+    <record id="action_client_engineering_dashboard" model="ir.actions.client">
+        <field name="name">Engineering Dashboard</field>
+        <field name="tag">engineering_dashboard_tag</field>
+    </record>
+
+    <!-- MENUS -->
     <menuitem id="menu_engineering_site_survey_root" name="Engineering Survey" web_icon="engineering_site_survey,static/description/icon.png" sequence="30"/>
-    <menuitem id="menu_engineering_site_survey" name="Request Site Survey" parent="menu_engineering_site_survey_root" action="action_engineering_site_survey" sequence="10"/>
     
-    <!-- Configuration Menu -->
+    <menuitem id="menu_engineering_dashboard_root" 
+              name="Dashboard" 
+              parent="menu_engineering_site_survey_root" 
+              action="action_client_engineering_dashboard"
+              sequence="1"/>
+
+    <menuitem id="menu_engineering_site_survey" name="Request Site Survey" parent="menu_engineering_site_survey_root" action="action_engineering_site_survey" sequence="10"/>
+
     <menuitem id="menu_engineering_config" name="Configuration" parent="menu_engineering_site_survey_root" sequence="100"/>
     <menuitem id="menu_engineering_config_settings" name="Settings" parent="menu_engineering_config" action="action_engineering_config_settings" sequence="1"/>
     <menuitem id="menu_engineering_expense_type" name="Expense Types" parent="menu_engineering_config" action="action_engineering_expense_type" sequence="10"/>
+
 </odoo>
