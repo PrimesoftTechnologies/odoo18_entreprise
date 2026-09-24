@@ -644,21 +644,23 @@ class EngineeringSiteSurvey(models.Model):
                 _('CRM module is not installed or loaded.')
             )
 
+        partner_name = self.partner_id.name if self.partner_id else ''
+
         lead_vals = {
             'name': (
                 f"Lead from Survey: "
-                f"{self.name} - {self.partner_id.name}"
+                f"{self.name} - {partner_name}"
                 + (f" ({self.contact_person})" if self.contact_person else "")
             ),
-            'partner_id': self.partner_id.id,
+            'partner_id': self.partner_id.id if self.partner_id else False,
+            'partner_name': partner_name,
             'contact_name': self.contact_person or '',
-            'partner_name': self.partner_id.name if self.partner_id else '',
             'phone': self.contact_phone,
             'survey_id': self.id,
             'description': (
                 f"<p>Generated from Engineering Site Survey: "
                 f"<b>{self.name}</b></p>"
-                f"<p>Customer / Company: {self.partner_id.name or ''}</p>"
+                f"<p>Customer / Company: {partner_name}</p>"
                 f"<p>Customer Name: {self.contact_person or ''}</p>"
                 f"<p>Location: {self.location or ''}</p>"
                 f"<p>Proposed Solution: "
