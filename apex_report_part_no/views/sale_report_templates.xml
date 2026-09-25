@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_saleorder_document_inherit_part_no" inherit_id="sale.report_saleorder_document">
+        <!-- Tunatafuta sehemu inayotumia line.name kwenye desc ya sale order na kuweka jina pekee la bidhaa -->
+        <xpath expr="//span[@t-field='line.name']" position="replace">
+            <span t-field="line.product_id.name"/>
+        </xpath>
+    </template>
+</odoo>
