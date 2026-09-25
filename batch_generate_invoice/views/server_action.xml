@@ -158,9 +158,7 @@
         </field>
     </record>
 
-    <!-- ==========================================================
-         6. MENUITEM UNDER ACCOUNTING
-         ========================================================== -->
+   
     <menuitem id="menu_batch_invoice_customer"
               name="Batch Invoices"
               parent="account.menu_finance_receivables"
