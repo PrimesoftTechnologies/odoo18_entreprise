@@ -6,11 +6,10 @@ class AccountMove(models.Model):
 
     sas_reference = fields.Char(string="SAS Reference")
     antrak_job_no = fields.Char(string="Antrak Job No")
-    po_no = fields.Char(string="PO No")  # Field mpya ya PO No kwenye Invoice
+    po_no = fields.Char(string="PO No")
     terms_template_id = fields.Many2one('sale.terms.template', string="Bank Details For Payment", ondelete='set null')
 
 
-# 1. Hifadhi ya Kudumu (Database Record) kwa ajili ya Batch zote zinazozalishwa
 class BatchInvoice(models.Model):
     _name = 'batch.invoice'
     _description = 'Batch Invoice Record'
@@ -18,16 +17,13 @@ class BatchInvoice(models.Model):
 
     name = fields.Char(string="Batch ID / Number", readonly=True, default="New")
     bank_details_id = fields.Many2one('sale.terms.template', string="Bank Details For Payment", readonly=True, ondelete='set null')
-    due_date = fields.Date(string="Due Date", readonly=True)  # Due Date ya kudumu
+    due_date = fields.Date(string="Due Date", readonly=True)
     separable_portion = fields.Selection([
         ('01', 'SP-01'),
         ('02', 'SP-02')
-    ], string='Separable Portion', readonly=True, default='01')  # SEPARABLE PORTION YA KUDUMU
+    ], string='Separable Portion', readonly=True, default='01')
     
-    # IMEONGEZWA HAPA: Field ya nani aliyetengeneza (Responsible)
     create_uid = fields.Many2one('res.users', string="Responsible", readonly=True)
-    
-    # IMEONGEZWA HAPA: Computed fields kwa ajili ya jumla ya kiasi (Total Amount)
     total_amount = fields.Monetary(string="Total Amount", compute='_compute_total_amount', currency_field='currency_id')
     currency_id = fields.Many2one('res.currency', compute='_compute_total_amount')
 
@@ -77,7 +73,7 @@ class BatchInvoiceLine(models.Model):
     )
     sas_reference = fields.Char(string="SAS Reference")
     antrak_job_no = fields.Char(string="Antrak Job No")
-    po_no = fields.Char(string="PO No")  # Imeongezwa hapa kwenye Batch Line
+    po_no = fields.Char(string="PO No")
     currency_id = fields.Many2one(
         related='invoice_id.currency_id',
         string="Currency",
@@ -91,18 +87,17 @@ class BatchInvoiceLine(models.Model):
     )
 
 
-# 2. Wizard ya kuchagua na kuhariri kabla ya kutengeneza
 class BatchInvoiceWizard(models.TransientModel):
     _name = 'batch.invoice.wizard'
     _description = 'Generate Batch Invoice Wizard'
 
     name = fields.Char(string="Batch Number", readonly=True, default="New")
     bank_details_id = fields.Many2one('sale.terms.template', string="Bank Details For Payment", ondelete='set null')
-    due_date = fields.Date(string="Due Date")  # Due Date kwenye Wizard
+    due_date = fields.Date(string="Due Date")
     separable_portion = fields.Selection([
         ('01', 'SP-01'),
         ('02', 'SP-02')
-    ], string='Separable Portion', default='01', required=True)  # SEPARABLE PORTION KWENYE WIZARD (DROP DOWN)
+    ], string='Separable Portion', default='01', required=True)
     
     line_ids = fields.One2many(
         'batch.invoice.wizard.line',
@@ -122,7 +117,7 @@ class BatchInvoiceWizard(models.TransientModel):
                 'invoice_id': inv.id,
                 'sas_reference': inv.sas_reference or '',
                 'antrak_job_no': inv.antrak_job_no or '',
-                'po_no': inv.po_no or '',  # Inavuta PO No ya sasa kwenye wizard
+                'po_no': inv.po_no or '',
             }))
 
         res['line_ids'] = lines
@@ -134,8 +129,8 @@ class BatchInvoiceWizard(models.TransientModel):
         batch_vals = {
             'name': batch_name,
             'bank_details_id': self.bank_details_id.id if self.bank_details_id else False,
-            'due_date': self.due_date,  # Inahifadhi Due Date kwenye Batch Record
-            'separable_portion': self.separable_portion,  # INAHIFADHI SEPARABLE PORTION ILYOCHAGULIWA
+            'due_date': self.due_date,
+            'separable_portion': self.separable_portion,
             'line_ids': []
         }
 
@@ -144,7 +139,7 @@ class BatchInvoiceWizard(models.TransientModel):
                 write_vals = {
                     'sas_reference': line.sas_reference,
                     'antrak_job_no': line.antrak_job_no,
-                    'po_no': line.po_no,  # Inasave mabadiliko ya PO No kwenye account.move kama ikibadilishwa
+                    'po_no': line.po_no,
                 }
                 if self.bank_details_id:
                     write_vals['terms_template_id'] = self.bank_details_id.id
@@ -154,7 +149,7 @@ class BatchInvoiceWizard(models.TransientModel):
                 'invoice_id': line.invoice_id.id,
                 'sas_reference': line.sas_reference,
                 'antrak_job_no': line.antrak_job_no,
-                'po_no': line.po_no,  # Inaingiza PO No kwenye kudumu (batch.invoice.line)
+                'po_no': line.po_no,
             }))
 
         new_batch = self.env['batch.invoice'].create(batch_vals)
@@ -189,10 +184,9 @@ class BatchInvoiceWizardLine(models.TransientModel):
         string="Invoice Number",
         readonly=True
     )
-    sas_field = fields.Char(string="SAS") # Keep or adjust if needed, original code had sas_reference
     sas_reference = fields.Char(string="SAS Reference")
     antrak_job_no = fields.Char(string="Antrak Job No")
-    po_no = fields.Char(string="PO No")  # Field ya PO No kwenye Wizard Line
+    po_no = fields.Char(string="PO No")
     currency_id = fields.Many2one(
         related='invoice_id.currency_id',
         string="Currency",

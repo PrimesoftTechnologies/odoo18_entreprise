@@ -2,7 +2,7 @@
 <odoo>
 
     <!-- ==========================================================
-         BATCH INVOICE TREE VIEW (HISTORY LIST - CREATE DISABLED)
+         1. BATCH INVOICE TREE VIEW (HISTORY LIST)
          ========================================================== -->
     <record id="view_batch_invoice_tree" model="ir.ui.view">
         <field name="name">batch.invoice.tree</field>
@@ -20,7 +20,7 @@
     </record>
 
     <!-- ==========================================================
-         BATCH INVOICE FORM VIEW (DETAILS FOR EACH BATCH ID)
+         2. BATCH INVOICE FORM VIEW (DETAILS)
          ========================================================== -->
     <record id="view_batch_invoice_form" model="ir.ui.view">
         <field name="name">batch.invoice.form</field>
@@ -51,7 +51,7 @@
                             <field name="invoice_number" string="Docket No. / Invoice" readonly="1"/>
                             <field name="po_no" string="PO Description"/> 
                             <field name="sas_reference" string="SAS Reference"/>
-                            <field name="antrak_job_no" string="Antrak Job No"/>        
+                            <field name="antrak_job_no" string="Antrak Job No"/>          
                             <field name="amount" string="Amount" readonly="1" sum="Total"/>
                         </list>
                     </field>
@@ -61,7 +61,7 @@
     </record>
 
     <!-- ==========================================================
-         BATCH INVOICE WIZARD FORM (POP-UP WITH BANK DROPDOWN)
+         3. BATCH INVOICE WIZARD FORM (POP-UP)
          ========================================================== -->
     <record id="view_batch_invoice_wizard_form" model="ir.ui.view">
         <field name="name">batch.invoice.wizard.form</field>
@@ -72,11 +72,9 @@
                     <group>
                         <field name="name" readonly="1" invisible="name == 'New'"/>
                         <group>
-                            <!-- Dropdown ya Bank Details kwenye Pop-up -->
                             <field name="bank_details_id" options="{'no_create': True}" string="Bank Details For Payment"/>
                         </group>
                         <group>
-                            <!-- Due Date na Separable Portion kwenye Pop-up -->
                             <field name="due_date" string="Due Date"/>
                             <field name="separable_portion" string="Separable Portion"/>
                         </group>
@@ -103,7 +101,7 @@
     </record>
 
     <!-- ==========================================================
-         WINDOW ACTION FOR WIZARD
+         4. WINDOW ACTION FOR WIZARD
          ========================================================== -->
     <record id="action_open_batch_wizard_window" model="ir.actions.act_window">
         <field name="name">Generate Batch Invoice</field>
@@ -114,7 +112,7 @@
     </record>
 
     <!-- ==========================================================
-         WINDOW ACTION FOR BATCH HISTORY LIST
+         5. WINDOW ACTION FOR BATCH HISTORY LIST (Kimeondolewa group_by)
          ========================================================== -->
     <record id="action_batch_invoice_history" model="ir.actions.act_window">
         <field name="name">Batch Invoices</field>
@@ -128,7 +126,7 @@
     </record>
 
     <!-- ==========================================================
-         MENUITEM UNDER ACCOUNTING (CUSTOMERS SECTION)
+         6. MENUITEM UNDER ACCOUNTING
          ========================================================== -->
     <menuitem id="menu_batch_invoice_customer"
               name="Batch Invoices"
@@ -137,7 +135,7 @@
               sequence="30"/>
 
     <!-- ==========================================================
-         ACCOUNT MOVE TREE VIEW INHERIT
+         7. ACCOUNT MOVE TREE VIEW INHERIT
          ========================================================== -->
     <record id="view_move_tree_inherited_batch" model="ir.ui.view">
         <field name="name">account.move.tree.inherited.batch</field>
