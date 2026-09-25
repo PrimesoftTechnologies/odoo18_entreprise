@@ -1,741 +1,745 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
-<t t-name="engineering_dashboard_template">
 
-    <div
-        class="container-fluid o_engineering_dashboard my-4"
-        style="
-            font-family: Tahoma, Arial, sans-serif;
-            overflow-y: auto;
-            height: calc(100vh - 80px);
-        "
-    >
-
-        <div class="row mb-4">
-            <div class="col-12 text-center">
-
-                <h2
-                    class="fw-bold"
-                    style="
-                        color: #333;
-                        font-family: Tahoma, Arial, sans-serif;
-                    "
-                >
-                    Engineering Site Survey Dashboard
-                </h2>
-
-                <hr
-                    style="
-                        width: 200px;
-                        margin: 10px auto;
-                        border-top: 3px solid #17a2b8;
-                    "
-                />
-
-            </div>
-        </div>
+    <t t-name="engineering_dashboard_template">
 
         <div
-            class="row bg-white p-3 mb-3 rounded shadow-sm align-items-end"
-            style="font-family: Tahoma, Arial, sans-serif;"
+            class="container-fluid o_engineering_dashboard my-4"
+            style="
+                font-family: Tahoma, Arial, sans-serif;
+                overflow-y: auto;
+                height: calc(100vh - 80px);
+            "
         >
 
-            <div class="col-md-3 mb-2">
+            <div class="row mb-4">
+                <div class="col-12">
 
-                <label class="form-label fw-bold text-muted small">
-                    <i class="fa fa-calendar"/>
-                    From Date
-                </label>
+                    <div
+                        class="w-100 px-4 py-3 shadow-sm"
+                        style="
+                            background-color: #88a9c3;
+                            font-family: Tahoma, Arial, sans-serif;
+                        "
+                    >
 
-                <input
-                    type="date"
-                    id="dash_from_date"
-                    class="form-control"
-                    t-model="state.from_date"
-                />
-
-            </div>
-
-            <div class="col-md-3 mb-2">
-
-                <label class="form-label fw-bold text-muted small">
-                    <i class="fa fa-calendar"/>
-                    To Date
-                </label>
-
-                <input
-                    type="date"
-                    id="dash_to_date"
-                    class="form-control"
-                    t-model="state.to_date"
-                />
-
-            </div>
-
-            <div class="col-md-3 mb-2">
-
-                <label class="form-label fw-bold text-muted small">
-                    <i class="fa fa-filter"/>
-                    Stage
-                </label>
-
-                <select
-                    id="dash_stage"
-                    class="form-select"
-                    t-model="state.stage"
-                >
-                    <option value="all">
-                        All Stages
-                    </option>
-
-                    <option value="draft">
-                        Draft
-                    </option>
-
-                    <option value="submitted">
-                        Submitted
-                    </option>
-
-                    <option value="approved">
-                        Approved
-                    </option>
-
-                    <option value="rejected">
-                        Rejected
-                    </option>
-
-                    <option value="survey_done">
-                        Survey Done
-                    </option>
-
-                    <option value="report_submitted">
-                        Report Submitted
-                    </option>
-
-                    <option value="completed">
-                        Completed
-                    </option>
-                </select>
-
-            </div>
-
-            <div class="col-md-3 mb-2">
-
-                <button
-                    type="button"
-                    class="btn w-100 text-white fw-bold"
-                    style="
-                        background-color: #6f42c1;
-                        font-family: Tahoma, Arial, sans-serif;
-                    "
-                    t-on-click="onSearchClick"
-                >
-                    <i class="fa fa-search"/>
-                    Search
-                </button>
-
-            </div>
-
-        </div>
-
-        <div class="row mb-4">
-
-            <div class="col-12">
-
-                <div
-                    class="d-flex align-items-center justify-content-between px-3 py-2 rounded shadow-sm"
-                    style="
-                        background-color: #ffffff;
-                        border-left: 4px solid #17a2b8;
-                        font-family: Tahoma, Arial, sans-serif;
-                    "
-                >
-
-                    <div class="d-flex align-items-center">
-
-                        <div
-                            class="d-flex align-items-center justify-content-center rounded-circle me-2"
+                        <h2
+                            class="fw-bold mb-0 text-white"
                             style="
-                                width: 32px;
-                                height: 32px;
-                                background-color: #17a2b8;
-                                color: #ffffff;
+                                font-family: Tahoma, Arial, sans-serif;
                             "
                         >
-                            <i class="fa fa-money"/>
+                            Engineering Site Survey Dashboard
+                        </h2>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <div
+                class="row bg-white p-3 mb-3 rounded shadow-sm align-items-end"
+                style="font-family: Tahoma, Arial, sans-serif;"
+            >
+
+                <div class="col-md-3 mb-2">
+
+                    <label class="form-label fw-bold text-muted small">
+                        <i class="fa fa-calendar"/>
+                        From Date
+                    </label>
+
+                    <input
+                        type="date"
+                        id="dash_from_date"
+                        class="form-control"
+                        t-model="state.from_date"
+                    />
+
+                </div>
+
+                <div class="col-md-3 mb-2">
+
+                    <label class="form-label fw-bold text-muted small">
+                        <i class="fa fa-calendar"/>
+                        To Date
+                    </label>
+
+                    <input
+                        type="date"
+                        id="dash_to_date"
+                        class="form-control"
+                        t-model="state.to_date"
+                    />
+
+                </div>
+
+                <div class="col-md-3 mb-2">
+
+                    <label class="form-label fw-bold text-muted small">
+                        <i class="fa fa-filter"/>
+                        Stage
+                    </label>
+
+                    <select
+                        id="dash_stage"
+                        class="form-select"
+                        t-model="state.stage"
+                    >
+                        <option value="all">
+                            All Stages
+                        </option>
+
+                        <option value="draft">
+                            Draft
+                        </option>
+
+                        <option value="submitted">
+                            Submitted
+                        </option>
+
+                        <option value="approved">
+                            Approved
+                        </option>
+
+                        <option value="rejected">
+                            Rejected
+                        </option>
+
+                        <option value="survey_done">
+                            Survey Done
+                        </option>
+
+                        <option value="report_submitted">
+                            Report Submitted
+                        </option>
+
+                        <option value="completed">
+                            Completed
+                        </option>
+                    </select>
+
+                </div>
+
+                <div class="col-md-3 mb-2">
+
+                    <button
+                        type="button"
+                        class="btn w-100 text-white fw-bold"
+                        style="
+                            background-color: #6f42c1;
+                            font-family: Tahoma, Arial, sans-serif;
+                        "
+                        t-on-click="onSearchClick"
+                    >
+                        <i class="fa fa-search"/>
+                        Search
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="row mb-4">
+
+                <div class="col-12">
+
+                    <div
+                        class="d-flex align-items-center justify-content-between px-3 py-2 rounded shadow-sm"
+                        style="
+                            background-color: #ffffff;
+                            border-left: 4px solid #17a2b8;
+                            font-family: Tahoma, Arial, sans-serif;
+                        "
+                    >
+
+                        <div class="d-flex align-items-center">
+
+                            <div
+                                class="d-flex align-items-center justify-content-center rounded-circle me-2"
+                                style="
+                                    width: 32px;
+                                    height: 32px;
+                                    background-color: #17a2b8;
+                                    color: #ffffff;
+                                "
+                            >
+                                <i class="fa fa-money"/>
+                            </div>
+
+                            <span
+                                class="fw-bold text-muted"
+                                style="font-size: 13px;"
+                            >
+                                TOTAL AMOUNT REQUESTED
+                            </span>
+
                         </div>
 
                         <span
-                            class="fw-bold text-muted"
-                            style="font-size: 13px;"
+                            class="fw-bold"
+                            style="
+                                color: #17a2b8;
+                                font-size: 18px;
+                            "
                         >
-                            TOTAL AMOUNT REQUESTED
+                            <t t-if="state.currency_code">
+                                <t t-esc="state.currency_code"/>
+                                <t t-esc="' '"/>
+                            </t>
+
+                            <t t-esc="formatAmount(state.total_amount)"/>
                         </span>
 
                     </div>
 
-                    <span
-                        class="fw-bold"
-                        style="
-                            color: #17a2b8;
-                            font-size: 18px;
-                        "
-                    >
-                        <t t-if="state.currency_code">
-                            <t t-esc="state.currency_code"/>
-                            <t t-esc="' '"/>
-                        </t>
-
-                        <t t-esc="formatAmount(state.total_amount)"/>
-                    </span>
-
                 </div>
 
             </div>
 
-        </div>
+            <div class="row">
 
-        <div class="row">
-
-            <div class="col-xl-3 col-md-6 mb-4">
-
-                <div
-                    class="card text-white shadow border-0 h-100"
-                    style="
-                        background-color: #5c6873;
-                        border-radius: 6px;
-                        font-family: Tahoma, Arial, sans-serif;
-                    "
-                >
+                <div class="col-xl-3 col-md-6 mb-4">
 
                     <div
-                        class="card-body"
-                        style="min-height: 120px;"
-                    >
-
-                        <div class="d-flex justify-content-between align-items-center">
-
-                            <div>
-
-                                <h1
-                                    class="display-5 fw-bold mb-0 text-white"
-                                    t-esc="state.draft_count"
-                                />
-
-                                <p
-                                    class="card-text mt-1 text-white"
-                                    style="font-size: 15px;"
-                                >
-                                    Draft Surveys
-                                </p>
-
-                            </div>
-
-                            <div>
-                                <i
-                                    class="fa fa-file-text-o fa-3x text-white"
-                                    style="opacity: 0.45;"
-                                />
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <div
-                        class="card-footer d-flex justify-content-between align-items-center py-2"
+                        class="card text-white shadow border-0 h-100"
                         style="
                             background-color: #5c6873;
-                            border-top: 1px solid rgba(255,255,255,0.15);
-                            border-bottom-left-radius: 6px;
-                            border-bottom-right-radius: 6px;
+                            border-radius: 6px;
+                            font-family: Tahoma, Arial, sans-serif;
                         "
                     >
 
-                        <a
-                            href="#"
-                            class="text-decoration-none small fw-bold px-2 py-1 rounded"
-                            style="
-                                color: #f5f5f5;
-                                background-color: rgba(0,0,0,0.18);
-                            "
-                            t-on-click.prevent="() => this.onViewDetails('draft')"
+                        <div
+                            class="card-body"
+                            style="min-height: 120px;"
                         >
-                            View Details
-                        </a>
 
-                        <i
-                            class="fa fa-ellipsis-h"
-                            style="color: #e6e6e6;"
-                        />
+                            <div class="d-flex justify-content-between align-items-center">
 
-                    </div>
+                                <div>
 
-                </div>
+                                    <h1
+                                        class="display-5 fw-bold mb-0 text-white"
+                                        t-esc="state.draft_count"
+                                    />
 
-            </div>
+                                    <p
+                                        class="card-text mt-1 text-white"
+                                        style="font-size: 15px;"
+                                    >
+                                        Draft Surveys
+                                    </p>
 
-            <div class="col-xl-3 col-md-6 mb-4">
+                                </div>
 
-                <div
-                    class="card text-white shadow border-0 h-100"
-                    style="
-                        background-color: #ffc107;
-                        border-radius: 6px;
-                        font-family: Tahoma, Arial, sans-serif;
-                    "
-                >
-
-                    <div
-                        class="card-body"
-                        style="min-height: 120px;"
-                    >
-
-                        <div class="d-flex justify-content-between align-items-center">
-
-                            <div>
-
-                                <h1
-                                    class="display-5 fw-bold mb-0 text-white"
-                                    t-esc="state.pending_count"
-                                />
-
-                                <p
-                                    class="card-text mt-1 text-white"
-                                    style="font-size: 15px;"
-                                >
-                                    To Approve &amp; Pending
-                                </p>
+                                <div>
+                                    <i
+                                        class="fa fa-file-text-o fa-3x text-white"
+                                        style="opacity: 0.45;"
+                                    />
+                                </div>
 
                             </div>
 
-                            <div>
-                                <i
-                                    class="fa fa-clock-o fa-3x text-white"
-                                    style="opacity: 0.45;"
-                                />
-                            </div>
+                        </div>
+
+                        <div
+                            class="card-footer d-flex justify-content-between align-items-center py-2"
+                            style="
+                                background-color: #5c6873;
+                                border-top: 1px solid rgba(255,255,255,0.15);
+                                border-bottom-left-radius: 6px;
+                                border-bottom-right-radius: 6px;
+                            "
+                        >
+
+                            <a
+                                href="#"
+                                class="text-decoration-none small fw-bold px-2 py-1 rounded"
+                                style="
+                                    color: #f5f5f5;
+                                    background-color: rgba(0,0,0,0.18);
+                                "
+                                t-on-click.prevent="() => this.onViewDetails('draft')"
+                            >
+                                View Details
+                            </a>
+
+                            <i
+                                class="fa fa-ellipsis-h"
+                                style="color: #e6e6e6;"
+                            />
 
                         </div>
 
                     </div>
 
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+
                     <div
-                        class="card-footer d-flex justify-content-between align-items-center py-2"
+                        class="card text-white shadow border-0 h-100"
                         style="
                             background-color: #ffc107;
-                            border-top: 1px solid rgba(255,255,255,0.25);
-                            border-bottom-left-radius: 6px;
-                            border-bottom-right-radius: 6px;
+                            border-radius: 6px;
+                            font-family: Tahoma, Arial, sans-serif;
                         "
                     >
 
-                        <a
-                            href="#"
-                            class="text-decoration-none small fw-bold px-2 py-1 rounded"
-                            style="
-                                color: #f5f5f5;
-                                background-color: rgba(0,0,0,0.18);
-                            "
-                            t-on-click.prevent="() => this.onViewDetails('pending')"
+                        <div
+                            class="card-body"
+                            style="min-height: 120px;"
                         >
-                            View Details
-                        </a>
 
-                        <i
-                            class="fa fa-ellipsis-h"
-                            style="color: #f5f5f5;"
-                        />
+                            <div class="d-flex justify-content-between align-items-center">
 
-                    </div>
+                                <div>
 
-                </div>
+                                    <h1
+                                        class="display-5 fw-bold mb-0 text-white"
+                                        t-esc="state.pending_count"
+                                    />
 
-            </div>
+                                    <p
+                                        class="card-text mt-1 text-white"
+                                        style="font-size: 15px;"
+                                    >
+                                        Pending Surveys
+                                    </p>
 
-            <div class="col-xl-3 col-md-6 mb-4">
+                                </div>
 
-                <div
-                    class="card text-white shadow border-0 h-100"
-                    style="
-                        background-color: #dc3545;
-                        border-radius: 6px;
-                        font-family: Tahoma, Arial, sans-serif;
-                    "
-                >
-
-                    <div
-                        class="card-body"
-                        style="min-height: 120px;"
-                    >
-
-                        <div class="d-flex justify-content-between align-items-center">
-
-                            <div>
-
-                                <h1
-                                    class="display-5 fw-bold mb-0 text-white"
-                                    t-esc="state.rejected_count"
-                                />
-
-                                <p
-                                    class="card-text mt-1 text-white"
-                                    style="font-size: 15px;"
-                                >
-                                    Rejected Surveys
-                                </p>
+                                <div>
+                                    <i
+                                        class="fa fa-clock-o fa-3x text-white"
+                                        style="opacity: 0.45;"
+                                    />
+                                </div>
 
                             </div>
 
-                            <div>
-                                <i
-                                    class="fa fa-times-circle fa-3x text-white"
-                                    style="opacity: 0.45;"
-                                />
-                            </div>
+                        </div>
+
+                        <div
+                            class="card-footer d-flex justify-content-between align-items-center py-2"
+                            style="
+                                background-color: #ffc107;
+                                border-top: 1px solid rgba(255,255,255,0.15);
+                                border-bottom-left-radius: 6px;
+                                border-bottom-right-radius: 6px;
+                            "
+                        >
+
+                            <a
+                                href="#"
+                                class="text-decoration-none small fw-bold px-2 py-1 rounded"
+                                style="
+                                    color: #ffffff;
+                                    background-color: rgba(0,0,0,0.18);
+                                "
+                                t-on-click.prevent="() => this.onViewDetails('pending')"
+                            >
+                                View Details
+                            </a>
+
+                            <i
+                                class="fa fa-ellipsis-h"
+                                style="color: #ffffff;"
+                            />
 
                         </div>
 
                     </div>
 
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+
                     <div
-                        class="card-footer d-flex justify-content-between align-items-center py-2"
+                        class="card text-white shadow border-0 h-100"
                         style="
                             background-color: #dc3545;
-                            border-top: 1px solid rgba(255,255,255,0.15);
-                            border-bottom-left-radius: 6px;
-                            border-bottom-right-radius: 6px;
+                            border-radius: 6px;
+                            font-family: Tahoma, Arial, sans-serif;
                         "
                     >
 
-                        <a
-                            href="#"
-                            class="text-decoration-none small fw-bold px-2 py-1 rounded"
-                            style="
-                                color: #f5f5f5;
-                                background-color: rgba(0,0,0,0.18);
-                            "
-                            t-on-click.prevent="() => this.onViewDetails('rejected')"
+                        <div
+                            class="card-body"
+                            style="min-height: 120px;"
                         >
-                            View Details
-                        </a>
 
-                        <i
-                            class="fa fa-ellipsis-h"
-                            style="color: #f5f5f5;"
-                        />
+                            <div class="d-flex justify-content-between align-items-center">
 
-                    </div>
+                                <div>
 
-                </div>
+                                    <h1
+                                        class="display-5 fw-bold mb-0 text-white"
+                                        t-esc="state.rejected_count"
+                                    />
 
-            </div>
+                                    <p
+                                        class="card-text mt-1 text-white"
+                                        style="font-size: 15px;"
+                                    >
+                                        Rejected Surveys
+                                    </p>
 
-            <div class="col-xl-3 col-md-6 mb-4">
+                                </div>
 
-                <div
-                    class="card text-white shadow border-0 h-100"
-                    style="
-                        background-color: #fd7e14;
-                        border-radius: 6px;
-                        font-family: Tahoma, Arial, sans-serif;
-                    "
-                >
-
-                    <div
-                        class="card-body"
-                        style="min-height: 120px;"
-                    >
-
-                        <div class="d-flex justify-content-between align-items-center">
-
-                            <div>
-
-                                <h1
-                                    class="display-5 fw-bold mb-0 text-white"
-                                    t-esc="state.survey_done_count"
-                                />
-
-                                <p
-                                    class="card-text mt-1 text-white"
-                                    style="font-size: 15px;"
-                                >
-                                    Survey Done
-                                </p>
+                                <div>
+                                    <i
+                                        class="fa fa-times-circle fa-3x text-white"
+                                        style="opacity: 0.45;"
+                                    />
+                                </div>
 
                             </div>
 
-                            <div>
-                                <i
-                                    class="fa fa-map-marker fa-3x text-white"
-                                    style="opacity: 0.45;"
-                                />
-                            </div>
+                        </div>
+
+                        <div
+                            class="card-footer d-flex justify-content-between align-items-center py-2"
+                            style="
+                                background-color: #dc3545;
+                                border-top: 1px solid rgba(255,255,255,0.15);
+                                border-bottom-left-radius: 6px;
+                                border-bottom-right-radius: 6px;
+                            "
+                        >
+
+                            <a
+                                href="#"
+                                class="text-decoration-none small fw-bold px-2 py-1 rounded"
+                                style="
+                                    color: #ffffff;
+                                    background-color: rgba(0,0,0,0.18);
+                                "
+                                t-on-click.prevent="() => this.onViewDetails('rejected')"
+                            >
+                                View Details
+                            </a>
+
+                            <i
+                                class="fa fa-ellipsis-h"
+                                style="color: #ffffff;"
+                            />
 
                         </div>
 
                     </div>
 
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+
                     <div
-                        class="card-footer d-flex justify-content-between align-items-center py-2"
+                        class="card text-white shadow border-0 h-100"
                         style="
-                            background-color: #fd7e14;
-                            border-top: 1px solid rgba(255,255,255,0.15);
-                            border-bottom-left-radius: 6px;
-                            border-bottom-right-radius: 6px;
+                            background-color: #17a2b8;
+                            border-radius: 6px;
+                            font-family: Tahoma, Arial, sans-serif;
                         "
                     >
 
-                        <a
-                            href="#"
-                            class="text-decoration-none small fw-bold px-2 py-1 rounded"
-                            style="
-                                color: #f5f5f5;
-                                background-color: rgba(0,0,0,0.18);
-                            "
-                            t-on-click.prevent="() => this.onViewDetails('survey_done')"
+                        <div
+                            class="card-body"
+                            style="min-height: 120px;"
                         >
-                            View Details
-                        </a>
 
-                        <i
-                            class="fa fa-ellipsis-h"
-                            style="color: #f5f5f5;"
-                        />
+                            <div class="d-flex justify-content-between align-items-center">
 
-                    </div>
+                                <div>
 
-                </div>
+                                    <h1
+                                        class="display-5 fw-bold mb-0 text-white"
+                                        t-esc="state.survey_done_count"
+                                    />
 
-            </div>
+                                    <p
+                                        class="card-text mt-1 text-white"
+                                        style="font-size: 15px;"
+                                    >
+                                        Survey Done
+                                    </p>
 
-            <div class="col-xl-3 col-md-6 mb-4">
+                                </div>
 
-                <div
-                    class="card text-white shadow border-0 h-100"
-                    style="
-                        background-color: #6f42c1;
-                        border-radius: 6px;
-                        font-family: Tahoma, Arial, sans-serif;
-                    "
-                >
-
-                    <div
-                        class="card-body"
-                        style="min-height: 120px;"
-                    >
-
-                        <div class="d-flex justify-content-between align-items-center">
-
-                            <div>
-
-                                <h1
-                                    class="display-5 fw-bold mb-0 text-white"
-                                    t-esc="state.report_submitted_count"
-                                />
-
-                                <p
-                                    class="card-text mt-1 text-white"
-                                    style="font-size: 15px;"
-                                >
-                                    Report Submitted
-                                </p>
+                                <div>
+                                    <i
+                                        class="fa fa-check-circle fa-3x text-white"
+                                        style="opacity: 0.45;"
+                                    />
+                                </div>
 
                             </div>
 
-                            <div>
-                                <i
-                                    class="fa fa-file-text-o fa-3x text-white"
-                                    style="opacity: 0.45;"
-                                />
-                            </div>
+                        </div>
+
+                        <div
+                            class="card-footer d-flex justify-content-between align-items-center py-2"
+                            style="
+                                background-color: #17a2b8;
+                                border-top: 1px solid rgba(255,255,255,0.15);
+                                border-bottom-left-radius: 6px;
+                                border-bottom-right-radius: 6px;
+                            "
+                        >
+
+                            <a
+                                href="#"
+                                class="text-decoration-none small fw-bold px-2 py-1 rounded"
+                                style="
+                                    color: #ffffff;
+                                    background-color: rgba(0,0,0,0.18);
+                                "
+                                t-on-click.prevent="() => this.onViewDetails('survey_done')"
+                            >
+                                View Details
+                            </a>
+
+                            <i
+                                class="fa fa-ellipsis-h"
+                                style="color: #ffffff;"
+                            />
 
                         </div>
 
                     </div>
 
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+
                     <div
-                        class="card-footer d-flex justify-content-between align-items-center py-2"
+                        class="card text-white shadow border-0 h-100"
                         style="
                             background-color: #6f42c1;
-                            border-top: 1px solid rgba(255,255,255,0.15);
-                            border-bottom-left-radius: 6px;
-                            border-bottom-right-radius: 6px;
+                            border-radius: 6px;
+                            font-family: Tahoma, Arial, sans-serif;
                         "
                     >
 
-                        <a
-                            href="#"
-                            class="text-decoration-none small fw-bold px-2 py-1 rounded"
-                            style="
-                                color: #f5f5f5;
-                                background-color: rgba(0,0,0,0.18);
-                            "
-                            t-on-click.prevent="() => this.onViewDetails('report_submitted')"
+                        <div
+                            class="card-body"
+                            style="min-height: 120px;"
                         >
-                            View Details
-                        </a>
 
-                        <i
-                            class="fa fa-ellipsis-h"
-                            style="color: #f5f5f5;"
-                        />
+                            <div class="d-flex justify-content-between align-items-center">
 
-                    </div>
+                                <div>
 
-                </div>
+                                    <h1
+                                        class="display-5 fw-bold mb-0 text-white"
+                                        t-esc="state.report_submitted_count"
+                                    />
 
-            </div>
+                                    <p
+                                        class="card-text mt-1 text-white"
+                                        style="font-size: 15px;"
+                                    >
+                                        Report Submitted
+                                    </p>
 
-            <div class="col-xl-3 col-md-6 mb-4">
+                                </div>
 
-                <div
-                    class="card text-white shadow border-0 h-100"
-                    style="
-                        background-color: #28a745;
-                        border-radius: 6px;
-                        font-family: Tahoma, Arial, sans-serif;
-                    "
-                >
-
-                    <div
-                        class="card-body"
-                        style="min-height: 120px;"
-                    >
-
-                        <div class="d-flex justify-content-between align-items-center">
-
-                            <div>
-
-                                <h1
-                                    class="display-5 fw-bold mb-0 text-white"
-                                    t-esc="state.completed_count"
-                                />
-
-                                <p
-                                    class="card-text mt-1 text-white"
-                                    style="font-size: 15px;"
-                                >
-                                    Completed
-                                </p>
+                                <div>
+                                    <i
+                                        class="fa fa-file-text fa-3x text-white"
+                                        style="opacity: 0.45;"
+                                    />
+                                </div>
 
                             </div>
 
-                            <div>
-                                <i
-                                    class="fa fa-check-circle fa-3x text-white"
-                                    style="opacity: 0.45;"
-                                />
-                            </div>
+                        </div>
+
+                        <div
+                            class="card-footer d-flex justify-content-between align-items-center py-2"
+                            style="
+                                background-color: #6f42c1;
+                                border-top: 1px solid rgba(255,255,255,0.15);
+                                border-bottom-left-radius: 6px;
+                                border-bottom-right-radius: 6px;
+                            "
+                        >
+
+                            <a
+                                href="#"
+                                class="text-decoration-none small fw-bold px-2 py-1 rounded"
+                                style="
+                                    color: #ffffff;
+                                    background-color: rgba(0,0,0,0.18);
+                                "
+                                t-on-click.prevent="() => this.onViewDetails('report_submitted')"
+                            >
+                                View Details
+                            </a>
+
+                            <i
+                                class="fa fa-ellipsis-h"
+                                style="color: #ffffff;"
+                            />
 
                         </div>
 
                     </div>
 
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+
                     <div
-                        class="card-footer d-flex justify-content-between align-items-center py-2"
+                        class="card text-white shadow border-0 h-100"
                         style="
                             background-color: #28a745;
-                            border-top: 1px solid rgba(255,255,255,0.15);
-                            border-bottom-left-radius: 6px;
-                            border-bottom-right-radius: 6px;
+                            border-radius: 6px;
+                            font-family: Tahoma, Arial, sans-serif;
                         "
                     >
 
-                        <a
-                            href="#"
-                            class="text-decoration-none small fw-bold px-2 py-1 rounded"
-                            style="
-                                color: #f5f5f5;
-                                background-color: rgba(0,0,0,0.18);
-                            "
-                            t-on-click.prevent="() => this.onViewDetails('completed')"
+                        <div
+                            class="card-body"
+                            style="min-height: 120px;"
                         >
-                            View Details
-                        </a>
 
-                        <i
-                            class="fa fa-ellipsis-h"
-                            style="color: #f5f5f5;"
-                        />
+                            <div class="d-flex justify-content-between align-items-center">
 
-                    </div>
+                                <div>
 
-                </div>
+                                    <h1
+                                        class="display-5 fw-bold mb-0 text-white"
+                                        t-esc="state.completed_count"
+                                    />
 
-            </div>
+                                    <p
+                                        class="card-text mt-1 text-white"
+                                        style="font-size: 15px;"
+                                    >
+                                        Completed Surveys
+                                    </p>
 
-            <div class="col-xl-3 col-md-6 mb-4">
+                                </div>
 
-                <div
-                    class="card text-white shadow border-0 h-100"
-                    style="
-                        background-color: #007bff;
-                        border-radius: 6px;
-                        font-family: Tahoma, Arial, sans-serif;
-                    "
-                >
-
-                    <div
-                        class="card-body"
-                        style="min-height: 120px;"
-                    >
-
-                        <div class="d-flex justify-content-between align-items-center">
-
-                            <div>
-
-                                <h1
-                                    class="display-5 fw-bold mb-0 text-white"
-                                    t-esc="state.total_count"
-                                />
-
-                                <p
-                                    class="card-text mt-1 text-white"
-                                    style="font-size: 15px;"
-                                >
-                                    All Surveys
-                                </p>
+                                <div>
+                                    <i
+                                        class="fa fa-check-square-o fa-3x text-white"
+                                        style="opacity: 0.45;"
+                                    />
+                                </div>
 
                             </div>
 
-                            <div>
-                                <i
-                                    class="fa fa-users fa-3x text-white"
-                                    style="opacity: 0.45;"
-                                />
-                            </div>
+                        </div>
+
+                        <div
+                            class="card-footer d-flex justify-content-between align-items-center py-2"
+                            style="
+                                background-color: #28a745;
+                                border-top: 1px solid rgba(255,255,255,0.15);
+                                border-bottom-left-radius: 6px;
+                                border-bottom-right-radius: 6px;
+                            "
+                        >
+
+                            <a
+                                href="#"
+                                class="text-decoration-none small fw-bold px-2 py-1 rounded"
+                                style="
+                                    color: #ffffff;
+                                    background-color: rgba(0,0,0,0.18);
+                                "
+                                t-on-click.prevent="() => this.onViewDetails('completed')"
+                            >
+                                View Details
+                            </a>
+
+                            <i
+                                class="fa fa-ellipsis-h"
+                                style="color: #ffffff;"
+                            />
 
                         </div>
 
                     </div>
 
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+
                     <div
-                        class="card-footer d-flex justify-content-between align-items-center py-2"
+                        class="card text-white shadow border-0 h-100"
                         style="
-                            background-color: #007bff;
-                            border-top: 1px solid rgba(255,255,255,0.15);
-                            border-bottom-left-radius: 6px;
-                            border-bottom-right-radius: 6px;
+                            background-color: #343a40;
+                            border-radius: 6px;
+                            font-family: Tahoma, Arial, sans-serif;
                         "
                     >
 
-                        <a
-                            href="#"
-                            class="text-decoration-none small fw-bold px-2 py-1 rounded"
-                            style="
-                                color: #f5f5f5;
-                                background-color: rgba(0,0,0,0.18);
-                            "
-                            t-on-click.prevent="() => this.onViewDetails('all')"
+                        <div
+                            class="card-body"
+                            style="min-height: 120px;"
                         >
-                            View Details
-                        </a>
 
-                        <i
-                            class="fa fa-ellipsis-h"
-                            style="color: #f5f5f5;"
-                        />
+                            <div class="d-flex justify-content-between align-items-center">
+
+                                <div>
+
+                                    <h1
+                                        class="display-5 fw-bold mb-0 text-white"
+                                        t-esc="state.total_count"
+                                    />
+
+                                    <p
+                                        class="card-text mt-1 text-white"
+                                        style="font-size: 15px;"
+                                    >
+                                        All Surveys
+                                    </p>
+
+                                </div>
+
+                                <div>
+                                    <i
+                                        class="fa fa-bar-chart fa-3x text-white"
+                                        style="opacity: 0.45;"
+                                    />
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div
+                            class="card-footer d-flex justify-content-between align-items-center py-2"
+                            style="
+                                background-color: #343a40;
+                                border-top: 1px solid rgba(255,255,255,0.15);
+                                border-bottom-left-radius: 6px;
+                                border-bottom-right-radius: 6px;
+                            "
+                        >
+
+                            <a
+                                href="#"
+                                class="text-decoration-none small fw-bold px-2 py-1 rounded"
+                                style="
+                                    color: #ffffff;
+                                    background-color: rgba(0,0,0,0.18);
+                                "
+                                t-on-click.prevent="() => this.onViewDetails('all')"
+                            >
+                                View Details
+                            </a>
+
+                            <i
+                                class="fa fa-ellipsis-h"
+                                style="color: #ffffff;"
+                            />
+
+                        </div>
 
                     </div>
 
@@ -743,211 +747,82 @@
 
             </div>
 
-        </div>
+            <div class="row g-4 mb-4">
 
-        <div class="row g-4 mb-4">
+                <div class="col-12 col-xl-6">
 
-            <div class="col-12 col-xl-6">
+                    <div class="card shadow-sm border-0 h-100">
 
-                <div class="card shadow-sm border-0 h-100">
+                        <div class="card-body p-4">
 
-                    <div class="card-body p-4">
+                            <h4
+                                class="fw-bold mb-1"
+                                style="color: #343a40;"
+                            >
+                                Leads &amp; Complaints
+                            </h4>
 
-                        <h4
-                            class="fw-bold mb-1"
-                            style="color: #343a40;"
-                        >
-                            Leads &amp; Complaints
-                        </h4>
+                            <p
+                                class="text-muted mb-4"
+                                style="font-size: 14px;"
+                            >
+                                Leads generated and complaints created
+                                from engineering site surveys.
+                            </p>
 
-                        <p
-                            class="text-muted mb-4"
-                            style="font-size: 14px;"
-                        >
-                            Leads generated and complaints created
-                            from engineering site surveys.
-                        </p>
-
-                        <div
-                            class="d-flex justify-content-center gap-4 mb-3 flex-wrap"
-                        >
-
-                            <div class="d-flex align-items-center">
-
-                                <span
-                                    style="
-                                        width: 12px;
-                                        height: 12px;
-                                        background-color: #007bff;
-                                        border-radius: 3px;
-                                        display: inline-block;
-                                        margin-right: 7px;
-                                    "
-                                />
-
-                                <span
-                                    class="text-muted"
-                                    style="font-size: 14px;"
-                                >
-                                    Leads Generated
-                                </span>
-
-                            </div>
-
-                            <div class="d-flex align-items-center">
-
-                                <span
-                                    style="
-                                        width: 12px;
-                                        height: 12px;
-                                        background-color: #dc3545;
-                                        border-radius: 3px;
-                                        display: inline-block;
-                                        margin-right: 7px;
-                                    "
-                                />
-
-                                <span
-                                    class="text-muted"
-                                    style="font-size: 14px;"
-                                >
-                                    Complaints Created
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                        <div
-                            class="w-100"
-                            style="height: 300px;"
-                        >
-
-                            <svg
-                                viewBox="0 0 600 260"
-                                class="w-100 h-100"
-                                preserveAspectRatio="xMidYMid meet"
+                            <div
+                                class="d-flex justify-content-center gap-4 mb-3 flex-wrap"
                             >
 
-                                <line
-                                    x1="70"
-                                    y1="200"
-                                    x2="530"
-                                    y2="200"
-                                    stroke="#dee2e6"
-                                    stroke-width="2"
-                                />
+                                <div class="d-flex align-items-center">
 
-                                <line
-                                    x1="70"
-                                    y1="30"
-                                    x2="70"
-                                    y2="200"
-                                    stroke="#dee2e6"
-                                    stroke-width="2"
-                                />
+                                    <span
+                                        style="
+                                            width: 12px;
+                                            height: 12px;
+                                            background-color: #007bff;
+                                            border-radius: 3px;
+                                            display: inline-block;
+                                            margin-right: 7px;
+                                        "
+                                    />
 
-                                <rect
-                                    x="150"
-                                    t-att-y="this.leadBarY"
-                                    width="100"
-                                    t-att-height="this.leadBarHeight"
-                                    rx="0"
-                                    ry="0"
-                                    fill="#007bff"
-                                />
+                                    <span
+                                        class="text-muted"
+                                        style="font-size: 14px;"
+                                    >
+                                        Leads Generated
+                                    </span>
 
-                                <text
-                                    x="200"
-                                    t-att-y="this.leadValueY"
-                                    text-anchor="middle"
-                                    font-size="16"
-                                    font-weight="bold"
-                                    fill="#343a40"
-                                >
-                                    <t t-esc="state.lead_count"/>
-                                </text>
+                                </div>
 
-                                <text
-                                    x="200"
-                                    y="225"
-                                    text-anchor="middle"
-                                    font-size="14"
-                                    fill="#6c757d"
-                                >
-                                    Leads
-                                </text>
+                                <div class="d-flex align-items-center">
 
-                                <rect
-                                    x="350"
-                                    t-att-y="this.ticketBarY"
-                                    width="100"
-                                    t-att-height="this.ticketBarHeight"
-                                    rx="0"
-                                    ry="0"
-                                    fill="#dc3545"
-                                />
+                                    <span
+                                        style="
+                                            width: 12px;
+                                            height: 12px;
+                                            background-color: #dc3545;
+                                            border-radius: 3px;
+                                            display: inline-block;
+                                            margin-right: 7px;
+                                        "
+                                    />
 
-                                <text
-                                    x="400"
-                                    t-att-y="this.ticketValueY"
-                                    text-anchor="middle"
-                                    font-size="16"
-                                    font-weight="bold"
-                                    fill="#343a40"
-                                >
-                                    <t t-esc="state.ticket_count"/>
-                                </text>
+                                    <span
+                                        class="text-muted"
+                                        style="font-size: 14px;"
+                                    >
+                                        Complaints Created
+                                    </span>
 
-                                <text
-                                    x="400"
-                                    y="225"
-                                    text-anchor="middle"
-                                    font-size="14"
-                                    fill="#6c757d"
-                                >
-                                    Complaints
-                                </text>
+                                </div>
 
-                            </svg>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div class="col-12 col-xl-6">
-
-                <div class="card shadow-sm border-0 h-100">
-
-                    <div class="card-body p-4">
-
-                        <h4
-                            class="fw-bold mb-1"
-                            style="color: #343a40;"
-                        >
-                            Responsible Engineers
-                        </h4>
-
-                        <p
-                            class="text-muted mb-4"
-                            style="font-size: 14px;"
-                        >
-                            Number of site surveys assigned to each engineer.
-                        </p>
-
-                        <t t-if="state.engineer_data.length">
+                            </div>
 
                             <div
                                 class="w-100"
-                                style="
-                                    height: 300px;
-                                    overflow-x: auto;
-                                    overflow-y: hidden;
-                                "
+                                style="height: 300px;"
                             >
 
                                 <svg
@@ -957,89 +832,220 @@
                                 >
 
                                     <line
-                                        x1="60"
+                                        x1="70"
                                         y1="200"
-                                        x2="570"
+                                        x2="530"
                                         y2="200"
                                         stroke="#dee2e6"
                                         stroke-width="2"
                                     />
 
                                     <line
-                                        x1="60"
+                                        x1="70"
                                         y1="30"
-                                        x2="60"
+                                        x2="70"
                                         y2="200"
                                         stroke="#dee2e6"
                                         stroke-width="2"
                                     />
 
-                                    <t
-                                        t-foreach="state.engineer_data"
-                                        t-as="engineer"
-                                        t-key="engineer.id"
+                                    <rect
+                                        x="150"
+                                        t-att-y="this.leadBarY"
+                                        width="100"
+                                        t-att-height="this.leadBarHeight"
+                                        rx="0"
+                                        ry="0"
+                                        fill="#007bff"
+                                    />
+
+                                    <text
+                                        x="200"
+                                        t-att-y="this.leadValueY"
+                                        text-anchor="middle"
+                                        font-size="16"
+                                        font-weight="bold"
+                                        fill="#343a40"
                                     >
+                                        <t t-esc="state.lead_count"/>
+                                    </text>
 
-                                        <rect
-                                            t-att-x="80 + state.engineer_data.indexOf(engineer) * (500 / Math.max(state.engineer_data.length, 1))"
-                                            t-att-y="this.getEngineerBarY(engineer.count)"
-                                            t-att-width="Math.max(40, 400 / Math.max(state.engineer_data.length, 1))"
-                                            t-att-height="this.getEngineerBarHeight(engineer.count)"
-                                            rx="0"
-                                            ry="0"
-                                            fill="#6f42c1"
-                                        />
+                                    <text
+                                        x="200"
+                                        y="225"
+                                        text-anchor="middle"
+                                        font-size="14"
+                                        fill="#6c757d"
+                                    >
+                                        Leads
+                                    </text>
 
-                                        <text
-                                            t-att-x="80 + state.engineer_data.indexOf(engineer) * (500 / Math.max(state.engineer_data.length, 1)) + Math.max(40, 400 / Math.max(state.engineer_data.length, 1)) / 2"
-                                            t-att-y="this.getEngineerValueY(engineer.count)"
-                                            text-anchor="middle"
-                                            font-size="14"
-                                            font-weight="bold"
-                                            fill="#343a40"
-                                        >
-                                            <t t-esc="engineer.count"/>
-                                        </text>
+                                    <rect
+                                        x="350"
+                                        t-att-y="this.ticketBarY"
+                                        width="100"
+                                        t-att-height="this.ticketBarHeight"
+                                        rx="0"
+                                        ry="0"
+                                        fill="#dc3545"
+                                    />
 
-                                        <text
-                                            t-att-x="80 + state.engineer_data.indexOf(engineer) * (500 / Math.max(state.engineer_data.length, 1)) + Math.max(40, 400 / Math.max(state.engineer_data.length, 1)) / 2"
-                                            y="225"
-                                            text-anchor="middle"
-                                            font-size="12"
-                                            fill="#6c757d"
-                                        >
-                                            <t t-esc="engineer.name"/>
-                                        </text>
+                                    <text
+                                        x="400"
+                                        t-att-y="this.ticketValueY"
+                                        text-anchor="middle"
+                                        font-size="16"
+                                        font-weight="bold"
+                                        fill="#343a40"
+                                    >
+                                        <t t-esc="state.ticket_count"/>
+                                    </text>
 
-                                    </t>
+                                    <text
+                                        x="400"
+                                        y="225"
+                                        text-anchor="middle"
+                                        font-size="14"
+                                        fill="#6c757d"
+                                    >
+                                        Complaints
+                                    </text>
 
                                 </svg>
 
                             </div>
 
-                        </t>
+                        </div>
 
-                        <t t-else="">
+                    </div>
 
-                            <div
-                                class="d-flex align-items-center justify-content-center text-muted"
-                                style="height: 300px;"
+                </div>
+
+                <div class="col-12 col-xl-6">
+
+                    <div class="card shadow-sm border-0 h-100">
+
+                        <div class="card-body p-4">
+
+                            <h4
+                                class="fw-bold mb-1"
+                                style="color: #343a40;"
                             >
-                                <div class="text-center">
+                                Responsible Engineers
+                            </h4>
 
-                                    <i
-                                        class="fa fa-bar-chart fa-3x mb-3"
-                                        style="opacity: 0.25;"
-                                    />
+                            <p
+                                class="text-muted mb-4"
+                                style="font-size: 14px;"
+                            >
+                                Number of site surveys assigned to each engineer.
+                            </p>
 
-                                    <div>
-                                        No responsible engineer data
+                            <t t-if="state.engineer_data.length">
+
+                                <div
+                                    class="w-100"
+                                    style="
+                                        height: 300px;
+                                        overflow-x: auto;
+                                        overflow-y: hidden;
+                                    "
+                                >
+
+                                    <svg
+                                        viewBox="0 0 600 260"
+                                        class="w-100 h-100"
+                                        preserveAspectRatio="xMidYMid meet"
+                                    >
+
+                                        <line
+                                            x1="60"
+                                            y1="200"
+                                            x2="570"
+                                            y2="200"
+                                            stroke="#dee2e6"
+                                            stroke-width="2"
+                                        />
+
+                                        <line
+                                            x1="60"
+                                            y1="30"
+                                            x2="60"
+                                            y2="200"
+                                            stroke="#dee2e6"
+                                            stroke-width="2"
+                                        />
+
+                                        <t
+                                            t-foreach="state.engineer_data"
+                                            t-as="engineer"
+                                            t-key="engineer.id"
+                                        >
+
+                                            <rect
+                                                t-att-x="80 + state.engineer_data.indexOf(engineer) * (500 / Math.max(state.engineer_data.length, 1))"
+                                                t-att-y="this.getEngineerBarY(engineer.count)"
+                                                t-att-width="Math.max(40, 400 / Math.max(state.engineer_data.length, 1))"
+                                                t-att-height="this.getEngineerBarHeight(engineer.count)"
+                                                rx="0"
+                                                ry="0"
+                                                fill="#6f42c1"
+                                            />
+
+                                            <text
+                                                t-att-x="80 + state.engineer_data.indexOf(engineer) * (500 / Math.max(state.engineer_data.length, 1)) + Math.max(40, 400 / Math.max(state.engineer_data.length, 1)) / 2"
+                                                t-att-y="this.getEngineerValueY(engineer.count)"
+                                                text-anchor="middle"
+                                                font-size="14"
+                                                font-weight="bold"
+                                                fill="#343a40"
+                                            >
+                                                <t t-esc="engineer.count"/>
+                                            </text>
+
+                                            <text
+                                                t-att-x="80 + state.engineer_data.indexOf(engineer) * (500 / Math.max(state.engineer_data.length, 1)) + Math.max(40, 400 / Math.max(state.engineer_data.length, 1)) / 2"
+                                                y="225"
+                                                text-anchor="middle"
+                                                font-size="12"
+                                                fill="#6c757d"
+                                            >
+                                                <t t-esc="engineer.name"/>
+                                            </text>
+
+                                        </t>
+
+                                    </svg>
+
+                                </div>
+
+                            </t>
+
+                            <t t-else="">
+
+                                <div
+                                    class="d-flex align-items-center justify-content-center text-muted"
+                                    style="height: 300px;"
+                                >
+
+                                    <div class="text-center">
+
+                                        <i
+                                            class="fa fa-bar-chart fa-3x mb-3"
+                                            style="opacity: 0.25;"
+                                        />
+
+                                        <div>
+                                            No responsible engineer data
+                                        </div>
+
                                     </div>
 
                                 </div>
-                            </div>
 
-                        </t>
+                            </t>
+
+                        </div>
 
                     </div>
 
@@ -1049,9 +1055,6 @@
 
         </div>
 
-    </div>
-
-</t>
+    </t>
 
 </templates>
-
