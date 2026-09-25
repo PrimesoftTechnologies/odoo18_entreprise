@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_purchaseorder_document_inherit_part_no" inherit_id="purchase.report_purchaseorder_document">
+        <!-- Tunabadilisha eneo linalochukua jina la line kwenye purchase ili lilete jina pekee la bidhaa -->
+        <xpath expr="//span[@t-field='line.name']" position="replace">
+            <span t-field="line.product_id.name"/>
+        </xpath>
+    </template>
+</odoo>
