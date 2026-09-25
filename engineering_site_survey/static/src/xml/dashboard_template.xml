@@ -117,6 +117,10 @@
                         <option value="completed">
                             Completed
                         </option>
+
+                        <option value="cancelled">
+                            Cancelled
+                        </option>
                     </select>
 
                 </div>
@@ -749,7 +753,7 @@
 
             <div class="row g-4 mb-4">
 
-                <div class="col-12 col-xl-6">
+                <div class="col-12 col-xl-4">
 
                     <div class="card shadow-sm border-0 h-100">
 
@@ -921,7 +925,7 @@
 
                 </div>
 
-                <div class="col-12 col-xl-6">
+                <div class="col-12 col-xl-4">
 
                     <div class="card shadow-sm border-0 h-100">
 
@@ -1051,6 +1055,135 @@
 
                 </div>
 
+                <div class="col-12 col-xl-4">
+
+                    <div class="card shadow-sm border-0 h-100">
+
+                        <div class="card-body p-4">
+
+                            <h4
+                                class="fw-bold mb-1"
+                                style="color: #343a40;"
+                            >
+                                Survey Status Distribution
+                            </h4>
+
+                            <p
+                                class="text-muted mb-3"
+                                style="font-size: 14px;"
+                            >
+                                Distribution of site surveys across all stages.
+                            </p>
+
+                            <t t-if="state.status_data.length and statusTotal">
+
+                                <div
+                                    class="d-flex justify-content-center align-items-center"
+                                    style="height: 220px;"
+                                >
+
+                                    <svg
+                                        viewBox="0 0 200 200"
+                                        width="210"
+                                        height="210"
+                                        style="display: block;"
+                                    >
+
+                                        <t
+                                            t-foreach="state.status_data"
+                                            t-as="status"
+                                            t-key="status.id"
+                                        >
+
+                                            <t t-if="status.count">
+
+                                                <path
+                                                    t-att-d="this.getStatusSlicePath(status, state.status_data.indexOf(status))"
+                                                    t-att-fill="this.getStatusColor(state.status_data.indexOf(status))"
+                                                    stroke="#ffffff"
+                                                    stroke-width="2"
+                                                />
+
+                                            </t>
+
+                                        </t>
+
+                                    </svg>
+
+                                </div>
+
+                                <div class="mt-2">
+
+                                    <t
+                                        t-foreach="state.status_data"
+                                        t-as="status"
+                                        t-key="status.id"
+                                    >
+
+                                        <t t-if="status.count">
+
+                                            <div
+                                                class="d-flex align-items-center justify-content-between mb-2"
+                                                style="font-size: 13px;"
+                                            >
+
+                                                <div class="d-flex align-items-center">
+
+                                                    <span
+                                                        t-att-style="'width: 12px; height: 12px; background-color: ' + this.getStatusColor(state.status_data.indexOf(status)) + '; display: inline-block; margin-right: 8px; border-radius: 2px;'"
+                                                    />
+
+                                                    <span class="text-muted">
+                                                        <t t-esc="status.name"/>
+                                                    </span>
+
+                                                </div>
+
+                                                <span class="fw-bold text-dark">
+                                                    <t t-esc="status.count"/>
+                                                    <t t-esc="' (' + this.getStatusPercentage(status.count).toFixed(1) + '%)'"/>
+                                                </span>
+
+                                            </div>
+
+                                        </t>
+
+                                    </t>
+
+                                </div>
+
+                            </t>
+
+                            <t t-else="">
+
+                                <div
+                                    class="d-flex align-items-center justify-content-center text-muted"
+                                    style="height: 300px;"
+                                >
+
+                                    <div class="text-center">
+
+                                        <i
+                                            class="fa fa-pie-chart fa-3x mb-3"
+                                            style="opacity: 0.25;"
+                                        />
+
+                                        <div>
+                                            No status data available
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </t>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
 
         </div>
@@ -1058,3 +1191,4 @@
     </t>
 
 </templates>
+

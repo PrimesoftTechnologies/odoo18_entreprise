@@ -1,3 +1,4 @@
+
 /** @odoo-module */
 
 import { registry } from "@web/core/registry";
@@ -21,6 +22,7 @@ export class EngineeringDashboard extends Component {
             lead_count: 0,
             ticket_count: 0,
             engineer_data: [],
+            status_data: [],
             currency_code: "",
             currency_symbol: "",
             from_date: "",
@@ -44,6 +46,11 @@ export class EngineeringDashboard extends Component {
                     to_date: this.state.to_date || false,
                     stage: this.state.stage || "all",
                 }
+            );
+
+            console.log(
+                "ENGINEERING DASHBOARD RESULT:",
+                result
             );
 
             if (result) {
@@ -79,6 +86,9 @@ export class EngineeringDashboard extends Component {
 
                 this.state.engineer_data =
                     result.engineer_data || [];
+
+                this.state.status_data =
+                    result.status_data || [];
 
                 this.state.currency_code =
                     result.currency_code || "";
@@ -167,8 +177,10 @@ export class EngineeringDashboard extends Component {
     }
 
     getEngineerBarY(count) {
-        return 200 -
-            this.getEngineerBarHeight(count);
+        return (
+            200 -
+            this.getEngineerBarHeight(count)
+        );
     }
 
     getEngineerValueY(count) {
@@ -176,6 +188,131 @@ export class EngineeringDashboard extends Component {
             20,
             this.getEngineerBarY(count) - 10
         );
+    }
+
+    get statusTotal() {
+        return this.state.status_data.reduce(
+            (total, item) =>
+                total + Number(item.count || 0),
+            0
+        );
+    }
+
+    getStatusPercentage(count) {
+        if (!this.statusTotal) {
+            return 0;
+        }
+
+        return (
+            Number(count || 0) /
+            this.statusTotal
+        ) * 100;
+    }
+
+    getStatusColor(index) {
+        const colors = [
+            "#88a9c3",
+            "#5b8def",
+            "#6fcf97",
+            "#f2c94c",
+            "#f2994a",
+            "#eb5757",
+            "#9b51e0",
+            "#56ccf2",
+        ];
+
+        return colors[
+            index % colors.length
+        ];
+    }
+
+    getStatusSlicePath(item, index) {
+        const count = Number(
+            item.count || 0
+        );
+
+        if (!count || !this.statusTotal) {
+            return "";
+        }
+
+        const previousCount =
+            this.state.status_data
+                .slice(0, index)
+                .reduce(
+                    (total, status) =>
+                        total +
+                        Number(status.count || 0),
+                    0
+                );
+
+        const centerX = 100;
+        const centerY = 100;
+        const radius = 80;
+
+        if (
+            Math.abs(
+                count - this.statusTotal
+            ) < 0.000001
+        ) {
+            return [
+                `M ${centerX} ${centerY - radius}`,
+                `A ${radius} ${radius} 0 1 1 ${centerX} ${centerY + radius}`,
+                `A ${radius} ${radius} 0 1 1 ${centerX} ${centerY - radius}`,
+                "Z",
+            ].join(" ");
+        }
+
+        const startAngle =
+            (
+                previousCount /
+                this.statusTotal
+            ) * 2 * Math.PI -
+            Math.PI / 2;
+
+        const endAngle =
+            (
+                (previousCount + count) /
+                this.statusTotal
+            ) * 2 * Math.PI -
+            Math.PI / 2;
+
+        const startX =
+            centerX +
+            radius *
+                Math.cos(startAngle);
+
+        const startY =
+            centerY +
+            radius *
+                Math.sin(startAngle);
+
+        const endX =
+            centerX +
+            radius *
+                Math.cos(endAngle);
+
+        const endY =
+            centerY +
+            radius *
+                Math.sin(endAngle);
+
+        const angleSize =
+            (
+                count /
+                this.statusTotal
+            ) * 2 * Math.PI;
+
+        const largeArcFlag =
+            angleSize > Math.PI
+                ? 1
+                : 0;
+
+        return [
+            `M ${centerX} ${centerY}`,
+            `L ${startX} ${startY}`,
+            `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endX} ${endY}`,
+            "Z",
+        ].join(" ");
     }
 
     formatAmount(amount) {
@@ -250,6 +387,12 @@ export class EngineeringDashboard extends Component {
                 "=",
                 "completed",
             ]);
+        } else if (stage === "cancelled") {
+            domain.push([
+                "state",
+                "=",
+                "cancelled",
+            ]);
         }
 
         this.actionService.doAction({
@@ -275,3 +418,4 @@ registry
         "engineering_dashboard_tag",
         EngineeringDashboard
     );
+

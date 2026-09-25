@@ -644,24 +644,18 @@ class EngineeringSiteSurvey(models.Model):
                 _('CRM module is not installed or loaded.')
             )
 
-        partner_name = self.partner_id.name if self.partner_id else ''
-
         lead_vals = {
             'name': (
                 f"Lead from Survey: "
-                f"{self.name} - {partner_name}"
-                + (f" ({self.contact_person})" if self.contact_person else "")
+                f"{self.name} - {self.partner_id.name}"
             ),
-            'partner_id': self.partner_id.id if self.partner_id else False,
-            'partner_name': partner_name,
-            'contact_name': self.contact_person or '',
+            'partner_id': self.partner_id.id,
+            'contact_name': self.contact_person,
             'phone': self.contact_phone,
             'survey_id': self.id,
             'description': (
                 f"<p>Generated from Engineering Site Survey: "
                 f"<b>{self.name}</b></p>"
-                f"<p>Customer / Company: {partner_name}</p>"
-                f"<p>Customer Name: {self.contact_person or ''}</p>"
                 f"<p>Location: {self.location or ''}</p>"
                 f"<p>Proposed Solution: "
                 f"{self.proposed_solution or ''}</p>"
@@ -902,6 +896,22 @@ class EngineeringSiteSurvey(models.Model):
                 ),
             })
 
+        status_data = []
+
+        for state_value, state_label in self._fields['state'].selection:
+            count = len(
+                surveys.filtered(
+                    lambda r, value=state_value:
+                    r.state == value
+                )
+            )
+
+            status_data.append({
+                'id': state_value,
+                'name': state_label,
+                'count': count,
+            })
+
         currencies = surveys.mapped('currency_id')
 
         if len(currencies) == 1:
@@ -932,6 +942,7 @@ class EngineeringSiteSurvey(models.Model):
             'lead_count': lead_count,
             'ticket_count': ticket_count,
             'engineer_data': engineer_data,
+            'status_data': status_data,
         }
 
 
@@ -1053,30 +1064,17 @@ class CrmLead(models.Model):
     def action_create_engineering_survey(self):
         self.ensure_one()
 
-        # Angalia partner_id au tumia partner_name iliyopo
-        partner_id = self.partner_id.id if self.partner_id else False
-
-        # Kama hakuna partner_id lakini kuna partner_name (Company Name), itafute au iunde kimyakimya
-        if not partner_id and self.partner_name:
-            existing_partner = self.env['res.partner'].search([('name', '=', self.partner_name)], limit=1)
-            if existing_partner:
-                partner_id = existing_partner.id
-            else:
-                new_partner = self.env['res.partner'].create({
-                    'name': self.partner_name,
-                    'company_type': 'company',
-                    'phone': self.phone or self.mobile or '',
-                    'street': self.street or '',
-                    'city': self.city or '',
-                })
-                partner_id = new_partner.id
-
-        if not partner_id:
-            raise UserError(_('Tafadhali jaza jina la Kampuni (Company Name) kwenye Lead kabla ya kutengeneza Site Survey.'))
-
         if not self.survey_id:
+            if not self.partner_id:
+                raise UserError(
+                    _(
+                        'Please select a Customer on this Lead '
+                        'before creating an Engineering Site Survey.'
+                    )
+                )
+
             survey_vals = {
-                'partner_id': partner_id,
+                'partner_id': self.partner_id.id,
                 'location': (
                     self.street
                     or self.city
@@ -1084,8 +1082,11 @@ class CrmLead(models.Model):
                 ),
                 'contact_person': (
                     self.contact_name
-                    or self.partner_name
-                    or ''
+                    or (
+                        self.partner_id.name
+                        if self.partner_id
+                        else ''
+                    )
                 ),
                 'contact_phone': (
                     self.phone
