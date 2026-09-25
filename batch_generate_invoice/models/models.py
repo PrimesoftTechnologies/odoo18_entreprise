@@ -30,19 +30,6 @@ class BatchInvoice(models.Model):
         string="Batch Lines"
     )
 
-    # Imeongezwa hapa ili kuhesabu jumla ya kiasi cha Batch kwa ajili ya list view
-    amount_total = fields.Monetary(
-        string="Total Amount", 
-        compute='_compute_amount_total', 
-        currency_field='line_ids.currency_id', 
-        store=True
-    )
-
-    @api.depends('line_ids.amount')
-    def _compute_amount_total(self):
-        for batch in self:
-            batch.amount_total = sum(batch.line_ids.mapped('amount'))
-
     def action_print_batch(self):
         return self.env.ref(
             'batch_generate_invoice.action_report_batch_invoice'
@@ -188,7 +175,7 @@ class BatchInvoiceWizardLine(models.TransientModel):
         string="Invoice Number",
         readonly=True
     )
-    sas_field = fields.Char(string="SAS") 
+    sas_field = fields.Char(string="SAS") # Keep or adjust if needed, original code had sas_reference
     sas_reference = fields.Char(string="SAS Reference")
     antrak_job_no = fields.Char(string="Antrak Job No")
     po_no = fields.Char(string="PO No")  # Field ya PO No kwenye Wizard Line
