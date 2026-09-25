@@ -23,14 +23,26 @@ class BatchInvoice(models.Model):
         ('02', 'SP-02')
     ], string='Separable Portion', readonly=True, default='01')
     
-    create_uid = fields.Many2one('res.users', string="Responsible", readonly=True)
-    total_amount = fields.Monetary(string="Total Amount", compute='_compute_total_amount', currency_field='currency_id')
-    currency_id = fields.Many2one('res.currency', compute='_compute_total_amount')
+    add_vat = fields.Boolean(string="Add 18% VAT", readonly=True)
+    subtotal_amount = fields.Monetary(string="Subtotal", compute='_compute_amounts', currency_field='currency_id')
+    vat_amount = fields.Monetary(string="18% VAT", compute='_compute_amounts', currency_field='currency_id')
+    total_amount = fields.Monetary(string="Final Total", compute='_compute_amounts', currency_field='currency_id')
+    currency_id = fields.Many2one('res.currency', compute='_compute_amounts')
 
-    @api.depends('line_ids.amount')
-    def _compute_total_amount(self):
+    @api.depends('line_ids.amount', 'add_vat')
+    def _compute_amounts(self):
         for record in self:
-            record.total_amount = sum(record.line_ids.mapped('amount'))
+            subtotal = sum(record.line_ids.mapped('amount'))
+            record.subtotal_amount = subtotal
+            
+            if record.add_vat:
+                vat = subtotal * 0.18
+                record.vat_amount = vat
+                record.total_amount = subtotal + vat
+            else:
+                record.vat_amount = 0.0
+                record.total_amount = subtotal
+                
             first_inv = record.line_ids[:1].invoice_id
             record.currency_id = first_inv.currency_id.id if first_inv else self.env.company.currency_id.id
 
@@ -99,6 +111,8 @@ class BatchInvoiceWizard(models.TransientModel):
         ('02', 'SP-02')
     ], string='Separable Portion', default='01', required=True)
     
+    add_vat = fields.Boolean(string="Add 18% VAT")
+    
     line_ids = fields.One2many(
         'batch.invoice.wizard.line',
         'wizard_id',
@@ -131,6 +145,7 @@ class BatchInvoiceWizard(models.TransientModel):
             'bank_details_id': self.bank_details_id.id if self.bank_details_id else False,
             'due_date': self.due_date,
             'separable_portion': self.separable_portion,
+            'add_vat': self.add_vat,
             'line_ids': []
         }
 
@@ -192,7 +207,7 @@ class BatchInvoiceWizardLine(models.TransientModel):
         string="Currency",
         readonly=True
     )
-    amount = fields.Monetary(
+    amount = Monetary = fields.Monetary(
         related='invoice_id.amount_total',
         string="Amount",
         currency_field='currency_id',

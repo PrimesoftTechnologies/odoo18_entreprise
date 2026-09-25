@@ -14,7 +14,7 @@
                 <field name="due_date" string="Due Date"/>
                 <field name="separable_portion" string="Separable Portion"/>
                 <field name="create_uid" string="Responsible"/>
-                <field name="total_amount" string="Total Amount" sum="Total"/>
+                <field name="total_amount" string="Final Total" sum="Total"/>
             </list>
         </field>
     </record>
@@ -37,6 +37,7 @@
                     <group>
                         <group>
                             <field name="bank_details_id" readonly="1"/>
+                            <field name="add_vat" readonly="1"/>
                         </group>
                         <group>
                             <field name="due_date" readonly="1"/>
@@ -55,6 +56,13 @@
                             <field name="amount" string="Amount" readonly="1" sum="Total"/>
                         </list>
                     </field>
+                    
+                    <!-- Sehemu ya Hesabu za Subtotal, VAT na Final Total -->
+                    <group class="oe_subtotal_footer oe_right" colspan="2">
+                        <field name="subtotal_amount" widget="monetary"/>
+                        <field name="vat_amount" widget="monetary" invisible="not add_vat"/>
+                        <field name="total_amount" widget="monetary" class="oe_subtotal_footer_separator"/>
+                    </group>
                 </sheet>
             </form>
         </field>
@@ -76,9 +84,10 @@
                             <field name="bank_details_id" options="{'no_create': True}" string="Bank Details For Payment"/>
                         </group>
                         <group>
-                            <!-- Due Date na Separable Portion kwenye Pop-up -->
+                            <!-- Due Date, Separable Portion na Checkbox ya VAT kwenye Pop-up -->
                             <field name="due_date" string="Due Date"/>
                             <field name="separable_portion" widget="radio" options="{'horizontal': true}" string="Separable Portion"/>
+                            <field name="add_vat" string="Add 18% VAT"/>
                         </group>
                     </group>
 
@@ -144,7 +153,7 @@
     </record>
 
     <!-- ==========================================================
-         5. WINDOW ACTION FOR BATCH HISTORY LIST (Kimeondolewa group_by)
+         5. WINDOW ACTION FOR BATCH HISTORY LIST
          ========================================================== -->
     <record id="action_batch_invoice_history" model="ir.actions.act_window">
         <field name="name">Batch Invoices</field>
