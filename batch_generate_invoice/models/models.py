@@ -207,7 +207,7 @@ class BatchInvoiceWizardLine(models.TransientModel):
         string="Currency",
         readonly=True
     )
-    amount = Monetary = fields.Monetary(
+    amount = fields.Monetary(
         related='invoice_id.amount_total',
         string="Amount",
         currency_field='currency_id',
