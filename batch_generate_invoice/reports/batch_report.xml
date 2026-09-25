@@ -94,7 +94,6 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <t t-set="total_amount" t-value="0"/>
                                 <t t-foreach="o.line_ids" t-as="line">
                                     <tr style="border-bottom: 1px solid #e9ecef;">
                                         <td style="padding: 8px 6px; text-align: center; color: #555555;">
@@ -114,14 +113,13 @@
                                         </td>
                                         <td style="padding: 8px 6px; text-align: right; font-weight: 600; color: #333333;">
                                             <span t-esc="curr_symbol"/> <span t-esc="'{:,.2f}'.format(line.amount)"/>
-                                            <t t-set="total_amount" t-value="total_amount + line.amount"/>
                                         </td>
                                     </tr>
                                 </t>
                             </tbody>
                         </table>
 
-                        <!-- TOTALS & TERMS SECTION WITH INCLUSIVE VAT CALCULATIONS -->
+                        <!-- TOTALS & TERMS SECTION WITH CORRECT ADDED VAT CALCULATIONS -->
                         <div style="width: 100%; display: table; margin-top: 10px;">
                             <!-- Terms & Bank Details Left Column -->
                             <div style="display: table-cell; width: 55%; vertical-align: top; padding-right: 20px;">
@@ -137,26 +135,24 @@
                                 </div>
                             </div>
 
-                            <!-- Totals Right Column with Inclusive Calculations -->
+                            <!-- Totals Right Column using Model Computed Fields -->
                             <div style="display: table-cell; width: 45%; vertical-align: top;">
-                                <t t-set="grand_total" t-value="total_amount"/>
-                                <t t-set="vat_amount" t-value="grand_total * 0.18 / 1.18"/>
-                                <t t-set="taxable_amount" t-value="grand_total - vat_amount"/>
-
                                 <table style="width: 100%; border-collapse: collapse; font-size: 11px; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px;">
                                     <tr>
-                                        <td style="padding: 6px 10px; color: #555555;">TAXABLE AMOUNT</td>
+                                        <td style="padding: 6px 10px; color: #555555;">SUBTOTAL</td>
                                         <td style="text-align: right; padding: 6px 10px; color: #555555;">
-                                            <span t-esc="curr_symbol"/> <span t-esc="'{:,.2f}'.format(taxable_amount)"/>
+                                            <span t-esc="curr_symbol"/> <span t-esc="'{:,.2f}'.format(o.subtotal_amount)"/>
                                         </td>
                                     </tr>
                                     
-                                    <tr>
-                                        <td style="padding: 6px 10px; color: #555555; border-bottom: 1px solid #dee2e6;">VAT 18%</td>
-                                        <td style="text-align: right; padding: 6px 10px; color: #555555; border-bottom: 1px solid #dee2e6;">
-                                            <span t-esc="curr_symbol"/> <span t-esc="'{:,.2f}'.format(vat_amount)"/>
-                                        </td>
-                                    </tr>
+                                    <t t-if="o.add_vat">
+                                        <tr>
+                                            <td style="padding: 6px 10px; color: #555555; border-bottom: 1px solid #dee2e6;">VAT 18%</td>
+                                            <td style="text-align: right; padding: 6px 10px; color: #555555; border-bottom: 1px solid #dee2e6;">
+                                                <span t-esc="curr_symbol"/> <span t-esc="'{:,.2f}'.format(o.vat_amount)"/>
+                                            </td>
+                                        </tr>
+                                    </t>
 
                                     <tr>
                                         <td style="padding: 6px 10px; color: #555555;">REIMBURSEMENT</td>
@@ -167,7 +163,7 @@
                                     <tr style="background-color: #f2dede;">
                                         <td style="padding: 8px 10px; font-weight: bold; color: #c0392b;">TOTAL <span t-esc="curr_symbol"/></td>
                                         <td style="text-align: right; padding: 8px 10px; font-weight: bold; color: #c0392b; font-size: 12px;">
-                                            <span t-esc="curr_symbol"/> <span t-esc="'{:,.2f}'.format(grand_total)"/>
+                                            <span t-esc="curr_symbol"/> <span t-esc="'{:,.2f}'.format(o.total_amount)"/>
                                         </td>
                                     </tr>
                                 </table>
