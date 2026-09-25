@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <templates xml:space="preserve">
-
-
 <t t-name="engineering_dashboard_template">
 
     <div
@@ -855,7 +852,8 @@
                                     t-att-y="this.leadBarY"
                                     width="100"
                                     t-att-height="this.leadBarHeight"
-                                    rx="6"
+                                    rx="0"
+                                    ry="0"
                                     fill="#007bff"
                                 />
 
@@ -885,7 +883,8 @@
                                     t-att-y="this.ticketBarY"
                                     width="100"
                                     t-att-height="this.ticketBarHeight"
-                                    rx="6"
+                                    rx="0"
+                                    ry="0"
                                     fill="#dc3545"
                                 />
 
@@ -986,7 +985,8 @@
                                             t-att-y="this.getEngineerBarY(engineer.count)"
                                             t-att-width="Math.max(40, 400 / Math.max(state.engineer_data.length, 1))"
                                             t-att-height="this.getEngineerBarHeight(engineer.count)"
-                                            rx="6"
+                                            rx="0"
+                                            ry="0"
                                             fill="#6f42c1"
                                         />
 
@@ -1053,5 +1053,5 @@
 
 </t>
 
-
 </templates>
+
