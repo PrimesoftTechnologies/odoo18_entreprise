@@ -117,11 +117,19 @@
                             <!-- Antrak Job Number -->
                             <field name="antrak_job_no" string="Antrak Job No"/>
 
-                            <!-- Amount -->
-                            <field name="amount" string="Amount" readonly="1" sum="Total"/>
+                            <!-- Amount (Tumeondoa sum="Total" ili isisome mara mbili na footer) -->
+                            <field name="amount" string="Amount" readonly="1"/>
 
                         </list>
                     </field>
+
+                    <!-- Sehemu ya Hesabu za Subtotal, VAT na Final Total kwenye Wizard -->
+                    <group class="oe_subtotal_footer oe_right" colspan="2">
+                        <field name="subtotal_amount" widget="monetary"/>
+                        <field name="vat_amount" widget="monetary" invisible="not add_vat"/>
+                        <field name="total_amount" widget="monetary" class="oe_subtotal_footer_separator"/>
+                    </group>
+
                 </sheet>
 
                 <!-- Footer -->

@@ -32,15 +32,12 @@ class BatchInvoice(models.Model):
     @api.depends('line_ids.amount', 'add_vat')
     def _compute_amounts(self):
         for record in self:
-            # Hapa inachukua jumla ya kiasi cha invoice zote zilizomo (mfano 2,000,000)
             subtotal = sum(record.line_ids.mapped('amount'))
             record.subtotal_amount = subtotal
             
             if record.add_vat:
-                # Inapiga 18% ya subtotal (mfano 2,000,000 * 0.18 = 360,000)
                 vat = subtotal * 0.18
                 record.vat_amount = vat
-                # Inajumlisha subtotal + vat (2,000,000 + 360,000 = 2,360,000)
                 record.total_amount = subtotal + vat
             else:
                 record.vat_amount = 0.0
@@ -116,6 +113,29 @@ class BatchInvoiceWizard(models.TransientModel):
     
     add_vat = fields.Boolean(string="Add 18% VAT")
     
+    # Mashamba ya hesabu ya Wizard ili kubadilika papo hapo
+    subtotal_amount = fields.Monetary(string="Subtotal", compute='_compute_wizard_amounts', currency_field='currency_id')
+    vat_amount = fields.Monetary(string="18% VAT", compute='_compute_wizard_amounts', currency_field='currency_id')
+    total_amount = fields.Monetary(string="Final Total", compute='_compute_wizard_amounts', currency_field='currency_id')
+    currency_id = fields.Many2one('res.currency', compute='_compute_wizard_amounts')
+
+    @api.depends('line_ids.amount', 'add_vat')
+    def _compute_wizard_amounts(self):
+        for wizard in self:
+            subtotal = sum(wizard.line_ids.mapped('amount'))
+            wizard.subtotal_amount = subtotal
+            
+            if wizard.add_vat:
+                vat = subtotal * 0.18
+                wizard.vat_amount = vat
+                wizard.total_amount = subtotal + vat
+            else:
+                wizard.vat_amount = 0.0
+                wizard.total_amount = subtotal
+                
+            first_inv = wizard.line_ids[:1].invoice_id
+            wizard.currency_id = first_inv.currency_id.id if first_inv else self.env.company.currency_id.id
+
     line_ids = fields.One2many(
         'batch.invoice.wizard.line',
         'wizard_id',
@@ -148,7 +168,7 @@ class BatchInvoiceWizard(models.TransientModel):
             'bank_details_id': self.bank_details_id.id if self.bank_details_id else False,
             'due_date': self.due_date,
             'separable_portion': self.separable_portion,
-            'add_vat': self.add_vat, # Hii inahifadhi kama VAT ilichaguliwa au la kwenye batch halisi
+            'add_vat': self.add_vat,
             'line_ids': []
         }
 
