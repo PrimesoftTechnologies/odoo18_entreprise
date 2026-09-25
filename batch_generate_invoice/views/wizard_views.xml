@@ -9,12 +9,12 @@
         <field name="model">batch.invoice</field>
         <field name="arch" type="xml">
             <list string="Batch Invoices" create="0">
-                <field name="name" string="Batch ID"/>
+                <field name="name" string="Batch Number"/>
                 <field name="create_date" string="Generated Date"/>
                 <field name="due_date" string="Due Date"/>
                 <field name="separable_portion" string="Separable Portion"/>
                 <field name="create_uid" string="Responsible"/>
-                <field name="total_amount" string="Final Total" sum="Total"/>
+                <field name="total_amount" string="Total" sum="Total"/>
             </list>
         </field>
     </record>
