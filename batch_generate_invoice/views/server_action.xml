@@ -40,7 +40,7 @@
                         </group>
                         <group>
                             <field name="due_date" readonly="1"/>
-                            <field name="separable_portion" readonly="1"/> <!-- IMEONGEZWA HAPA -->
+                            <field name="separable_portion" readonly="1"/>
                         </group>
                     </group>
                     <field name="line_ids" nolabel="1">
@@ -70,14 +70,15 @@
             <form string="Generate Batch Invoice">
                 <sheet>
                     <group>
+                        <field name="name" readonly="1" invisible="name == 'New'"/>
                         <group>
                             <!-- Dropdown ya Bank Details kwenye Pop-up -->
                             <field name="bank_details_id" options="{'no_create': True}" string="Bank Details For Payment"/>
                         </group>
                         <group>
-                            <!-- Due Date na Separable Portion mara baada yake kwenye Pop-up -->
+                            <!-- Due Date na Separable Portion kwenye Pop-up -->
                             <field name="due_date" string="Due Date"/>
-                            <field name="separable_portion" widget="radio" options="{'horizontal': true}" string="Separable Portion"/> <!-- IMEONGEZWA HAPA BAADA YA DUE DATE -->
+                            <field name="separable_portion" widget="radio" options="{'horizontal': true}" string="Separable Portion"/>
                         </group>
                     </group>
 
@@ -143,13 +144,17 @@
     </record>
 
     <!-- ==========================================================
-         5. WINDOW ACTION FOR BATCH HISTORY LIST
+         5. WINDOW ACTION FOR BATCH HISTORY LIST (Kimeondolewa group_by)
          ========================================================== -->
     <record id="action_batch_invoice_history" model="ir.actions.act_window">
         <field name="name">Batch Invoices</field>
         <field name="res_model">batch.invoice</field>
         <field name="view_mode">list,form</field>
-        <field name="context">{'group_by': 'name'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No batch invoices generated yet!
+            </p>
+        </field>
     </record>
 
     <!-- ==========================================================
