@@ -24,6 +24,20 @@ class BatchInvoice(models.Model):
         ('02', 'SP-02')
     ], string='Separable Portion', readonly=True, default='01')  # SEPARABLE PORTION YA KUDUMU
     
+    # IMEONGEZWA HAPA: Field ya nani aliyetengeneza (Responsible)
+    create_uid = fields.Many2one('res.users', string="Responsible", readonly=True)
+    
+    # IMEONGEZWA HAPA: Computed fields kwa ajili ya jumla ya kiasi (Total Amount)
+    total_amount = fields.Monetary(string="Total Amount", compute='_compute_total_amount', currency_field='currency_id')
+    currency_id = fields.Many2one('res.currency', compute='_compute_total_amount')
+
+    @api.depends('line_ids.amount')
+    def _compute_total_amount(self):
+        for record in self:
+            record.total_amount = sum(record.line_ids.mapped('amount'))
+            first_inv = record.line_ids[:1].invoice_id
+            record.currency_id = first_inv.currency_id.id if first_inv else self.env.company.currency_id.id
+
     line_ids = fields.One2many(
         'batch.invoice.line',
         'batch_id',

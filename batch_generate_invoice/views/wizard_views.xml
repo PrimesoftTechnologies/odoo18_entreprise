@@ -10,10 +10,11 @@
         <field name="arch" type="xml">
             <list string="Batch Invoices" create="0">
                 <field name="name" string="Batch ID"/>
-                <field name="bank_details_id" string="Bank Details"/>
-                <field name="due_date" string="Due Date"/>
-                <field name="separable_portion" string="Separable Portion"/> <!-- IMEONGEZWA HAPA -->
                 <field name="create_date" string="Generated Date"/>
+                <field name="due_date" string="Due Date"/>
+                <field name="separable_portion" string="Separable Portion"/>
+                <field name="create_uid" string="Responsible"/>
+                <field name="total_amount" string="Total Amount" sum="Total"/>
             </list>
         </field>
     </record>
@@ -39,7 +40,7 @@
                         </group>
                         <group>
                             <field name="due_date" readonly="1"/>
-                            <field name="separable_portion" readonly="1"/> <!-- IMEONGEZWA HAPA -->
+                            <field name="separable_portion" readonly="1"/>
                         </group>
                     </group>
                     <field name="line_ids" nolabel="1">
@@ -77,7 +78,7 @@
                         <group>
                             <!-- Due Date na Separable Portion kwenye Pop-up -->
                             <field name="due_date" string="Due Date"/>
-                            <field name="separable_portion" string="Separable Portion"/> <!-- IMEONGEZWA HAPA BAADA YA DUE DATE -->
+                            <field name="separable_portion" string="Separable Portion"/>
                         </group>
                     </group>
                     <field name="line_ids" nolabel="1">
