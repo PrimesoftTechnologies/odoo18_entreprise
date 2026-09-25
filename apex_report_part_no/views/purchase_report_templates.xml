@@ -9,10 +9,8 @@
 
     <!-- Template ya Request for Quotation (RFQ) -->
     <template id="report_purchasequotation_document_inherit_part_no" inherit_id="purchase.report_purchasequotation_document">
-        <xpath expr="//td[@id='product']" position="replace">
-            <td id="product">
-                <span t-field="line.product_id.name"/>
-            </td>
+        <xpath expr="//span[@t-field='order_line.name']" position="replace">
+            <span t-field="order_line.product_id.name"/>
         </xpath>
     </template>
 </odoo>
