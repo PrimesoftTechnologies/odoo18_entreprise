@@ -31,20 +31,16 @@
 
     <!-- 4. Muundo Kamili wa Apex Delivery Note Layout -->
     <template id="report_delivery_document_apex_custom" inherit_id="stock.report_delivery_document">
-        
-        <!-- Tunaondoa kabisa ile block ya anwani ya juu ya asili ili isijirudie -->
-        <xpath expr="//div[@name='right_box']" position="replace">
-        </xpath>
-        <xpath expr="//div[@name='div_outgoing_address']" position="replace">
-        </xpath>
-        <xpath expr="//div[@name='div_incoming_address']" position="replace">
-        </xpath>
-        <xpath expr="//div[@name='div_partner_invoice']" position="replace">
-        </xpath>
-
         <xpath expr="//div[hasclass('page')]" position="replace">
             <div class="page" style="font-family: Arial, sans-serif; font-size: 11px; color: #000;">
                 
+                <!-- CSS ya kuficha kabisa sehemu yoyote ya anwani ya juu ya asili isijirudie -->
+                <style>
+                    .row.mt-3.mb-3, div[name="right_box"], div[name="div_outgoing_address"], div[name="div_incoming_address"], div[name="div_partner_invoice"] {
+                        display: none !important;
+                    }
+                </style>
+
                 <!-- Header / Company Info & Reference Tables -->
                 <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
                     <tr>
@@ -91,6 +87,7 @@
                     </tr>
                 </table>
 
+                <!-- Jedwali la Bidhaa (Items Table) -->
                 <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
                     <thead>
                         <tr style="background-color: #e9ecef; text-align: center; font-weight: bold; font-size: 11px;">
