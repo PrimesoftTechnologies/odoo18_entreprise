@@ -29,15 +29,28 @@
         </field>
     </record>
 
-    <!-- 4. Muundo Kamili wa Apex Delivery Note Layout -->
+    <!-- 4. Muundo Kamili wa Apex Delivery Note Layout na Footer Kushuka Chini Kabisa -->
     <template id="report_delivery_document_apex_custom" inherit_id="stock.report_delivery_document">
         <xpath expr="//div[hasclass('page')]" position="replace">
             <div class="page" style="font-family: Arial, sans-serif; font-size: 11px; color: #000;">
                 
-                <!-- CSS ya kuficha sehemu ya asili na kupanga kurasa -->
+                <!-- CSS ya kuficha sehemu ya asili na kupanga ukurasa kwa mfumo wa Flexbox ili kusukuma footer chini -->
                 <style>
                     .row.mt-3.mb-3, div[name="right_box"], div[name="div_outgoing_address"], div[name="div_incoming_address"], div[name="div_partner_invoice"] {
                         display: none !important;
+                    }
+                    .page-container {
+                        position: relative;
+                        height: 100vh;
+                        min-height: 1020px; /* Inakadiria urefu wa A4 ili kulazimisha footer kwenda chini kabisa */
+                        box-sizing: border-box;
+                    }
+                    .footer-section {
+                        position: absolute;
+                        bottom: 30px;
+                        left: 0;
+                        right: 0;
+                        width: 100%;
                     }
                 </style>
 
@@ -57,11 +70,11 @@
                 <t t-foreach="pages" t-as="page_lines">
                     <t t-set="page_index" t-value="pages.index(page_lines)"/>
                     
-                    <div class="page-section" t-att-style="'page-break-after: always;' if page_index &lt; len(pages) - 1 else ''">
+                    <div class="page-container" t-att-style="'page-break-after: always;' if page_index &lt; len(pages) - 1 else ''">
                         
                         <!-- HEADER: Inaonekana UKURASA WA KWANZA TU (page_index == 0) -->
                         <t t-if="page_index == 0">
-                            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                            <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
                                 <tr>
                                     <!-- Customer Name Box -->
                                     <td style="width: 50%; border: 1px solid #000; padding: 8px; vertical-align: top;">
@@ -141,33 +154,35 @@
                             </tbody>
                         </table>
 
-                        <!-- FOOTER: Sehemu ya Masharti na Saini inaonekana UKURASA WA MWISHO TU au chini kabisa -->
+                        <!-- FOOTER SECTION: Inashushwa chini kabisa ya ukurasa kwenye ukurasa wa mwisho -->
                         <t t-if="page_index == len(pages) - 1">
-                            <!-- Sehemu ya Chini: Masharti na Saini -->
-                            <table style="width: 100%; border-collapse: collapse; margin-top: 15px; vertical-align: top;">
-                                <tr>
-                                    <td style="width: 60%; border: 1px solid #000; padding: 8px; vertical-align: top; font-size: 10px;">
-                                        <div style="margin-bottom: 3px;">a) goods once sold cannot be returned</div>
-                                        <div style="margin-bottom: 3px;">b) no responsibility can be accepted for shortage or damage in transit</div>
-                                        <div>c) all the above goods received in good order and condition</div>
-                                    </td>
-                                    <td style="width: 40%; border: 1px solid #000; padding: 8px; vertical-align: top; font-size: 10px;">
-                                        <div style="font-weight: bold; margin-bottom: 5px;">Received By:</div>
-                                        <div style="margin-bottom: 4px;">Name: ______________________</div>
-                                        <div style="margin-bottom: 4px;">Date: ______________________</div>
-                                        <div>Signature: __________________</div>
-                                    </td>
-                                </tr>
-                            </table>
+                            <div class="footer-section">
+                                <!-- Sehemu ya Chini: Masharti na Saini -->
+                                <table style="width: 100%; border-collapse: collapse; vertical-align: top;">
+                                    <tr>
+                                        <td style="width: 60%; border: 1px solid #000; padding: 8px; vertical-align: top; font-size: 10px;">
+                                            <div style="margin-bottom: 3px;">a) goods once sold cannot be returned</div>
+                                            <div style="margin-bottom: 3px;">b) no responsibility can be accepted for shortage or damage in transit</div>
+                                            <div>c) all the above goods received in good order and condition</div>
+                                        </td>
+                                        <td style="width: 40%; border: 1px solid #000; padding: 8px; vertical-align: top; font-size: 10px;">
+                                            <div style="font-weight: bold; margin-bottom: 5px;">Received By:</div>
+                                            <div style="margin-bottom: 4px;">Name: ______________________</div>
+                                            <div style="margin-bottom: 4px;">Date: ______________________</div>
+                                            <div>Signature: __________________</div>
+                                        </td>
+                                    </tr>
+                                </table>
 
-                            <!-- Boksi la Muhuri (Please Stamp) -->
-                            <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
-                                <tr>
-                                    <td style="border: 1px solid #000; padding: 8px; height: 45px; vertical-align: top; font-size: 10px; color: #555;">
-                                        Please stamp upon acknowledgement of Goods &amp; Services
-                                    </td>
-                                </tr>
-                            </table>
+                                <!-- Boksi la Muhuri (Please Stamp) -->
+                                <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
+                                    <tr>
+                                        <td style="border: 1px solid #000; padding: 8px; height: 40px; vertical-align: top; font-size: 10px; color: #555;">
+                                            Please stamp upon acknowledgement of Goods &amp; Services
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
                         </t>
 
                     </div>
