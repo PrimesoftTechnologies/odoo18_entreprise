@@ -17,7 +17,7 @@
         </xpath>
     </template>
 
-    <!-- Delivery Slip: Jedwali kuu (Draft/Waiting/Ready) -->
+    <!-- Delivery Slip: Kubadilisha jina la bidhaa kwenye Delivery Document -->
     <template id="report_delivery_document_inherit_product_name"
               inherit_id="stock.report_delivery_document">
         <!-- Jedwali Kuu la Moves -->
@@ -25,14 +25,9 @@
             <span t-field="move.product_id.name"/>
         </xpath>
         
-        <!-- Jedwali la Backorder kama lipo -->
+        <!-- Jedwali la Backorder -->
         <xpath expr="//table[@name='stock_backorder_table']//span[@t-field='bo_line.product_id']" position="replace">
             <span t-field="bo_line.product_id.name"/>
-        </xpath>
-
-        <!-- Jedwali la Done (stock_move_line_table) kama lipo kwenye document kuu -->
-        <xpath expr="//table[@name='stock_move_line_table']//span[@t-field='move_line.product_id']" position="replace">
-            <span t-field="move_line.product_id.name"/>
         </xpath>
     </template>
 
