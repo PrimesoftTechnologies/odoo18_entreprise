@@ -20,7 +20,7 @@
     <!-- Inherit ya Delivery Slip / Delivery Order -->
     <template id="report_delivery_document_inherit_product_name"
               inherit_id="stock.report_delivery_document">
-        <xpath expr="//span[@t-field='move_line.product_id']" position="replace">
+        <xpath expr="//td[@name='move_line_product_outgoing']/span" position="replace">
             <span t-field="move_line.product_id.name"/>
         </xpath>
     </template>
