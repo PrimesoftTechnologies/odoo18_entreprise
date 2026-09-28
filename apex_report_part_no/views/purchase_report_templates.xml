@@ -29,23 +29,27 @@
         </field>
     </record>
 
-    <!-- 4. Muundo wa Apex Delivery Note Layout wenye upeo wa bidhaa 14 kwa kila ukurasa na footer ukurasa wa mwisho -->
+    <!-- 4. Muundo wa Apex Delivery Note Layout: Upeo wa bidhaa 14 na Footer iko chini kabisa kila wakati -->
     <template id="report_delivery_document_apex_custom" inherit_id="stock.report_delivery_document">
         <xpath expr="//div[hasclass('page')]" position="replace">
             <div class="page" style="font-family: Arial, sans-serif; font-size: 11px; color: #000;">
                 
-                <!-- CSS ya kuficha sehemu ya asili na kusimamia kurasa -->
+                <!-- CSS ya kuficha sehemu ya asili na kulazimisha footer kukaa chini kabisa ya ukurasa -->
                 <style>
                     .row.mt-3.mb-3, div[name="right_box"], div[name="div_outgoing_address"], div[name="div_incoming_address"], div[name="div_partner_invoice"] {
                         display: none !important;
                     }
                     .page-box {
                         position: relative;
-                        min-height: 850px; /* Inakadiria nafasi ya kurasa za A4 */
+                        min-height: 920px; /* Urefu kamili unaosukuma footer kwenda chini kabisa ya A4 */
+                        box-sizing: border-box;
                     }
                     .footer-at-bottom {
-                        margin-top: 20px;
-                        page-break-inside: avoid;
+                        position: absolute;
+                        bottom: 10px;
+                        left: 0;
+                        right: 0;
+                        width: 100%;
                     }
                 </style>
 
@@ -61,7 +65,7 @@
                     <t t-set="pages" t-value="[lines[i:i + chunk_size] for i in range(0, total_lines, chunk_size)]"/>
                 </t>
 
-                <!-- Tunazungusha kupitia kurasa zote zilizopatikana (kila ukurasa una upeo wa bidhaa 14) -->
+                <!-- Tunazungusha kupitia kurasa zote zilizopatikana -->
                 <t t-foreach="pages" t-as="page_lines">
                     <t t-set="page_index" t-value="pages.index(page_lines)"/>
                     
@@ -149,7 +153,7 @@
                             </tbody>
                         </table>
 
-                        <!-- FOOTER SECTION: Inaonekana UKURASA WA MWISHO TU chini ya bidhaa zilizobaki -->
+                        <!-- FOOTER SECTION: INASHUSHWA CHINI KABISA KWENYE UKURASA WA MWISHO HATA KAMA KUNA BIDHAA MOJA -->
                         <t t-if="page_index == len(pages) - 1">
                             <div class="footer-at-bottom">
                                 <table style="width: 100%; border-collapse: collapse; vertical-align: top;">
