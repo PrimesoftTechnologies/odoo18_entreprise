@@ -29,15 +29,26 @@
         </field>
     </record>
 
-    <!-- 4. Muundo Kamili wa Apex Delivery Note Layout Bila Page 2 ya Ziada -->
+    <!-- 4. Muundo Kamili wa Apex Delivery Note Layout na Footer Kushuka Chini Kabisa -->
     <template id="report_delivery_document_apex_custom" inherit_id="stock.report_delivery_document">
         <xpath expr="//div[hasclass('page')]" position="replace">
             <div class="page" style="font-family: Arial, sans-serif; font-size: 11px; color: #000;">
                 
-                <!-- CSS ya kuficha sehemu ya asili -->
+                <!-- CSS ya kuficha sehemu ya asili na kulazimisha footer kukaa chini kabisa -->
                 <style>
                     .row.mt-3.mb-3, div[name="right_box"], div[name="div_outgoing_address"], div[name="div_incoming_address"], div[name="div_partner_invoice"] {
                         display: none !important;
+                    }
+                    .page-box {
+                        position: relative;
+                        min-height: 950px; /* Inakadiria nafasi ya ukurasa wa A4 ili kusukuma footer chini */
+                    }
+                    .footer-at-bottom {
+                        position: absolute;
+                        bottom: 0px;
+                        left: 0;
+                        right: 0;
+                        width: 100%;
                     }
                 </style>
 
@@ -57,7 +68,7 @@
                 <t t-foreach="pages" t-as="page_lines">
                     <t t-set="page_index" t-value="pages.index(page_lines)"/>
                     
-                    <div class="page-container" t-att-style="'page-break-after: always; margin-bottom: 20px;' if page_index &lt; len(pages) - 1 else 'margin-bottom: 20px;'">
+                    <div class="page-box" t-att-style="'page-break-after: always;' if page_index &lt; len(pages) - 1 else ''">
                         
                         <!-- HEADER: Inaonekana UKURASA WA KWANZA TU (page_index == 0) -->
                         <t t-if="page_index == 0">
@@ -141,9 +152,9 @@
                             </tbody>
                         </table>
 
-                        <!-- FOOTER SECTION: Inaonekana kwenye ukurasa wa mwisho -->
+                        <!-- FOOTER SECTION: Inashushwa chini kabisa ya ukurasa kwa kutumia position absolute -->
                         <t t-if="page_index == len(pages) - 1">
-                            <div style="margin-top: 40px;">
+                            <div class="footer-at-bottom">
                                 <!-- Sehemu ya Chini: Masharti na Saini -->
                                 <table style="width: 100%; border-collapse: collapse; vertical-align: top;">
                                     <tr>
