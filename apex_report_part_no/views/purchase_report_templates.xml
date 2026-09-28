@@ -29,12 +29,12 @@
         </field>
     </record>
 
-    <!-- 4. Muundo Ulioboreshwa wa Apex Delivery Note Layout (Huzuia upotevu wa data) -->
+    <!-- 4. Muundo Ulioboreshwa wa Apex Delivery Note Layout (Bila kikomo cha 10 na footer ipo chini) -->
     <template id="report_delivery_document_apex_custom" inherit_id="stock.report_delivery_document">
         <xpath expr="//div[hasclass('page')]" position="replace">
             <div class="page" style="font-family: Arial, sans-serif; font-size: 11px; color: #000;">
                 
-                <!-- CSS ya kuficha sehemu za asili na kuruhusu jedwali kujigawanya lenyewe salama -->
+                <!-- CSS ya kuficha sehemu ya asili na kuruhusu jedwali kujigawanya lenyewe bila kikomo -->
                 <style>
                     .row.mt-3.mb-3, div[name="right_box"], div[name="div_outgoing_address"], div[name="div_incoming_address"], div[name="div_partner_invoice"] {
                         display: none !important;
@@ -43,9 +43,15 @@
                     tr { page-break-inside: avoid; page-break-after: auto; }
                     thead { display: table-header-group; }
                     tfoot { display: table-footer-group; }
+                    
+                    /* CSS ya kushikilia sehemu ya chini (footer) kwenye kurasa zote au ukurasa wa mwisho */
+                    .footer-section {
+                        margin-top: 30px;
+                        page-break-inside: avoid;
+                    }
                 </style>
 
-                <!-- HEADER: Taarifa za Mteja na Namba za Kumbukumbu -->
+                <!-- HEADER: Taarifa za Mteja na Namba za Kumbukumbu (Zinaonekana juu ya ripoti) -->
                 <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
                     <tr>
                         <!-- Customer Name Box -->
@@ -91,7 +97,7 @@
                     </tr>
                 </table>
 
-                <!-- JEDWALI LA BIDHAA (Zitaonyeshwa zote bila kupoteza hata moja) -->
+                <!-- JEDWALI LA BIDHAA (Zitaonyeshwa zote bila kikomo cha 10) -->
                 <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
                     <thead>
                         <tr style="background-color: #e9ecef; text-align: center; font-weight: bold; font-size: 11px;">
@@ -125,8 +131,8 @@
                     </tbody>
                 </table>
 
-                <!-- FOOTER SECTION: Masharti, Saini, na Muhuri chini ya ripoti -->
-                <div style="margin-top: 25px;">
+                <!-- FOOTER SECTION: Sehemu ya Saini na Masharti ipo chini kama ulivyotaka -->
+                <div class="footer-section">
                     <table style="width: 100%; border-collapse: collapse; vertical-align: top;">
                         <tr>
                             <td style="width: 60%; border: 1px solid #000; padding: 8px; vertical-align: top; font-size: 10px;">
