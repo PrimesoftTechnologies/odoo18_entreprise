@@ -34,22 +34,30 @@
         <xpath expr="//div[hasclass('page')]" position="replace">
             <div class="page" style="font-family: Arial, sans-serif; font-size: 11px; color: #000;">
                 
-                <!-- CSS ya kuficha sehemu ya asili na kulazimisha footer kukaa chini kabisa ya ukurasa -->
+                <!-- CSS ya kuficha sehemu ya asili na kupangilia ukurasa kwa usahihi bila kuruka -->
                 <style>
                     .row.mt-3.mb-3, div[name="right_box"], div[name="div_outgoing_address"], div[name="div_incoming_address"], div[name="div_partner_invoice"] {
                         display: none !important;
                     }
                     .page-box {
                         position: relative;
-                        min-height: 920px; /* Urefu kamili unaosukuma footer kwenda chini kabisa ya A4 */
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-between;
+                        height: 100vh; /* Inatumia urefu kamili wa ukurasa wa PDF bila kulazimisha saizi kubwa ya pikseli */
                         box-sizing: border-box;
+                        page-break-after: always;
+                    }
+                    .page-box:last-child {
+                        page-break-after: avoid;
+                    }
+                    .content-container {
+                        flex: 1;
                     }
                     .footer-at-bottom {
-                        position: absolute;
-                        bottom: 10px;
-                        left: 0;
-                        right: 0;
                         width: 100%;
+                        margin-top: auto;
+                        padding-bottom: 20px;
                     }
                 </style>
 
@@ -69,89 +77,92 @@
                 <t t-foreach="pages" t-as="page_lines">
                     <t t-set="page_index" t-value="pages.index(page_lines)"/>
                     
-                    <div class="page-box" t-att-style="'page-break-after: always;' if page_index &lt; len(pages) - 1 else ''">
-                        
-                        <!-- HEADER: Inaonekana UKURASA WA KWANZA TU -->
-                        <t t-if="page_index == 0">
-                            <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
-                                <tr>
-                                    <!-- Customer Name Box -->
-                                    <td style="width: 50%; border: 1px solid #000; padding: 8px; vertical-align: top;">
-                                        <div style="background-color: #d4edda; font-weight: bold; padding: 2px 5px; margin-bottom: 5px; font-size: 12px;">Delivery Note</div>
-                                        <div style="font-weight: bold; margin-bottom: 3px;">Customer Name</div>
-                                        <div t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True}'/>
-                                    </td>
-                                    <td style="width: 2%;"></td>
-                                    <!-- Reference Boxes -->
-                                    <td style="width: 48%; vertical-align: top; padding: 0;">
-                                        <table style="width: 100%; border-collapse: collapse; text-align: center;">
-                                            <tr style="background-color: #f2f2f2; font-weight: bold;">
-                                                <td style="border: 1px solid #000; padding: 4px; font-size: 10px;">Purchase Order No.</td>
-                                                <td style="border: 1px solid #000; padding: 4px; font-size: 10px;">Document Dated</td>
-                                                <td style="border: 1px solid #000; padding: 4px; font-size: 10px;">Delivery Note No.</td>
-                                            </tr>
-                                            <tr>
-                                                <td style="border: 1px solid #000; padding: 6px; font-size: 11px;">
-                                                    <span t-esc="o.sale_id.client_order_ref"/>
-                                                </td>
-                                                <td style="border: 1px solid #000; padding: 6px; font-size: 11px;">
-                                                    <span t-field="o.scheduled_date" t-options="{'widget': 'date'}"/>
-                                                </td>
-                                                <td style="border: 1px solid #000; padding: 6px; font-size: 11px; font-weight: bold;">
-                                                    <span t-field="o.name"/>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                        <table style="width: 100%; border-collapse: collapse; text-align: center; margin-top: 5px;">
-                                            <tr style="background-color: #f2f2f2; font-weight: bold;">
-                                                <td style="border: 1px solid #000; padding: 4px; font-size: 10px;">Delivery Details</td>
-                                                <td style="border: 1px solid #000; padding: 4px; font-size: 10px;">Delivery Terms</td>
-                                                <td style="border: 1px solid #000; padding: 4px; font-size: 10px;">GRN No.</td>
-                                            </tr>
-                                            <tr>
-                                                <td style="border: 1px solid #000; padding: 6px; height: 20px;"></td>
-                                                <td style="border: 1px solid #000; padding: 6px;"></td>
-                                                <td style="border: 1px solid #000; padding: 6px;"></td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                </tr>
-                            </table>
-                        </t>
-
-                        <!-- JEDWALI LA BIDHAA (Upeo wa bidhaa 14 kwa kila ukurasa) -->
-                        <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-                            <thead>
-                                <tr style="background-color: #e9ecef; text-align: center; font-weight: bold; font-size: 11px;">
-                                    <td style="border: 1px solid #000; padding: 6px; width: 15%;">Item Code</td>
-                                    <td style="border: 1px solid #000; padding: 6px; width: 35%;">Description of Goods &amp; Services</td>
-                                    <td style="border: 1px solid #000; padding: 6px; width: 8%;">Qty</td>
-                                    <td style="border: 1px solid #000; padding: 6px; width: 8%;">Units</td>
-                                    <td style="border: 1px solid #000; padding: 6px; width: 14%;">Part Number</td>
-                                    <td style="border: 1px solid #000; padding: 6px; width: 20%;">Remarks</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <t t-foreach="page_lines" t-as="move">
+                    <div class="page-box">
+                        <div class="content-container">
+                            
+                            <!-- HEADER: Inaonekana UKURASA WA KWANZA TU -->
+                            <t t-if="page_index == 0">
+                                <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
                                     <tr>
-                                        <td style="border: 1px solid #000; padding: 5px; text-align: center; height: 20px;"></td>
-                                        <td style="border: 1px solid #000; padding: 5px;">
-                                            <span t-field="move.product_id.name"/>
+                                        <!-- Customer Name Box -->
+                                        <td style="width: 50%; border: 1px solid #000; padding: 8px; vertical-align: top;">
+                                            <div style="background-color: #d4edda; font-weight: bold; padding: 2px 5px; margin-bottom: 5px; font-size: 12px;">Delivery Note</div>
+                                            <div style="font-weight: bold; margin-bottom: 3px;">Customer Name</div>
+                                            <div t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True}'/>
                                         </td>
-                                        <td style="border: 1px solid #000; padding: 5px; text-align: center;">
-                                            <span t-field="move.product_uom_qty"/>
+                                        <td style="width: 2%;"></td>
+                                        <!-- Reference Boxes -->
+                                        <td style="width: 48%; vertical-align: top; padding: 0;">
+                                            <table style="width: 100%; border-collapse: collapse; text-align: center;">
+                                                <tr style="background-color: #f2f2f2; font-weight: bold;">
+                                                    <td style="border: 1px solid #000; padding: 4px; font-size: 10px;">Purchase Order No.</td>
+                                                    <td style="border: 1px solid #000; padding: 4px; font-size: 10px;">Document Dated</td>
+                                                    <td style="border: 1px solid #000; padding: 4px; font-size: 10px;">Delivery Note No.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="border: 1px solid #000; padding: 6px; font-size: 11px;">
+                                                        <span t-esc="o.sale_id.client_order_ref"/>
+                                                    </td>
+                                                    <td style="border: 1px solid #000; padding: 6px; font-size: 11px;">
+                                                        <span t-field="o.scheduled_date" t-options="{'widget': 'date'}"/>
+                                                    </td>
+                                                    <td style="border: 1px solid #000; padding: 6px; font-size: 11px; font-weight: bold;">
+                                                        <span t-field="o.name"/>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            <table style="width: 100%; border-collapse: collapse; text-align: center; margin-top: 5px;">
+                                                <tr style="background-color: #f2f2f2; font-weight: bold;">
+                                                    <td style="border: 1px solid #000; padding: 4px; font-size: 10px;">Delivery Details</td>
+                                                    <td style="border: 1px solid #000; padding: 4px; font-size: 10px;">Delivery Terms</td>
+                                                    <td style="border: 1px solid #000; padding: 4px; font-size: 10px;">GRN No.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="border: 1px solid #000; padding: 6px; height: 20px;"></td>
+                                                    <td style="border: 1px solid #000; padding: 6px;"></td>
+                                                    <td style="border: 1px solid #000; padding: 6px;"></td>
+                                                </tr>
+                                            </table>
                                         </td>
-                                        <td style="border: 1px solid #000; padding: 5px; text-align: center;">
-                                            <span t-field="move.product_uom.name"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 5px; text-align: center;">
-                                            <span t-field="move.product_id.default_code"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 5px;"></td>
                                     </tr>
-                                </t>
-                            </tbody>
-                        </table>
+                                </table>
+                            </t>
+
+                            <!-- JEDWALI LA BIDHAA (Upeo wa bidhaa 14 kwa kila ukurasa) -->
+                            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                                <thead>
+                                    <tr style="background-color: #e9ecef; text-align: center; font-weight: bold; font-size: 11px;">
+                                        <td style="border: 1px solid #000; padding: 6px; width: 15%;">Item Code</td>
+                                        <td style="border: 1px solid #000; padding: 6px; width: 35%;">Description of Goods &amp; Services</td>
+                                        <td style="border: 1px solid #000; padding: 6px; width: 8%;">Qty</td>
+                                        <td style="border: 1px solid #000; padding: 6px; width: 8%;">Units</td>
+                                        <td style="border: 1px solid #000; padding: 6px; width: 14%;">Part Number</td>
+                                        <td style="border: 1px solid #000; padding: 6px; width: 20%;">Remarks</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="page_lines" t-as="move">
+                                        <tr>
+                                            <td style="border: 1px solid #000; padding: 5px; text-align: center; height: 20px;"></td>
+                                            <td style="border: 1px solid #000; padding: 5px;">
+                                                <span t-field="move.product_id.name"/>
+                                            </td>
+                                            <td style="border: 1px solid #000; padding: 5px; text-align: center;">
+                                                <span t-field="move.product_uom_qty"/>
+                                            </td>
+                                            <td style="border: 1px solid #000; padding: 5px; text-align: center;">
+                                                <span t-field="move.product_uom.name"/>
+                                            </td>
+                                            <td style="border: 1px solid #000; padding: 5px; text-align: center;">
+                                                <span t-field="move.product_id.default_code"/>
+                                            </td>
+                                            <td style="border: 1px solid #000; padding: 5px;"></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+
+                        </div>
 
                         <!-- FOOTER SECTION: INASHUSHWA CHINI KABISA KWENYE UKURASA WA MWISHO HATA KAMA KUNA BIDHAA MOJA -->
                         <t t-if="page_index == len(pages) - 1">
