@@ -3,7 +3,7 @@
 
     <!-- ============================================================
          PURCHASE ORDER
-         Show Product Name only, without Internal Reference
+         Show Product Name only
          ============================================================ -->
     <template id="report_purchaseorder_document_inherit_part_no"
               inherit_id="purchase.report_purchaseorder_document">
@@ -17,7 +17,7 @@
 
     <!-- ============================================================
          REQUEST FOR QUOTATION (RFQ)
-         Show Product Name only, without Internal Reference
+         Show Product Name only
          ============================================================ -->
     <template id="report_purchasequotation_document_inherit_part_no"
               inherit_id="purchase.report_purchasequotation_document">
@@ -30,15 +30,19 @@
 
 
     <!-- ============================================================
-         DELIVERY ORDER / DELIVERY NOTE
-         Show Product Name only, without Internal Reference
+         DELIVERY NOTE / DELIVERY SLIP
+         Show Product Name only
          ============================================================ -->
     <template id="report_delivery_document_inherit_part_no"
               inherit_id="stock.report_delivery_document">
 
-        <xpath expr="//span[@t-field='move.product_id.display_name']" position="replace">
-            <span t-field="move.product_id.name"/>
-        </xpath>
+        <!-- Remove the additional transfer description -->
+        <xpath expr="//p[@t-if='move.description_picking and move.description_picking != move.product_id.name and move._get_report_description_picking()']"
+               position="replace"/>
+
+        <!-- Remove additional description from backorder lines -->
+        <xpath expr="//p[@t-if='bo_line.description_picking and bo_line.description_picking != bo_line.product_id.name and bo_line._get_report_description_picking()']"
+               position="replace"/>
 
     </template>
 
