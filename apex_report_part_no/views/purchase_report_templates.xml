@@ -29,7 +29,7 @@
         </field>
     </record>
 
-    <!-- 4. Muundo wa Apex Delivery Note Layout: Upeo wa bidhaa 14, Footer chini, na Inachukua Sales Line Description -->
+    <!-- 4. Muundo wa Apex Delivery Note Layout: Upeo wa bidhaa 14, Footer chini, na Inatenganisha Jina safi na Maelezo ya Ziada -->
     <template id="report_delivery_document_apex_custom" inherit_id="stock.report_delivery_document">
         <xpath expr="//div[hasclass('page')]" position="replace">
             <div class="page" style="font-family: Arial, sans-serif; font-size: 11px; color: #000;">
@@ -128,7 +128,7 @@
                                 </table>
                             </t>
 
-                            <!-- JEDWALI LA BIDHAA (Inaonyesha Description kamili kutoka kwenye Sale Order Line) -->
+                            <!-- JEDWALI LA BIDHAA -->
                             <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
                                 <thead>
                                     <tr style="background-color: #e9ecef; text-align: center; font-weight: bold; font-size: 11px;">
@@ -145,11 +145,19 @@
                                         <tr>
                                             <td style="border: 1px solid #000; padding: 5px; text-align: center; height: 20px;"></td>
                                             <td style="border: 1px solid #000; padding: 5px;">
-                                                <t t-if="move.sale_line_id">
-                                                    <span t-field="move.sale_line_id.name"/>
-                                                </t>
-                                                <t t-else="">
+                                                <!-- Jina la Bidhaa pekee (Bila mabano ya part number) -->
+                                                <div style="font-weight: bold;">
                                                     <span t-field="move.product_id.name"/>
+                                                </div>
+                                                <!-- Maelezo ya ziada yaliyowekwa kwenye Sale Line (kama yapo na hayafanani na jina tupu) -->
+                                                <t t-if="move.sale_line_id and move.sale_line_id.name">
+                                                    <t t-set="full_desc" t-value="move.sale_line_id.name"/>
+                                                    <!-- Tunachuja ili kuzuia jina la bidhaa au part number kujirudia hapa chini -->
+                                                    <t t-if="full_desc != move.product_id.name and not full_desc.startswith('[')">
+                                                        <div style="color: #333; font-size: 10px; margin-top: 2px;">
+                                                            <span t-field="move.sale_line_id.name"/>
+                                                        </div>
+                                                    </t>
                                                 </t>
                                             </td>
                                             <td style="border: 1px solid #000; padding: 5px; text-align: center;">
