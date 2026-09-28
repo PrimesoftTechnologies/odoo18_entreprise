@@ -17,16 +17,14 @@
         </xpath>
     </template>
 
-    <!-- Delivery Slip: Kubadilisha jina la bidhaa kwenye Delivery Document -->
+    <!-- Delivery Slip: Kubadilisha jina la bidhaa kwa njia ya jumla kwenye Delivery Document -->
     <template id="report_delivery_document_inherit_product_name"
               inherit_id="stock.report_delivery_document">
-        <!-- Jedwali Kuu la Moves -->
-        <xpath expr="//table[@name='stock_move_table']//span[@t-field='move.product_id']" position="replace">
+        <!-- Inatafuta sehemu yoyote ya bidhaa kwenye jedwali la delivery na kuondoa internal reference -->
+        <xpath expr="//span[@t-field='move.product_id']" position="replace">
             <span t-field="move.product_id.name"/>
         </xpath>
-        
-        <!-- Jedwali la Backorder -->
-        <xpath expr="//table[@name='stock_backorder_table']//span[@t-field='bo_line.product_id']" position="replace">
+        <xpath expr="//span[@t-field='bo_line.product_id']" position="replace">
             <span t-field="bo_line.product_id.name"/>
         </xpath>
     </template>
