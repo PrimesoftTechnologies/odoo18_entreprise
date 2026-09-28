@@ -17,15 +17,23 @@
         </xpath>
     </template>
 
-    <!-- Delivery Slip: Kubadilisha jina la bidhaa kwa njia ya jumla kwenye Delivery Document -->
+    <!-- Inherit ya Delivery Slip (Stock Move Table - Draft/Ready/Waiting) -->
     <template id="report_delivery_document_inherit_product_name"
               inherit_id="stock.report_delivery_document">
-        <!-- Inatafuta sehemu yoyote ya bidhaa kwenye jedwali la delivery na kuondoa internal reference -->
         <xpath expr="//span[@t-field='move.product_id']" position="replace">
             <span t-field="move.product_id.name"/>
         </xpath>
         <xpath expr="//span[@t-field='bo_line.product_id']" position="replace">
             <span t-field="bo_line.product_id.name"/>
+        </xpath>
+    </template>
+
+    <!-- Inherit ya Aggregated Move Lines (Hii ndiyo ilikuwa inasababisha bado ionekane kwenye Delivery za Sales zilizopo DONE) -->
+    <template id="stock_report_delivery_aggregated_move_lines_inherit_part_no"
+              inherit_id="stock.stock_report_delivery_aggregated_move_lines">
+        <xpath expr="//span[@t-esc=&quot;aggregated_lines[line]['name']&quot;]" position="replace">
+            <!-- Inatumia product_id ya mstari wa kwanza kwenye kundi hili ili kuchukua jina safi pekee bila internal reference -->
+            <span t-field="aggregated_lines[line]['product_id'].name"/>
         </xpath>
     </template>
 
