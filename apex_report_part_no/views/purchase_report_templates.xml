@@ -31,11 +31,10 @@
 
     <!-- 4. Muundo Kamili wa Apex Delivery Note Layout -->
     <template id="report_delivery_document_apex_custom" inherit_id="stock.report_delivery_document">
-        <!-- Tunabadilisha muundo mzima wa page ya delivery note kuleta muonekano wa fomu ya Apex -->
         <xpath expr="//div[hasclass('page')]" position="replace">
             <div class="page" style="font-family: Arial, sans-serif; font-size: 11px; color: #000;">
                 
-                <!-- Header / Company Info (Kama ipo kwenye Layout kuu itaonekana, tunaweka maboksi ya fomu) -->
+                <!-- Header / Company Info & Reference Tables -->
                 <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
                     <tr>
                         <!-- Customer Name Box -->
@@ -94,22 +93,22 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <t t-foreach="o.move_line_ids" t-as="move_line">
+                        <t t-foreach="o.move_ids_without_package" t-as="move">
                             <tr>
                                 <td style="border: 1px solid #000; padding: 5px; text-align: center;">
-                                    <span t-field="move_line.product_id.default_code"/>
+                                    <span t-field="move.product_id.default_code"/>
                                 </td>
                                 <td style="border: 1px solid #000; padding: 5px;">
-                                    <span t-field="move_line.product_id.name"/>
+                                    <span t-field="move.product_id.name"/>
                                 </td>
                                 <td style="border: 1px solid #000; padding: 5px; text-align: center;">
-                                    <span t-field="move_line.qty_done"/>
+                                    <span t-field="move.product_uom_qty"/>
                                 </td>
                                 <td style="border: 1px solid #000; padding: 5px; text-align: center;">
-                                    <span t-field="move_line.product_uom_id.name"/>
+                                    <span t-field="move.product_uom.name"/>
                                 </td>
                                 <td style="border: 1px solid #000; padding: 5px; text-align: center;">
-                                    <span t-field="move_line.product_id.barcode"/>
+                                    <span t-field="move.product_id.barcode"/>
                                 </td>
                                 <td style="border: 1px solid #000; padding: 5px;"></td>
                             </tr>
@@ -120,13 +119,11 @@
                 <!-- Sehemu ya Chini: Masharti na Saini -->
                 <table style="width: 100%; border-collapse: collapse; margin-top: 15px; vertical-align: top;">
                     <tr>
-                        <!-- Masharti ya Kisheria (a, b, c) -->
                         <td style="width: 60%; border: 1px solid #000; padding: 8px; vertical-align: top; font-size: 10px;">
                             <div style="margin-bottom: 3px;">a) goods once sold cannot be returned</div>
                             <div style="margin-bottom: 3px;">b) no responsibility can be accepted for shortage or damage in transit</div>
                             <div>c) all the above goods received in good order and condition</div>
                         </td>
-                        <!-- Sehemu ya Saini (Received By) -->
                         <td style="width: 40%; border: 1px solid #000; padding: 8px; vertical-align: top; font-size: 10px;">
                             <div style="font-weight: bold; margin-bottom: 5px;">Received By:</div>
                             <div style="margin-bottom: 4px;">Name: ______________________</div>
