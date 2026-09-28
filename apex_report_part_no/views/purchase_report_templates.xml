@@ -31,7 +31,7 @@
     <!-- 2. Delivery Slip: Aggregated lines (Done state bila Serial Numbers) -->
     <template id="stock_report_delivery_aggregated_move_lines_inherit_part_no"
               inherit_id="stock.stock_report_delivery_aggregated_move_lines">
-        <xpath expr="//span[@t-esc='aggregated_line[\'product_name\']']" position="replace">
+        <xpath expr="//span[@t-esc=&quot;aggregated_line['product_name']&quot;]" position="replace">
             <span t-esc="env['product.product'].browse(aggregated_line['product_id']).name"/>
         </xpath>
     </template>
