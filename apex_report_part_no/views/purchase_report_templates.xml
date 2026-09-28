@@ -41,7 +41,7 @@
                     }
                     .page-box {
                         position: relative;
-                        min-height: 950px; /* Inakadiria nafasi ya ukurasa wa A4 ili kusukuma footer chini */
+                        min-height: 850px; /* Inakadiria nafasi ya ukurasa wa A4 ili kusukuma footer chini */
                     }
                     .footer-at-bottom {
                         position: absolute;
