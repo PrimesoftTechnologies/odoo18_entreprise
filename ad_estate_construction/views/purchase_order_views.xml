@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_estate_purchase_order_custom" model="ir.sequence">
+        <field name="name">Estate Purchase Order Sequence</field>
+        <field name="code">estate.purchase.order.custom.seq</field>
+        <field name="padding">4</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+    </record>
+
+    <record id="purchase_order_form_estate_inherit" model="ir.ui.view">
+        <field name="name">purchase.order.form.estate.inherit</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_manager_approve" type="object" string="Manager Approval" invisible="not requires_manager_approval or manager_approved or state != 'draft'" class="oe_highlight" groups="estate_base.group_estate_manager"/>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="project_id"/>
+                <field name="order_type"/>
+            </xpath>
+            <xpath expr="//group[@name='other_info']" position="inside">
+                <group string="Retention &amp; Approval Controls">
+                    <field name="retention_percentage"/>
+                    <field name="retention_amount"/>
+                    <field name="approval_limit"/>
+                    <field name="requires_manager_approval"/>
+                    <field name="manager_approved"/>
+                </group>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Negotiation Notes &amp; Revision Tracker" name="negotiations">
+                    <field name="negotiation_notes" placeholder="Track vendor negotiations, terms, and counter-offers..."/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

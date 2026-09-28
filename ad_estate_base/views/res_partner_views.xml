@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_estate_inherit" model="ir.ui.view">
+        <field name="name">res.partner.form.estate.inherit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='internal_notes']" position="after">
+                <page string="Real Estate &amp; KYC" name="real_estate_kyc">
+                    <group>
+                        <group string="Real Estate Roles">
+                            <field name="is_landlord"/>
+                            <field name="is_tenant"/>
+                            <field name="is_buyer"/>
+                            <field name="is_broker"/>
+                            <field name="is_subcontractor"/>
+                            <field name="is_existing_member"/>
+                        </group>
+                        <group string="Identification &amp; KYC">
+                            <field name="pan_no"/>
+                            <field name="aadhaar_no"/>
+                            <field name="kyc_verified"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

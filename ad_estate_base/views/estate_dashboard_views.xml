@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_estate_dashboard_kanban" model="ir.ui.view">
+        <field name="name">estate.dashboard.kanban</field>
+        <field name="model">estate.dashboard</field>
+        <field name="arch" type="xml">
+            <kanban create="false" can_open="false">
+                <field name="name"/>
+                <field name="total_projects"/>
+                <field name="active_projects"/>
+                <field name="total_buildings"/>
+                <field name="total_units"/>
+                <field name="available_units"/>
+                <field name="reserved_units"/>
+                <field name="sold_units"/>
+                <field name="leased_units"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click container-fluid p-3">
+                            <h3 class="mb-4 text-primary"><field name="name"/></h3>
+                            
+                            <!-- Master Inventory Metrics -->
+                            <div class="row text-center mb-4">
+                                <div class="col-md-3">
+                                    <div class="card bg-light p-3 shadow-sm border-0">
+                                        <h2 class="text-primary font-weight-bold"><field name="total_projects"/></h2>
+                                        <span class="text-muted">Total Projects</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-light p-3 shadow-sm border-0">
+                                        <h2 class="text-warning font-weight-bold"><field name="active_projects"/></h2>
+                                        <span class="text-muted">Under Construction</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-light p-3 shadow-sm border-0">
+                                        <h2 class="text-info font-weight-bold"><field name="total_buildings"/></h2>
+                                        <span class="text-muted">Buildings / Wings</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-light p-3 shadow-sm border-0">
+                                        <h2 class="text-success font-weight-bold"><field name="total_units"/></h2>
+                                        <span class="text-muted">Total Properties</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Property Status Breakdown -->
+                            <div class="card p-3 shadow-sm mb-4">
+                                <h5>Inventory Breakdown</h5>
+                                <div class="row text-center mt-2">
+                                    <div class="col-3">
+                                        <span class="badge bg-success p-2 w-100">Available: <field name="available_units"/></span>
+                                    </div>
+                                    <div class="col-3">
+                                        <span class="badge bg-warning p-2 w-100">Reserved: <field name="reserved_units"/></span>
+                                    </div>
+                                    <div class="col-3">
+                                        <span class="badge bg-primary p-2 w-100">Sold: <field name="sold_units"/></span>
+                                    </div>
+                                    <div class="col-3">
+                                        <span class="badge bg-info p-2 w-100">Leased: <field name="leased_units"/></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="action_estate_dashboard" model="ir.actions.act_window">
+        <field name="name">Command Center Dashboard</field>
+        <field name="res_model">estate.dashboard</field>
+        <field name="view_mode">kanban</field>
+    </record>
+
+    <record id="action_estate_owl_dashboard" model="ir.actions.client">
+        <field name="name">Real Estate Executive OWL Dashboard</field>
+        <field name="tag">estate_owl_dashboard_action</field>
+    </record>
+</odoo>
+

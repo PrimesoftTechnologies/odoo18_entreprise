@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_estate_construction_root" name="Construction &amp; BOQ" parent="ad_estate_base.menu_estate_root" sequence="25"/>
+    <menuitem id="menu_estate_boq" name="BOQ Estimates" parent="menu_estate_construction_root" action="action_estate_boq" sequence="10"/>
+    <menuitem id="menu_estate_purchase_requisition" name="Purchase Requisitions" parent="menu_estate_construction_root" action="action_estate_purchase_requisition" sequence="20"/>
+    <menuitem id="menu_estate_purchase_order" name="Work Orders &amp; Material POs" parent="menu_estate_construction_root" action="purchase.purchase_form_action" sequence="30"/>
+</odoo>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- Sample BOQ -->
+        <record id="demo_estate_boq_1" model="estate.boq">
+            <field name="name">Tower A Superstructure Civil Work</field>
+            <field name="project_id" ref="ad_estate_base.demo_estate_project_1"/>
+            <field name="building_id" ref="ad_estate_base.demo_estate_building_1"/>
+            <field name="wbs_phase">civil</field>
+            <field name="overhead_pct">5.0</field>
+            <field name="margin_pct">10.0</field>
+        </record>
+    </data>
+</odoo>

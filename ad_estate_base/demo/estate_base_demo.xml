@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- Master Projects -->
+        <record id="demo_estate_project_1" model="estate.project">
+            <field name="name">Skyline Horizon Towers</field>
+            <field name="code">PRJ-SKY-01</field>
+            <field name="project_type">residential</field>
+            <field name="state">construction</field>
+        </record>
+
+        <record id="demo_estate_project_2" model="estate.project">
+            <field name="name">Apex Corporate Hub</field>
+            <field name="code">PRJ-APX-02</field>
+            <field name="project_type">commercial</field>
+            <field name="state">sanctioned</field>
+        </record>
+
+        <!-- Buildings / Wings -->
+        <record id="demo_estate_building_1" model="estate.building">
+            <field name="name">Tower A - North Wing</field>
+            <field name="code">TWR-A</field>
+            <field name="project_id" ref="ad_estate_base.demo_estate_project_1"/>
+            <field name="total_floors">25</field>
+        </record>
+
+        <record id="demo_estate_building_2" model="estate.building">
+            <field name="name">Tower B - South Wing</field>
+            <field name="code">TWR-B</field>
+            <field name="project_id" ref="ad_estate_base.demo_estate_project_1"/>
+            <field name="total_floors">25</field>
+        </record>
+
+        <!-- Unit Types & Amenities -->
+        <record id="demo_unit_type_2bhk" model="estate.unit.type">
+            <field name="name">2 BHK Luxury Suite</field>
+            <field name="code">2BHK</field>
+        </record>
+
+        <record id="demo_unit_type_3bhk" model="estate.unit.type">
+            <field name="name">3 BHK Grand Penthouse</field>
+            <field name="code">3BHK</field>
+        </record>
+
+        <!-- Property Units -->
+        <record id="demo_estate_unit_101" model="estate.unit">
+            <field name="name">Unit 101 - 2BHK</field>
+            <field name="project_id" ref="ad_estate_base.demo_estate_project_1"/>
+            <field name="building_id" ref="ad_estate_base.demo_estate_building_1"/>
+            <field name="unit_type_id" ref="ad_estate_base.demo_unit_type_2bhk"/>
+            <field name="floor">1</field>
+            <field name="carpet_area">950.0</field>
+            <field name="super_builtup_area">1350.0</field>
+            <field name="pricing_mode">sale</field>
+            <field name="base_price">150000.0</field>
+            <field name="state">available</field>
+        </record>
+
+        <record id="demo_estate_unit_202" model="estate.unit">
+            <field name="name">Unit 202 - 3BHK</field>
+            <field name="project_id" ref="ad_estate_base.demo_estate_project_1"/>
+            <field name="building_id" ref="ad_estate_base.demo_estate_building_1"/>
+            <field name="unit_type_id" ref="ad_estate_base.demo_unit_type_3bhk"/>
+            <field name="floor">2</field>
+            <field name="carpet_area">1450.0</field>
+            <field name="super_builtup_area">1950.0</field>
+            <field name="pricing_mode">both</field>
+            <field name="base_price">240000.0</field>
+            <field name="state">reserved</field>
+        </record>
+
+        <record id="demo_estate_unit_303" model="estate.unit">
+            <field name="name">Unit 303 - 2BHK</field>
+            <field name="project_id" ref="ad_estate_base.demo_estate_project_1"/>
+            <field name="building_id" ref="ad_estate_base.demo_estate_building_2"/>
+            <field name="unit_type_id" ref="ad_estate_base.demo_unit_type_2bhk"/>
+            <field name="floor">3</field>
+            <field name="carpet_area">950.0</field>
+            <field name="super_builtup_area">1350.0</field>
+            <field name="pricing_mode">sale</field>
+            <field name="base_price">160000.0</field>
+            <field name="state">sold</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Top level menu -->
+    <menuitem id="menu_estate_root" name="Real Estate" web_icon="ad_estate_base,static/description/icon.png" sequence="10"/>
+
+    <!-- Dashboard Category -->
+    <menuitem id="menu_estate_dashboard" name="Dashboard" parent="menu_estate_root" action="action_estate_owl_dashboard" sequence="1"/>
+
+
+
+    <!-- Projects Category -->
+    <menuitem id="menu_estate_projects_root" name="Projects" parent="menu_estate_root" sequence="10"/>
+    <menuitem id="menu_estate_project" name="Projects" parent="menu_estate_projects_root" action="action_estate_project" sequence="10"/>
+    <menuitem id="menu_estate_building" name="Buildings / Wings" parent="menu_estate_projects_root" action="action_estate_building" sequence="20"/>
+
+    <!-- Properties / Units Category -->
+    <menuitem id="menu_estate_properties_root" name="Properties &amp; Units" parent="menu_estate_root" sequence="20"/>
+    <menuitem id="menu_estate_unit" name="Units" parent="menu_estate_properties_root" action="action_estate_unit" sequence="10"/>
+
+    <!-- Configuration Category -->
+    <menuitem id="menu_estate_config_root" name="Configuration" parent="menu_estate_root" sequence="90" groups="group_estate_manager"/>
+    <menuitem id="menu_estate_unit_type" name="Unit Types" parent="menu_estate_config_root" action="action_estate_unit_type" sequence="10"/>
+    <menuitem id="menu_estate_unit_amenity" name="Amenities" parent="menu_estate_config_root" action="action_estate_unit_amenity" sequence="20"/>
+</odoo>
+
+

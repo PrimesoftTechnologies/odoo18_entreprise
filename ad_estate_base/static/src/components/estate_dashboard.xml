@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="ad_estate_base.EstateOwlDashboard">
+        <div class="o_estate_owl_dashboard p-4 overflow-auto bg-view" style="min-height: 100vh;">
+            <!-- Header Section -->
+            <div class="d-flex justify-content-between align-items-center mb-4 p-3 rounded-3 shadow-sm border bg-card">
+                <div>
+                    <h2 class="fw-bold mb-1 text-primary">
+                        <i class="fa fa-building me-2"/>Real Estate Operations Nexus
+                    </h2>
+                    <span class="text-muted small">Live Operational Intelligence &amp; Multi-Module Asset Management</span>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" t-on-click="loadDashboardData">
+                        <i class="fa fa-refresh me-1 text-primary"/>Sync Data
+                    </button>
+                    <button class="btn btn-sm btn-primary rounded-pill px-3 fw-semibold" t-on-click="openProjects">
+                        <i class="fa fa-cubes me-1"/>Projects Control
+                    </button>
+                </div>
+            </div>
+
+            <!-- Top Metric Cards Row -->
+            <div class="row g-3 mb-4">
+                <!-- Projects -->
+                <div class="col-xl-3 col-md-6">
+                    <div class="card h-100 p-3 rounded-3 shadow-sm border-0 border-start border-4 border-primary" style="cursor: pointer;" t-on-click="openProjects">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="small text-uppercase fw-bold text-primary">Active Projects</span>
+                                <h1 class="display-6 fw-bold mb-0 mt-1" t-esc="state.data.total_projects"/>
+                                <div class="mt-2 small">
+                                    <span class="badge text-bg-primary me-1" t-esc="state.data.active_projects + ' Construction'"/>
+                                    <span class="badge text-bg-secondary" t-esc="state.data.total_buildings + ' Wings'"/>
+                                </div>
+                            </div>
+                            <div class="p-3 rounded-circle bg-primary-subtle text-primary">
+                                <i class="fa fa-cubes fa-2x"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Properties -->
+                <div class="col-xl-3 col-md-6">
+                    <div class="card h-100 p-3 rounded-3 shadow-sm border-0 border-start border-4 border-success" style="cursor: pointer;" t-on-click="openUnits">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="small text-uppercase fw-bold text-success">Available Units</span>
+                                <h1 class="display-6 fw-bold mb-0 mt-1" t-esc="state.data.available_units"/>
+                                <div class="mt-2 small">
+                                    <span class="badge text-bg-success me-1" t-esc="state.data.total_units + ' Total Units'"/>
+                                </div>
+                            </div>
+                            <div class="p-3 rounded-circle bg-success-subtle text-success">
+                                <i class="fa fa-building fa-2x"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contracted Sales -->
+                <div class="col-xl-3 col-md-6">
+                    <div class="card h-100 p-3 rounded-3 shadow-sm border-0 border-start border-4 border-warning" style="cursor: pointer;" t-on-click="openSales">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="small text-uppercase fw-bold text-warning">Contracted Revenue</span>
+                                <h2 class="fw-bold mb-0 mt-1" t-esc="formatCurrency(state.data.sales_revenue)"/>
+                                <div class="mt-2 small">
+                                    <span class="badge text-bg-warning me-1" t-esc="state.data.active_contracts + ' Active Agreements'"/>
+                                </div>
+                            </div>
+                            <div class="p-3 rounded-circle bg-warning-subtle text-warning">
+                                <i class="fa fa-line-chart fa-2x"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rent Roll -->
+                <div class="col-xl-3 col-md-6">
+                    <div class="card h-100 p-3 rounded-3 shadow-sm border-0 border-start border-4 border-info" style="cursor: pointer;" t-on-click="openTenancy">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="small text-uppercase fw-bold text-info">Monthly Rent Roll</span>
+                                <h2 class="fw-bold mb-0 mt-1" t-esc="formatCurrency(state.data.monthly_rent_roll)"/>
+                                <div class="mt-2 small">
+                                    <span class="badge text-bg-danger" t-esc="state.data.pending_maintenance + ' Maintenance Open'"/>
+                                </div>
+                            </div>
+                            <div class="p-3 rounded-circle bg-info-subtle text-info">
+                                <i class="fa fa-key fa-2x"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Central Section: Inventory Spectrum & Quick Commands -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-8">
+                    <div class="card p-4 rounded-3 shadow-sm border">
+                        <h5 class="fw-bold mb-3 text-body">
+                            <i class="fa fa-pie-chart me-2 text-primary"/>Property Inventory Spectrum
+                        </h5>
+                        
+                        <!-- Progress Visual -->
+                        <div class="progress rounded-pill mb-4" style="height: 16px;">
+                            <div class="progress-bar bg-success" role="progressbar" t-att-style="'width: ' + ((state.data.available_units / (state.data.total_units || 1)) * 100) + '%'"/>
+                            <div class="progress-bar bg-warning" role="progressbar" t-att-style="'width: ' + ((state.data.reserved_units / (state.data.total_units || 1)) * 100) + '%'"/>
+                            <div class="progress-bar bg-primary" role="progressbar" t-att-style="'width: ' + ((state.data.sold_units / (state.data.total_units || 1)) * 100) + '%'"/>
+                            <div class="progress-bar bg-info" role="progressbar" t-att-style="'width: ' + ((state.data.leased_units / (state.data.total_units || 1)) * 100) + '%'"/>
+                        </div>
+
+                        <div class="row text-center g-3">
+                            <div class="col-3">
+                                <div class="p-3 rounded-3 border bg-success-subtle text-success">
+                                    <h3 class="fw-bold mb-0" t-esc="state.data.available_units"/>
+                                    <span class="small fw-medium">Available</span>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="p-3 rounded-3 border bg-warning-subtle text-warning">
+                                    <h3 class="fw-bold mb-0" t-esc="state.data.reserved_units"/>
+                                    <span class="small fw-medium">Reserved</span>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="p-3 rounded-3 border bg-primary-subtle text-primary">
+                                    <h3 class="fw-bold mb-0" t-esc="state.data.sold_units"/>
+                                    <span class="small fw-medium">Sold</span>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="p-3 rounded-3 border bg-info-subtle text-info">
+                                    <h3 class="fw-bold mb-0" t-esc="state.data.leased_units"/>
+                                    <span class="small fw-medium">Leased</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card p-4 rounded-3 shadow-sm border h-100">
+                        <h5 class="fw-bold mb-3 text-body">
+                            <i class="fa fa-rocket me-2 text-warning"/>Command Launcher
+                        </h5>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-secondary text-start rounded-3 p-2" t-on-click="openProjects">
+                                <i class="fa fa-angle-right me-2 text-primary"/><strong class="text-body">Master Projects</strong> (<t t-esc="state.data.total_projects"/>)
+                            </button>
+                            <button class="btn btn-outline-secondary text-start rounded-3 p-2" t-on-click="openUnits">
+                                <i class="fa fa-angle-right me-2 text-success"/><strong class="text-body">Property Inventory</strong> (<t t-esc="state.data.total_units"/>)
+                            </button>
+                            <button class="btn btn-outline-secondary text-start rounded-3 p-2" t-on-click="openSales">
+                                <i class="fa fa-angle-right me-2 text-warning"/><strong class="text-body">Sales &amp; Milestone Invoicing</strong>
+                            </button>
+                            <button class="btn btn-outline-secondary text-start rounded-3 p-2" t-on-click="openTenancy">
+                                <i class="fa fa-angle-right me-2 text-info"/><strong class="text-body">Tenancy &amp; CAM Yield</strong>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ledger & Execution Tables -->
+            <div class="row g-4">
+                <!-- Transaction Ledger -->
+                <div class="col-lg-6">
+                    <div class="card p-4 rounded-3 shadow-sm border">
+                        <h5 class="fw-bold mb-3 text-body">
+                            <i class="fa fa-history me-2 text-primary"/>Live Transaction Ledger
+                        </h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr class="text-muted">
+                                        <th>Ref</th>
+                                        <th>Type</th>
+                                        <th>Party</th>
+                                        <th>Unit</th>
+                                        <th class="text-end">Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.data.recent_transactions" t-as="tx" t-key="tx.ref">
+                                        <tr>
+                                            <td class="fw-bold text-primary" t-esc="tx.ref"/>
+                                            <td><span class="badge text-bg-secondary" t-esc="tx.type"/></td>
+                                            <td t-esc="tx.partner"/>
+                                            <td class="text-muted" t-esc="tx.unit"/>
+                                            <td class="text-end fw-bold text-success" t-esc="formatCurrency(tx.amount)"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Projects -->
+                <div class="col-lg-6">
+                    <div class="card p-4 rounded-3 shadow-sm border">
+                        <h5 class="fw-bold mb-3 text-body">
+                            <i class="fa fa-building me-2 text-primary"/>Project Pipeline
+                        </h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr class="text-muted">
+                                        <th>Code</th>
+                                        <th>Project Name</th>
+                                        <th>Type</th>
+                                        <th>Status</th>
+                                        <th class="text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.data.recent_projects" t-as="p" t-key="p.id">
+                                        <tr>
+                                            <td class="fw-bold text-body" t-esc="p.code"/>
+                                            <td t-esc="p.name"/>
+                                            <td><span class="badge text-bg-secondary" t-esc="p.project_type"/></td>
+                                            <td><span class="badge text-bg-info text-capitalize" t-esc="p.state"/></td>
+                                            <td class="text-end">
+                                                <button class="btn btn-sm btn-outline-primary px-2 py-0" t-on-click="() => this.openProjectRecord(p.id)">
+                                                    Inspect
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

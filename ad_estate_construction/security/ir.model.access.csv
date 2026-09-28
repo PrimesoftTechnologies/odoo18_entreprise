@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_estate_boq_user,estate.boq.user,model_estate_boq,ad_estate_base.group_estate_user,1,1,1,0
+access_estate_boq_manager,estate.boq.manager,model_estate_boq,ad_estate_base.group_estate_manager,1,1,1,1
+access_estate_boq_line_user,estate.boq.line.user,model_estate_boq_line,ad_estate_base.group_estate_user,1,1,1,1
+access_estate_purchase_requisition_user,estate.purchase.requisition.user,model_estate_purchase_requisition,ad_estate_base.group_estate_user,1,1,1,0
+access_estate_purchase_requisition_manager,estate.purchase.requisition.manager,model_estate_purchase_requisition,ad_estate_base.group_estate_manager,1,1,1,1
+access_estate_purchase_requisition_line_user,estate.purchase.requisition.line.user,model_estate_purchase_requisition_line,ad_estate_base.group_estate_user,1,1,1,1
