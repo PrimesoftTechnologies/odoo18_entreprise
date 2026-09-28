@@ -1,49 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- ============================================================
-         PURCHASE ORDER
-         Show Product Name only
-         ============================================================ -->
+    <!-- Inherit ya Purchase Order -->
     <template id="report_purchaseorder_document_inherit_part_no"
               inherit_id="purchase.report_purchaseorder_document">
-
         <xpath expr="//span[@t-field='line.name']" position="replace">
             <span t-field="line.product_id.name"/>
         </xpath>
-
     </template>
 
-
-    <!-- ============================================================
-         REQUEST FOR QUOTATION (RFQ)
-         Show Product Name only
-         ============================================================ -->
+    <!-- Inherit ya Purchase Quotation (RFQ) -->
     <template id="report_purchasequotation_document_inherit_part_no"
               inherit_id="purchase.report_purchasequotation_document">
-
         <xpath expr="//span[@t-field='order_line.name']" position="replace">
             <span t-field="order_line.product_id.name"/>
         </xpath>
-
     </template>
 
-
-    <!-- ============================================================
-         DELIVERY NOTE / DELIVERY SLIP
-         Show Product Name only
-         ============================================================ -->
-    <template id="report_delivery_document_inherit_part_no"
+    <!-- Ongezeko hili hapa kwa ajili ya Delivery Slip / Delivery Order -->
+    <template id="report_delivery_document_inherit_product_name"
               inherit_id="stock.report_delivery_document">
-
-        <!-- Remove the additional transfer description -->
-        <xpath expr="//p[@t-if='move.description_picking and move.description_picking != move.product_id.name and move._get_report_description_picking()']"
-               position="replace"/>
-
-        <!-- Remove additional description from backorder lines -->
-        <xpath expr="//p[@t-if='bo_line.description_picking and bo_line.description_picking != bo_line.product_id.name and bo_line._get_report_description_picking()']"
-               position="replace"/>
-
+        <xpath expr="//span[@t-field='move_line.product_id.display_name']" position="replace">
+            <span t-field="move_line.product_id.name"/>
+        </xpath>
     </template>
 
 </odoo>
