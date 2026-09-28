@@ -28,12 +28,12 @@
         </xpath>
     </template>
 
-    <!-- Inherit ya Aggregated Move Lines (Hii ndiyo ilikuwa inasababisha bado ionekane kwenye Delivery za Sales zilizopo DONE) -->
+    <!-- Inherit ya Aggregated Move Lines (Imebadilishwa ili kuepuka KeyError ya product_id) -->
     <template id="stock_report_delivery_aggregated_move_lines_inherit_part_no"
               inherit_id="stock.stock_report_delivery_aggregated_move_lines">
         <xpath expr="//span[@t-esc=&quot;aggregated_lines[line]['name']&quot;]" position="replace">
-            <!-- Inatumia product_id ya mstari wa kwanza kwenye kundi hili ili kuchukua jina safi pekee bila internal reference -->
-            <span t-field="aggregated_lines[line]['product_id'].name"/>
+            <!-- Tunatumia product_id ya move ya kwanza inayohusika kwenye kundi hili kupitia lile funguo sahihi -->
+            <span t-esc="aggregated_lines[line].get('product', aggregated_lines[line]['name'])"/>
         </xpath>
     </template>
 
