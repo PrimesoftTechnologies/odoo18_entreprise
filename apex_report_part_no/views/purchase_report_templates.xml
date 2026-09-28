@@ -31,6 +31,12 @@
 
     <!-- 4. Muundo Kamili wa Apex Delivery Note Layout -->
     <template id="report_delivery_document_apex_custom" inherit_id="stock.report_delivery_document">
+        
+        <!-- Tunaficha au kuondoa anwani ya juu ya asili ili isijirudie -->
+        <xpath expr="//div[hasclass('row')]//div[hasclass('col-auto')]" position="attributes">
+            <attribute name="style">display: none;</attribute>
+        </xpath>
+
         <xpath expr="//div[hasclass('page')]" position="replace">
             <div class="page" style="font-family: Arial, sans-serif; font-size: 11px; color: #000;">
                 
@@ -95,7 +101,6 @@
                     <tbody>
                         <t t-foreach="o.move_ids_without_package" t-as="move">
                             <tr>
-                                <!-- Item Code imeachwa wazi (bila data ya mfumo) ili iweze kujazwa au kuonekana wazi -->
                                 <td style="border: 1px solid #000; padding: 5px; text-align: center; height: 20px;"></td>
                                 <td style="border: 1px solid #000; padding: 5px;">
                                     <span t-field="move.product_id.name"/>
@@ -106,7 +111,6 @@
                                 <td style="border: 1px solid #000; padding: 5px; text-align: center;">
                                     <span t-field="move.product_uom.name"/>
                                 </td>
-                                <!-- Product Code sasa inachukua Internal Reference (default_code) -->
                                 <td style="border: 1px solid #000; padding: 5px; text-align: center;">
                                     <span t-field="move.product_id.default_code"/>
                                 </td>
