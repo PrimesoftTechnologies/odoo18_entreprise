@@ -32,7 +32,8 @@
     <template id="stock_report_delivery_aggregated_move_lines_inherit_part_no"
               inherit_id="stock.stock_report_delivery_aggregated_move_lines">
         <xpath expr="//span[@t-esc=&quot;aggregated_lines[line]['name']&quot;]" position="replace">
-            <span t-field="line.name"/>
+            <!-- Tunatumia t-esc na kuchukua jina safi kupitia product kama ipo, au tunasafisha string ya name -->
+            <span t-esc="aggregated_lines[line]['product_id'].name if 'product_id' in aggregated_lines[line] else aggregated_lines[line]['name'].split('] ')[-1] if '] ' in aggregated_lines[line]['name'] else aggregated_lines[line]['name']"/>
         </xpath>
     </template>
 
