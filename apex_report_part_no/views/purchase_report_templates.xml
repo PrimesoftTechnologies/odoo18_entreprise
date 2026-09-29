@@ -29,20 +29,15 @@
         </field>
     </record>
 
-    <!-- 5. Kurekebisha Quotation / Sale Order: Amount (TZS/USD) juu na namba safi chini bila TSh -->
+    <!-- 5. Kurekebisha Quotation / Sale Order kupitia CSS salama kabisa -->
     <template id="report_sale_document_inherit_amount_currency" inherit_id="sale.report_saleorder_document">
-        <!-- Kubadilisha kichwa cha Amount kuwa Amount (TZS) au Amount (USD) kutegemea sarafu ya order -->
-        <xpath expr="//th[@name='th_amount']" position="replace">
-            <th name="th_amount" class="text-end">
-                Amount (<span t-field="o.currency_id.name"/>)
-            </th>
-        </xpath>
-
-        <!-- Kuondoa TSh kwenye namba za chini na kuacha namba tupu zilizopangiliwa -->
-        <xpath expr="//td[@name='td_subtotal']" position="replace">
-            <td name="td_subtotal" class="text-end">
-                <span t-esc="'{0:,.2f}'.format(line.price_subtotal)"/>
-            </td>
+        <xpath expr="//div[hasclass('page')]" position="inside">
+            <style>
+                /* Hii inaficha neno la sarafu linalotokea pembeni ya bei kwenye mistari ya chini */
+                .oe_currency_value + span, span[t-field*="price_subtotal"] + span, td[name="td_subtotal"] span:nth-child(2) {
+                    display: none !important;
+                }
+            </style>
         </xpath>
     </template>
 
