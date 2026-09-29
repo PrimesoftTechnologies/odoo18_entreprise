@@ -29,6 +29,21 @@
         </field>
     </record>
 
+    <!-- 5. INHERIT YA SALE ORDER / QUOTATION REPORT (KUBADILISHA AMOUNT KUWA Amount (TZ) BILA TSh) -->
+    <template id="report_sale_document_inherit_amount_tz" inherit_id="sale.report_sale_document">
+        <!-- Tunabadilisha kichwa cha Amount kuwa Amount (TZ) -->
+        <xpath expr="//th[@name='th_amount']" position="replace">
+            <th name="th_amount" class="text-end">Amount (TZ)</th>
+        </xpath>
+
+        <!-- Tunabadilisha eneo la bei ya mstari (price_subtotal) ili isitoe maandishi ya TSh -->
+        <xpath expr="//td[@name='td_subtotal']" position="replace">
+            <td name="td_subtotal" class="text-end">
+                <span t-esc="'{0:,.2f}'.format(line.price_subtotal)"/>
+            </td>
+        </xpath>
+    </template>
+
     <!-- 4. Muundo wa Apex Delivery Note Layout: Upeo wa bidhaa 14, Footer chini, na Jina la kawaida + Maelezo ya Ziada safi -->
     <template id="report_delivery_document_apex_custom" inherit_id="stock.report_delivery_document">
         <xpath expr="//div[hasclass('page')]" position="replace">
