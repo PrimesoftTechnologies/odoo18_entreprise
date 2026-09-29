@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================
+         PROJECT TASK FORM INHERITANCE
+         ============================================================ -->
+    <record id="view_task_form_project_manufacturer_request" model="ir.ui.view">
+        <field name="name">project.task.form.project.manufacturer.request</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+
+            <!-- Vitufe viko hapa juu kwenye Header ya Task moja kwa moja -->
+            <xpath expr="//header" position="inside">
+                <!-- 1. Kitufe cha Submit: Kinaonekana kukiwa na bidhaa na kiko draft -->
+                <button
+                    name="action_submit_manufacturing_request"
+                    type="object"
+                    string="Submit Manufacturing Request"
+                    class="btn-primary"
+                    icon="fa-industry"
+                    invisible="manufacturer_request_count == 0 or manufacturer_request_state != 'draft'"
+                />
+                
+                <!-- 2. Kitufe cha Muongozo (Info): Kinatumia method sahihi ya Python -->
+                <button
+                    name="action_info_missing_products"
+                    string="Add Products in Tab Below to Submit"
+                    type="object"
+                    class="btn btn-secondary text-muted"
+                    icon="fa-info-circle"
+                    invisible="manufacturer_request_count > 0 or manufacturer_request_state != 'draft'"
+                />
+
+                <!-- 3. Kitufe cha Reset to Draft: Kinatokea mara tu kikiwa Submitted -->
+                <button
+                    name="action_reset_task_manufacturing_request"
+                    type="object"
+                    string="Reset to Draft"
+                    class="btn-secondary"
+                    invisible="manufacturer_request_state != 'submitted'"
+                />
+            </xpath>
+
+            <!-- Product Request tab -->
+            <xpath expr="//notebook" position="inside">
+                <page
+                    name="product_request"
+                    string="Product Request"
+                    icon="fa-cubes"
+                >
+                    <field
+                        name="manufacturer_request_ids"
+                        mode="list"
+                        context="{'default_task_id': id}"
+                        readonly="manufacturer_request_state != 'draft'"
+                    >
+                        <list
+                            editable="bottom"
+                            decoration-muted="state == 'done'"
+                            decoration-info="state == 'submitted'"
+                        >
+                            <field name="product_id"/>
+                            <field name="quantity"/>
+                            <field name="uom_id"/>
+                            <field name="state" widget="badge"/>
+                            <field name="request_date" optional="hide"/>
+                            <field name="submitted_by" optional="hide"/>
+                            <field name="notes" optional="hide"/>
+                        </list>
+                    </field>
+
+                    <div class="text-muted mt-2">
+                        Add the products required for manufacturing, specify
+                        the quantity and unit, then click
+                        <strong>Submit Manufacturing Request</strong> above.
+                    </div>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ============================================================
+         MANUFACTURING REQUEST FORM VIEW
+         ============================================================ -->
+    <record id="view_project_manufacturing_request_form" model="ir.ui.view">
+        <field name="name">project.manufacturing.request.form</field>
+        <field name="model">project.manufacturing.request</field>
+        <field name="arch" type="xml">
+            <form string="Product Request">
+                <header>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,submitted,done"/>
+                </header>
+
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="task_id"/>
+                            <field name="project_id"/>
+                            <field name="product_id"/>
+                        </group>
+                        <group>
+                            <field name="quantity"/>
+                            <field name="uom_id"/>
+                            <field name="request_date"/>
+                            <field name="submitted_by"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <field name="notes" placeholder="Add notes..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         MANUFACTURING REQUEST LIST VIEW
+         ============================================================ -->
+    <record id="view_project_manufacturing_request_list" model="ir.ui.view">
+        <field name="name">project.manufacturing.request.list</field>
+        <field name="model">project.manufacturing.request</field>
+        <field name="arch" type="xml">
+            <list string="Product Requests">
+                <field name="task_id"/>
+                <field name="project_id"/>
+                <field name="product_id"/>
+                <field name="quantity"/>
+                <field name="uom_id"/>
+                <field name="state" widget="badge"/>
+                <field name="request_date"/>
+                <field name="submitted_by"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Action Window -->
+    <record id="action_project_manufacturing_request" model="ir.actions.act_window">
+        <field name="name">Product Requests</field>
+        <field name="res_model">project.manufacturing.request</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Standalone App Menu Kuu yenye Web Icon -->
+    <menuitem
+        id="menu_manufacturing_request_root"
+        name="Manufacturing Requests"
+        web_icon="project_manufacturer_request,static/description/icon.png"
+        sequence="50"/>
+
+    <menuitem
+        id="menu_manufacturing_request_sub"
+        name="All Requests"
+        parent="menu_manufacturing_request_root"
+        action="action_project_manufacturing_request"
+        sequence="10"/>
+
+</odoo>
