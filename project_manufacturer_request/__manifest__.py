@@ -5,7 +5,7 @@
     "summary": "Request manufacturing products directly from Project Tasks as a standalone App",
     "description": """
 Project Manufacturer Request App
-================================
+=================================
 - Adds a Product Request tab to Project Tasks.
 - Submit requests with a stunning Rainbow Success effect.
 - Standalone App on the Odoo dashboard to manage all manufacturing requests.
