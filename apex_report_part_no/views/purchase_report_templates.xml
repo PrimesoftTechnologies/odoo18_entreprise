@@ -29,12 +29,11 @@
         </field>
     </record>
 
-    <!-- 5. Kurekebisha Quotation / Sale Order ili iwe Amount (TZ) juu na kutoa TSh za chini -->
-    <template id="report_sale_document_inherit_amount_tz" inherit_id="sale.report_sale_order_document">
-        <!-- CSS ya kuficha maandishi ya sarafu ya pembeni kwenye jedwali la mauzo -->
+    <!-- 5. Kurekebisha Quotation / Sale Order ili kuficha TSh za chini kupitia CSS sahihi -->
+    <template id="report_sale_document_inherit_amount_tz" inherit_id="sale.report_saleorder_document">
         <xpath expr="//div[hasclass('page')]" position="inside">
             <style>
-                /* Hii inaficha neno la sarafu linalotokea pembeni ya bei ili namba zibaki pekee */
+                /* Hii inaficha neno la sarafu linalotokea pembeni ya bei kwenye mauzo */
                 .oe_currency_value + span, span[t-field*="price_subtotal"] + span {
                     display: none !important;
                 }
