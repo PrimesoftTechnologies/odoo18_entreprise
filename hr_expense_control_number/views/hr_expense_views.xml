@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="hr_expense_view_form_inherit_control_number" model="ir.ui.view">
+        <field name="name">hr.expense.view.form.inherit.control.number</field>
+        <field name="model">hr.expense</field>
+        <field name="inherit_id" ref="hr_expense.hr_expense_view_form"/>
+        <field name="arch" type="xml">
+            <field name="sheet_id" position="after">
+                <field name="control_number" readonly="not is_editable"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="hr_expense_view_search_inherit_control_number" model="ir.ui.view">
+        <field name="name">hr.expense.view.search.inherit.control.number</field>
+        <field name="model">hr.expense</field>
+        <field name="inherit_id" ref="hr_expense.hr_expense_view_search"/>
+        <field name="arch" type="xml">
+            <field name="name" position="attributes">
+                <attribute name="filter_domain">['|', '|', '|', ('employee_id', 'ilike', self), ('name', 'ilike', self), ('product_id', 'ilike', self), ('control_number', 'ilike', self)]</attribute>
+            </field>
+            <field name="name" position="after">
+                <field name="control_number"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>
