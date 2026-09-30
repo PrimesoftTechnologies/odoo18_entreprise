@@ -29,18 +29,13 @@
         </field>
     </record>
 
-    <!-- 4. Kuhamisha Fields kwenye Fomu ya Odoo (UI) ziwe chini ya Destination Location -->
+    <!-- 4. Kuongeza Fields kwenye Fomu ya Odoo (UI) chini ya Destination Location -->
     <record id="view_picking_form_inherit_apex_details" model="ir.ui.view">
         <field name="name">stock.picking.form.inherit.apex.details</field>
         <field name="model">stock.picking</field>
         <field name="inherit_id" ref="stock.view_picking_form"/>
         <field name="arch" type="xml">
-            <!-- Kuondoa fields hizi zilipokuwa hapo awali kama zipo -->
-            <xpath expr="//field[@name='delivery_details']" position="delete"/>
-            <xpath expr="//field[@name='delivery_terms']" position="delete"/>
-            <xpath expr="//field[@name='grn_no']" position="delete"/>
-
-            <!-- Kuziongeza chini ya Destination Location upande wa kushoto -->
+            <!-- Kuongeza fields chini ya Destination Location upande wa kushoto -->
             <xpath expr="//field[@name='location_dest_id']" position="after">
                 <field name="delivery_details"/>
                 <field name="delivery_terms"/>
@@ -111,8 +106,8 @@
                         <div class="content-container">
                             
                             <t t-if="page_index == 0">
-                                <div style="text-align: center; font-weight: bold; font-size: 24px; margin-top: 10px; margin-bottom: 15px; text-transform: uppercase; color: #003366;">
-                                    Delivery Note
+                                <div style="text-align: center; font-weight: bold; font-size: 18px; margin-top: 10px; margin-bottom: 15px; text-transform: uppercase; color: #003366;">
+                                    Delivery Notes
                                 </div>
 
                                 <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
@@ -162,7 +157,6 @@
                                                         <span t-field="o.name"/>
                                                     </td>
                                                 </tr>
-            
                                             </table>
                                         </td>
                                     </tr>
