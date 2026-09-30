@@ -108,26 +108,27 @@
                                     Delivery Note
                                 </div>
 
-                                <!-- Kutumia table moja ya nje yenye vertical-align: stretch / top na kuweka padding zilizosawazishwa -->
+                                <!-- Jedwali kuu la kupangilia upande wa kushoto na kulia liwe sawa -->
                                 <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
                                     <tr>
                                         <!-- Customer Details (Upande wa Kushoto) -->
                                         <td style="width: 50%; vertical-align: top; padding: 0;">
-                                            <div style="border: 1px solid #000; padding: 8px; min-height: 110px; box-sizing: border-box;">
+                                            <div style="border: 1px solid #000; padding: 8px; height: 100%; min-height: 110px; box-sizing: border-box;">
                                                 <div style="font-weight: bold; margin-bottom: 5px;">Customer Details</div>
                                                 <div t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name", "vat", "company_registry"], "no_marker": True}'/>
                                             </div>
                                         </td>
                                         <td style="width: 2%; border: none;"></td>
-                                        <!-- Taarifa za Kulia: Zilizotulia na zenye urefu unaolingana kabisa -->
+                                        <!-- Taarifa za Kulia: Zimeunganishwa kwenye table MOJA tu ili kuondoa mistari ya katikati -->
                                         <td style="width: 48%; vertical-align: top; padding: 0;">
                                             <table style="width: 100%; border-collapse: collapse; border: 1px solid #000; text-align: center; height: 100%;">
-                                                <!-- Safu ya Kwanza: Heads za PO, Date, Delivery Note -->
+                                                <!-- Safu ya 1: Vichwa vya PO, Date, Delivery Note -->
                                                 <tr style="background-color: #f2f2f2; font-weight: bold;">
                                                     <td style="border: 1px solid #000; padding: 5px; font-size: 9px; width: 33%;">Purchase Order No.</td>
                                                     <td style="border: 1px solid #000; padding: 5px; font-size: 9px; width: 33%;">Document Dated</td>
                                                     <td style="border: 1px solid #000; padding: 5px; font-size: 9px; width: 34%;">Delivery Note No.</td>
                                                 </tr>
+                                                <!-- Safu ya 2: Thamani za PO, Date, Delivery Note -->
                                                 <tr>
                                                     <td style="border: 1px solid #000; padding: 8px; font-size: 10px; vertical-align: middle;">
                                                         <span t-esc="o.sale_id.client_order_ref"/>
@@ -139,12 +140,13 @@
                                                         <span t-field="o.name"/>
                                                     </td>
                                                 </tr>
-                                                <!-- Safu ya Pili: Heads za Delivery Details, Terms, GRN -->
+                                                <!-- Safu ya 3: Vichwa vya Delivery Details, Terms, GRN -->
                                                 <tr style="background-color: #f2f2f2; font-weight: bold;">
                                                     <td style="border: 1px solid #000; padding: 5px; font-size: 9px;">Delivery Details</td>
                                                     <td style="border: 1px solid #000; padding: 5px; font-size: 9px;">Delivery Terms</td>
                                                     <td style="border: 1px solid #000; padding: 5px; font-size: 9px;">GRN No.</td>
                                                 </tr>
+                                                <!-- Safu ya 4: Thamani za Delivery Details, Terms, GRN -->
                                                 <tr>
                                                     <td style="border: 1px solid #000; padding: 8px; font-size: 10px; vertical-align: middle;">
                                                         <span t-field="o.delivery_details"/>
