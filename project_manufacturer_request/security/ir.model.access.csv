@@ -1,2 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_project_manufacturing_request_user,project.manufacturing.request.user,model_project_manufacturing_request,project.group_project_user,1,1,1,1
+access_project_manufacturing_request_line_user,project.manufacturing.request.line.user,model_project_manufacturing_request_line,project.group_project_user,1,1,1,1
+access_project_task_manufacturing_line_user,project.task.manufacturing.line.user,model_project_task_manufacturing_line,project.group_project_user,1,1,1,1

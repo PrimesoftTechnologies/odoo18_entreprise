@@ -1,12 +1,13 @@
 {
     "name": "Project Manufacturer Request",
-    "version": "18.0.1.2.0",
+    "version": "18.0.1.3.0",
     "category": "Manufacturing/Project",
-    "summary": "Request manufacturing products directly from Project Tasks as a standalone App",
+    "summary": "Request manufacturing products directly from Project Tasks as a standalone App with Sequence",
     "description": """
 Project Manufacturer Request App
-=================================
+================================
 - Adds a Product Request tab to Project Tasks.
+- Generates a unique sequence number (MR/00001) upon submission.
 - Submit requests with a stunning Rainbow Success effect.
 - Standalone App on the Odoo dashboard to manage all manufacturing requests.
     """,
@@ -15,9 +16,11 @@ Project Manufacturer Request App
     "depends": [
         "project",
         "product",
+        "purchase",
     ],
     "data": [
         "security/ir.model.access.csv",
+        "data/ir_sequence_data.xml",
         "views/project_task_views.xml",
     ],
     "images": [

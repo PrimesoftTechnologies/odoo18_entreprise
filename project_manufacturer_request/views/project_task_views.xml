@@ -10,39 +10,39 @@
         <field name="inherit_id" ref="project.view_task_form2"/>
         <field name="arch" type="xml">
 
-            <!-- Vitufe viko hapa juu kwenye Header ya Task moja kwa moja -->
+            <!-- Vitufe kwenye Header ya Task -->
             <xpath expr="//header" position="inside">
-                <!-- 1. Kitufe cha Submit: Kinaonekana kukiwa na bidhaa na kiko draft -->
+                <!-- 1. Kitufe cha Submit -->
                 <button
                     name="action_submit_manufacturing_request"
                     type="object"
-                    string="Submit Manufacturing Request"
+                    string="Submit Material Request"
                     class="btn-primary"
                     icon="fa-industry"
-                    invisible="manufacturer_request_count == 0 or manufacturer_request_state != 'draft'"
+                    invisible="manufacturer_request_state != 'draft'"
                 />
                 
-                <!-- 2. Kitufe cha Muongozo (Info): Kinatumia method sahihi ya Python -->
+                <!-- 2. Kitufe cha Muongozo (Info) -->
                 <button
                     name="action_info_missing_products"
                     string="Add Products in Tab Below to Submit"
                     type="object"
                     class="btn btn-secondary text-muted"
                     icon="fa-info-circle"
-                    invisible="manufacturer_request_count > 0 or manufacturer_request_state != 'draft'"
+                    invisible="manufacturer_request_state != 'draft'"
                 />
 
-                <!-- 3. Kitufe cha Reset to Draft: Kinatokea mara tu kikiwa Submitted -->
+                <!-- 3. Kitufe cha Reset to Draft -->
                 <button
                     name="action_reset_task_manufacturing_request"
                     type="object"
                     string="Reset to Draft"
                     class="btn-secondary"
-                    invisible="manufacturer_request_state != 'submitted'"
+                    invisible="manufacturer_request_state not in ['wait_approval', 'submitted']"
                 />
             </xpath>
 
-            <!-- Product Request tab -->
+            <!-- Product Request tab kwenye Task -->
             <xpath expr="//notebook" position="inside">
                 <page
                     name="product_request"
@@ -50,30 +50,23 @@
                     icon="fa-cubes"
                 >
                     <field
-                        name="manufacturer_request_ids"
+                        name="manufacturing_line_ids"
                         mode="list"
                         context="{'default_task_id': id}"
                         readonly="manufacturer_request_state != 'draft'"
                     >
-                        <list
-                            editable="bottom"
-                            decoration-muted="state == 'done'"
-                            decoration-info="state == 'submitted'"
-                        >
+                        <list editable="bottom">
                             <field name="product_id"/>
                             <field name="quantity"/>
                             <field name="uom_id"/>
-                            <field name="state" widget="badge"/>
-                            <field name="request_date" optional="hide"/>
-                            <field name="submitted_by" optional="hide"/>
-                            <field name="notes" optional="hide"/>
+                            <field name="notes" optional="show"/>
                         </list>
                     </field>
 
                     <div class="text-muted mt-2">
                         Add the products required for manufacturing, specify
                         the quantity and unit, then click
-                        <strong>Submit Manufacturing Request</strong> above.
+                        <strong>Submit Material Request</strong> above.
                     </div>
                 </page>
             </xpath>
@@ -82,37 +75,88 @@
     </record>
 
     <!-- ============================================================
-         MANUFACTURING REQUEST FORM VIEW
+         MANUFACTURING REQUEST FORM VIEW (Master-Detail)
          ============================================================ -->
     <record id="view_project_manufacturing_request_form" model="ir.ui.view">
         <field name="name">project.manufacturing.request.form</field>
         <field name="model">project.manufacturing.request</field>
         <field name="arch" type="xml">
-            <form string="Product Request">
+            <form string="Material Request">
                 <header>
-                    <field name="state" widget="statusbar"
-                           statusbar_visible="draft,submitted,done"/>
+                    <!-- Kitufe cha Approve Material Request -->
+                    <button 
+                        name="action_approve" 
+                        type="object" 
+                        string="Approve Material Request" 
+                        class="btn-primary" 
+                        invisible="state != 'wait_approval'"
+                    />
+                    
+                    <!-- Vitufe vitatu vikiwa Submitted -->
+                    <button 
+                        name="action_issue_out" 
+                        type="object" 
+                        string="Issue Out" 
+                        class="btn-primary" 
+                        invisible="state != 'submitted'"
+                    />
+                    <button 
+                        name="action_internal_transfer" 
+                        type="object" 
+                        string="Internal Transfer" 
+                        class="btn-secondary" 
+                        invisible="state != 'submitted'"
+                    />
+                    <button 
+                        name="action_create_purchase_order" 
+                        type="object" 
+                        string="Create PO" 
+                        class="btn-secondary" 
+                        invisible="state != 'submitted'"
+                    />
+
+                    <!-- Statusbar yenye hatua zote 4 -->
+                    <field name="state" widget="statusbar" statusbar_visible="draft,wait_approval,submitted,done"/>
                 </header>
 
                 <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
                     <group>
                         <group>
-                            <field name="task_id"/>
-                            <field name="project_id"/>
-                            <field name="product_id"/>
+                            <field name="task_id" readonly="1"/>
+                            <field name="project_id" readonly="1"/>
+                            <field name="partner_id" options="{'no_create': True}" readonly="state == 'done'"/>
                         </group>
                         <group>
-                            <field name="quantity"/>
-                            <field name="uom_id"/>
-                            <field name="request_date"/>
-                            <field name="submitted_by"/>
+                            <field name="request_date" readonly="1"/>
+                            <field name="submitted_by" readonly="1"/>
                         </group>
                     </group>
 
-                    <group>
+                    <notebook>
+                        <page string="Products" name="products">
+                            <field name="line_ids" readonly="state != 'draft'">
+                                <list editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="quantity"/>
+                                    <field name="uom_id"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+
+                    <group class="mt-4">
                         <field name="notes" placeholder="Add notes..."/>
                     </group>
                 </sheet>
+
+                <!-- Chatter ya Odoo 18 -->
+                <chatter/>
             </form>
         </field>
     </record>
@@ -124,22 +168,21 @@
         <field name="name">project.manufacturing.request.list</field>
         <field name="model">project.manufacturing.request</field>
         <field name="arch" type="xml">
-            <list string="Product Requests">
+            <list string="Material Requests">
+                <field name="name"/>
                 <field name="task_id"/>
                 <field name="project_id"/>
-                <field name="product_id"/>
-                <field name="quantity"/>
-                <field name="uom_id"/>
-                <field name="state" widget="badge"/>
+                <field name="partner_id"/>
                 <field name="request_date"/>
                 <field name="submitted_by"/>
+                <field name="state" widget="badge"/>
             </list>
         </field>
     </record>
 
     <!-- Action Window -->
     <record id="action_project_manufacturing_request" model="ir.actions.act_window">
-        <field name="name">Product Requests</field>
+        <field name="name">Material Requests</field>
         <field name="res_model">project.manufacturing.request</field>
         <field name="view_mode">list,form</field>
     </record>
@@ -147,7 +190,7 @@
     <!-- Standalone App Menu Kuu yenye Web Icon -->
     <menuitem
         id="menu_manufacturing_request_root"
-        name="Manufacturing Requests"
+        name="Material Requests"
         web_icon="project_manufacturer_request,static/description/icon.png"
         sequence="50"/>
 
