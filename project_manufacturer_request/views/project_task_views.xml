@@ -49,8 +49,9 @@
                     string="Product Request"
                     icon="fa-cubes"
                 >
+                    <!-- Hapa ndipo tulibadilisha iwe manufacturing_line_ids ili iendane na Python -->
                     <field
-                        name="manufacturer_request_ids"
+                        name="manufacturing_line_ids"
                         mode="list"
                         context="{'default_task_id': id}"
                         readonly="manufacturer_request_state != 'draft'"
