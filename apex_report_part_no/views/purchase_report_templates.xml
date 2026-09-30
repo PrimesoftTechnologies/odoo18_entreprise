@@ -56,7 +56,93 @@
 
 
     <!-- ============================================================
-         4. DELIVERY ORDER FORM
+         4. SALES ORDER REPORT
+         Remove Currency Symbol/Code from Product Line Amounts
+         Keep Currency in Subtotal / Total
+         ============================================================ -->
+    <template id="report_saleorder_document_remove_line_currency"
+              inherit_id="sale.report_saleorder_document">
+
+        <!-- ========================================================
+             UNIT PRICE
+             Example:
+             BEFORE: TZS 100,000.00
+             AFTER:  100,000.00
+             ======================================================== -->
+        <xpath expr="//td[@name='td_priceunit']/span[@t-field='line.price_unit']"
+               position="replace">
+
+            <span t-esc="line.price_unit"
+                  t-options="{
+                      'widget': 'float',
+                      'precision': 2
+                  }"/>
+
+        </xpath>
+
+
+        <!-- ========================================================
+             LINE SUBTOTAL
+             Example:
+             BEFORE: TZS 200,000.00
+             AFTER:  200,000.00
+             ======================================================== -->
+        <xpath expr="//td[@name='td_subtotal']/span[@t-field='line.price_subtotal']"
+               position="replace">
+
+            <span t-esc="line.price_subtotal"
+                  t-options="{
+                      'widget': 'float',
+                      'precision': 2
+                  }"/>
+
+        </xpath>
+
+    </template>
+
+
+    <!-- ============================================================
+         5. SALES QUOTATION REPORT
+         Remove Currency Symbol/Code from Product Line Amounts
+         Keep Currency in Subtotal / Total
+         ============================================================ -->
+    <template id="report_salequotation_document_remove_line_currency"
+              inherit_id="sale.report_saleorder_document">
+
+        <!-- ========================================================
+             UNIT PRICE
+             ======================================================== -->
+        <xpath expr="//td[@name='td_priceunit']/span[@t-field='line.price_unit']"
+               position="replace">
+
+            <span t-esc="line.price_unit"
+                  t-options="{
+                      'widget': 'float',
+                      'precision': 2
+                  }"/>
+
+        </xpath>
+
+
+        <!-- ========================================================
+             LINE SUBTOTAL
+             ======================================================== -->
+        <xpath expr="//td[@name='td_subtotal']/span[@t-field='line.price_subtotal']"
+               position="replace">
+
+            <span t-esc="line.price_subtotal"
+                  t-options="{
+                      'widget': 'float',
+                      'precision': 2
+                  }"/>
+
+        </xpath>
+
+    </template>
+
+
+    <!-- ============================================================
+         6. DELIVERY ORDER FORM
          Add Delivery Details, Delivery Terms, GRN No.
          and Remarks
          ============================================================ -->
@@ -99,7 +185,7 @@
 
 
     <!-- ============================================================
-         5. CUSTOM DELIVERY NOTE REPORT
+         7. CUSTOM DELIVERY NOTE REPORT
          ============================================================ -->
     <template id="report_delivery_document_apex_custom"
               inherit_id="stock.report_delivery_document">
@@ -126,10 +212,6 @@
                         display: none !important;
                     }
 
-
-                    /* ==================================================
-                       PAGE STRUCTURE
-                       ================================================== */
                     .page-box {
                         position: relative;
                         display: flex;
@@ -140,23 +222,14 @@
                         page-break-after: always;
                     }
 
-
                     .page-box:last-child {
                         page-break-after: avoid;
                     }
 
-
-                    /* ==================================================
-                       MAIN CONTENT
-                       ================================================== */
                     .content-container {
                         flex: 1;
                     }
 
-
-                    /* ==================================================
-                       FOOTER
-                       ================================================== */
                     .footer-at-bottom {
                         width: 100%;
                         margin-top: auto;
@@ -167,10 +240,6 @@
                         box-shadow: none !important;
                     }
 
-
-                    /* ==================================================
-                       REMOVE FOOTER BORDERS
-                       ================================================== */
                     .footer-at-bottom table,
                     .footer-at-bottom tr,
                     .footer-at-bottom td,
@@ -180,10 +249,6 @@
                         box-shadow: none !important;
                     }
 
-
-                    /* ==================================================
-                       HIDE CONTACT INFORMATION
-                       ================================================== */
                     .o_address_format span[itemprop="telephone"],
                     .o_address_format span[itemprop="fax"],
                     .o_address_format span[itemprop="email"] {
@@ -237,7 +302,6 @@
                          ================================================== -->
                     <div class="page-box">
 
-
                         <!-- ==================================================
                              MAIN CONTENT
                              ================================================== -->
@@ -249,10 +313,7 @@
                                  ================================================= -->
                             <t t-if="page_index == 0">
 
-
-                                <!-- =============================================
-                                     REPORT TITLE
-                                     ============================================= -->
+                                <!-- REPORT TITLE -->
                                 <div style="
                                     text-align: center;
                                     font-weight: bold;
@@ -276,10 +337,7 @@
                                     margin-top: 5px;
                                 ">
 
-
-                                    <!-- =================================================
-                                         HEADER ROW
-                                         ================================================= -->
+                                    <!-- HEADER ROW -->
                                     <tr style="
                                         background-color: #f2f2f2;
                                         font-weight: bold;
@@ -326,9 +384,7 @@
                                     </tr>
 
 
-                                    <!-- =================================================
-                                         FIRST VALUE ROW
-                                         ================================================= -->
+                                    <!-- FIRST VALUE ROW -->
                                     <tr>
 
                                         <!-- CUSTOMER DETAILS -->
@@ -409,9 +465,7 @@
                                     </tr>
 
 
-                                    <!-- =================================================
-                                         SECOND HEADER ROW
-                                         ================================================= -->
+                                    <!-- SECOND HEADER ROW -->
                                     <tr style="
                                         background-color: #f2f2f2;
                                         font-weight: bold;
@@ -445,9 +499,7 @@
                                     </tr>
 
 
-                                    <!-- =================================================
-                                         SECOND VALUE ROW
-                                         ================================================= -->
+                                    <!-- SECOND VALUE ROW -->
                                     <tr>
 
                                         <!-- DELIVERY DETAILS -->
@@ -692,7 +744,6 @@
 
                             </table>
 
-
                         </div>
 
 
@@ -711,10 +762,6 @@
                                 box-shadow: none !important;
                              ">
 
-
-                            <!-- ==================================================
-                                 FOOTER CONTENT
-                                 ================================================== -->
                             <table style="
                                 width: 100%;
                                 border-collapse: collapse;
@@ -805,9 +852,7 @@
                             </table>
 
 
-                            <!-- ==================================================
-                                 STAMP MESSAGE
-                                 ================================================== -->
+                            <!-- STAMP MESSAGE -->
                             <div style="
                                 width: 100%;
                                 margin-top: 4px;
@@ -822,7 +867,6 @@
                             </div>
 
                         </div>
-
 
                     </div>
 
