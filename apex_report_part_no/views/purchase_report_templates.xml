@@ -155,7 +155,7 @@
 
     <!-- ============================================================
          6. CUSTOM DELIVERY NOTE REPORT
-         Footer Fixed At Bottom Of Every Printed Page
+         Footer At Bottom Of EVERY Printed Page
          ============================================================ -->
     <template id="report_delivery_document_apex_custom"
               inherit_id="stock.report_delivery_document">
@@ -185,21 +185,18 @@
 
 
                     /* =================================================
-                       MAIN PRINTED PAGE
-                       A4 PRINTABLE AREA
+                       PAGE CONTAINER
+                       =================================================
+                       Each page is its own container.
+                       Footer is positioned relative to this container.
                        ================================================= */
 
                     .page-box {
                         position: relative;
 
-                        /*
-                         * Fixed printable height.
-                         * This makes the footer position predictable
-                         * in the PDF renderer.
-                         */
-                        height: 265mm;
-
                         width: 100%;
+
+                        min-height: 277mm;
 
                         box-sizing: border-box;
 
@@ -210,7 +207,7 @@
 
 
                     /* =================================================
-                       REMOVE PAGE BREAK AFTER LAST PAGE
+                       LAST PAGE
                        ================================================= */
 
                     .page-box:last-child {
@@ -220,68 +217,57 @@
 
                     /* =================================================
                        MAIN CONTENT AREA
-                       IMPORTANT:
-                       Reserve enough space at the bottom for footer.
-                       Product rows will therefore not overlap footer.
+                       =================================================
+                       Reserve space for footer.
                        ================================================= */
 
                     .content-container {
                         width: 100%;
 
-                        /*
-                         * Reserve footer area.
-                         */
-                        padding-bottom: 43mm;
-
                         box-sizing: border-box;
+
+                        /*
+                         * Space reserved for footer.
+                         * Product table cannot use this area.
+                         */
+                        padding-bottom: 35mm;
                     }
 
 
                     /* =================================================
-                       FOOTER AREA
-                       FIXED TO BOTTOM OF EVERY PAGE-BOX
+                       FOOTER
+                       =================================================
+                       Always at the bottom of CURRENT page.
                        ================================================= */
 
                     .footer-at-bottom {
                         position: absolute;
 
                         left: 0;
+
                         right: 0;
 
                         bottom: 0;
 
                         width: 100%;
 
-                        height: 39mm;
+                        height: 32mm;
 
                         box-sizing: border-box;
 
-                        padding: 0 0 2mm 0;
-
                         margin: 0;
 
+                        padding: 0;
+
                         border: none !important;
+
                         outline: none !important;
+
                         box-shadow: none !important;
 
-                        background: transparent !important;
+                        background: #fff !important;
 
                         overflow: hidden;
-                    }
-
-
-                    /* =================================================
-                       FORCE ALL FOOTER CHILDREN TO HAVE NO BORDER
-                       ================================================= */
-
-                    .footer-at-bottom,
-                    .footer-at-bottom div,
-                    .footer-at-bottom span,
-                    .footer-at-bottom p {
-                        border: none !important;
-                        outline: none !important;
-                        box-shadow: none !important;
-                        background: transparent !important;
                     }
 
 
@@ -292,20 +278,30 @@
                     .footer-content {
                         width: 100%;
 
+                        height: 100%;
+
+                        box-sizing: border-box;
+
+                        margin: 0;
+
+                        padding: 0;
+
                         font-size: 9px;
 
                         line-height: 1.35;
 
-                        box-sizing: border-box;
-
                         border: none !important;
 
-                        background: transparent !important;
+                        outline: none !important;
+
+                        box-shadow: none !important;
+
+                        background: #fff !important;
                     }
 
 
                     /* =================================================
-                       LEFT TERMS SECTION
+                       LEFT SIDE TERMS
                        ================================================= */
 
                     .footer-terms {
@@ -317,14 +313,20 @@
 
                         padding-right: 10px;
 
+                        margin: 0;
+
                         border: none !important;
+
+                        outline: none !important;
+
+                        box-shadow: none !important;
 
                         background: transparent !important;
                     }
 
 
                     /* =================================================
-                       RIGHT RECEIVED BY SECTION
+                       RIGHT SIDE RECEIVED BY
                        ================================================= */
 
                     .footer-received {
@@ -336,14 +338,20 @@
 
                         padding-left: 10px;
 
+                        margin: 0;
+
                         border: none !important;
+
+                        outline: none !important;
+
+                        box-shadow: none !important;
 
                         background: transparent !important;
                     }
 
 
                     /* =================================================
-                       TERM ROW
+                       TERMS
                        ================================================= */
 
                     .footer-term {
@@ -352,6 +360,10 @@
                         padding: 0;
 
                         border: none !important;
+
+                        outline: none !important;
+
+                        box-shadow: none !important;
 
                         background: transparent !important;
                     }
@@ -370,6 +382,10 @@
 
                         border: none !important;
 
+                        outline: none !important;
+
+                        box-shadow: none !important;
+
                         background: transparent !important;
                     }
 
@@ -382,31 +398,6 @@
                         margin: 0 0 3px 0;
 
                         padding: 0;
-
-                        border: none !important;
-
-                        background: transparent !important;
-                    }
-
-
-                    /* =================================================
-                       STAMP MESSAGE
-                       ================================================= */
-
-                    .footer-stamp {
-                        clear: both;
-
-                        width: 100%;
-
-                        margin-top: 7px;
-
-                        padding: 3px 0;
-
-                        font-size: 9px;
-
-                        color: #555;
-
-                        box-sizing: border-box;
 
                         border: none !important;
 
@@ -429,9 +420,61 @@
 
                         line-height: 0;
 
+                        margin: 0;
+
+                        padding: 0;
+
                         border: none !important;
 
                         background: transparent !important;
+                    }
+
+
+                    /* =================================================
+                       STAMP MESSAGE
+                       =================================================
+                       IMPORTANT:
+                       This is INSIDE footer.
+                       ================================================= */
+
+                    .footer-stamp {
+                        width: 100%;
+
+                        margin: 5px 0 0 0;
+
+                        padding: 0;
+
+                        font-size: 9px;
+
+                        line-height: 12px;
+
+                        color: #555;
+
+                        box-sizing: border-box;
+
+                        border: none !important;
+
+                        outline: none !important;
+
+                        box-shadow: none !important;
+
+                        background: transparent !important;
+                    }
+
+
+                    /* =================================================
+                       FORCE FOOTER CHILDREN NO BORDER
+                       ================================================= */
+
+                    .footer-at-bottom,
+                    .footer-at-bottom *,
+                    .footer-content,
+                    .footer-content * {
+                        border: none !important;
+
+                        outline: none !important;
+
+                        box-shadow: none !important;
                     }
 
 
@@ -457,9 +500,7 @@
 
 
                 <!-- ====================================================
-                     NUMBER OF PRODUCT LINES PER PAGE
-
-                     Footer has its own reserved area.
+                     PRODUCT LINES PER PAGE
                      ==================================================== -->
 
                 <t t-set="chunk_size"
@@ -493,7 +534,7 @@
 
 
                 <!-- ====================================================
-                     LOOP THROUGH EVERY PRINTED PAGE
+                     LOOP THROUGH EVERY PAGE
                      ==================================================== -->
 
                 <t t-foreach="pages"
@@ -501,14 +542,14 @@
 
 
                     <!-- =================================================
-                         PAGE CONTAINER
+                         INDIVIDUAL PAGE
                          ================================================= -->
 
                     <div class="page-box">
 
 
                         <!-- =============================================
-                             MAIN CONTENT AREA
+                             MAIN CONTENT
                              ============================================= -->
 
                         <div class="content-container">
@@ -833,7 +874,7 @@
 
 
                                 <!-- =========================================
-                                     PRODUCTS TABLE HEADER
+                                     TABLE HEADER
                                      ========================================= -->
 
                                 <thead>
@@ -1070,15 +1111,18 @@
                         <!-- =================================================
                              FOOTER
                              =================================================
-                             IMPORTANT:
+                             THIS FOOTER IS INSIDE page-box.
 
-                             This is INSIDE page-box.
+                             Therefore EVERY PAGE gets:
 
-                             Therefore EVERY page gets its own footer.
+                             1. Terms
+                             2. Received By
+                             3. Name
+                             4. Date
+                             5. Signature
+                             6. Stamp message
 
-                             position:absolute + bottom:0 means the footer
-                             stays at the bottom of the current page-box,
-                             regardless of how many product rows exist.
+                             The footer is positioned at bottom: 0.
                              ================================================= -->
 
                         <div class="footer-at-bottom">
