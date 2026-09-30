@@ -75,6 +75,7 @@
                         margin-top: auto;
                         padding-bottom: 5px;
                     }
+                    /* Kuficha namba ya simu na kuonyesha TIN/VRN za mteja */
                     .o_address_format span[itemprop="telephone"] {
                         display: none !important;
                     }
@@ -104,9 +105,10 @@
 
                                 <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
                                     <tr>
+                                        <!-- Customer Details Box -->
                                         <td style="width: 50%; border: 1px solid #000; padding: 6px; vertical-align: top;">
-                                            <div style="font-weight: bold; margin-bottom: 3px;">Customer</div>
-                                            <div t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                                            <div style="font-weight: bold; margin-bottom: 3px;">Customer Details</div>
+                                            <div t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name", "vat", "company_registry"], "no_marker": True}'/>
                                         </td>
                                         <td style="width: 2%;"></td>
                                         <td style="width: 48%; vertical-align: top; padding: 0;">
@@ -151,14 +153,15 @@
                                 </table>
                             </t>
 
+                            <!-- JEDWALI LA BIDHAA: Part Number imesogezwa mbele kabla ya Qty -->
                             <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
                                 <thead>
                                     <tr style="background-color: #e9ecef; text-align: center; font-weight: bold; font-size: 11px;">
-                                        <td style="border: 1px solid #000; padding: 5px; width: 15%;">Item Code</td>
-                                        <td style="border: 1px solid #000; padding: 5px; width: 37%;">Description of Goods &amp; Services</td>
-                                        <td style="border: 1px solid #000; padding: 5px; width: 8%;">Qty</td>
-                                        <td style="border: 1px solid #000; padding: 5px; width: 8%;">Units</td>
+                                        <td style="border: 1px solid #000; padding: 5px; width: 12%;">Item Code</td>
+                                        <td style="border: 1px solid #000; padding: 5px; width: 42%;">Description of Goods &amp; Services</td>
                                         <td style="border: 1px solid #000; padding: 5px; width: 14%;">Part Number</td>
+                                        <td style="border: 1px solid #000; padding: 5px; width: 7%;">Qty</td>
+                                        <td style="border: 1px solid #000; padding: 5px; width: 7%;">Units</td>
                                         <td style="border: 1px solid #000; padding: 5px; width: 18%;">Remarks</td>
                                     </tr>
                                 </thead>
@@ -180,13 +183,13 @@
                                                 </t>
                                             </td>
                                             <td style="border: 1px solid #000; padding: 4px; text-align: center;">
+                                                <span t-field="move.product_id.default_code"/>
+                                            </td>
+                                            <td style="border: 1px solid #000; padding: 4px; text-align: center;">
                                                 <span t-field="move.product_uom_qty"/>
                                             </td>
                                             <td style="border: 1px solid #000; padding: 4px; text-align: center;">
                                                 <span t-field="move.product_uom.name"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 4px; text-align: center;">
-                                                <span t-field="move.product_id.default_code"/>
                                             </td>
                                             <td style="border: 1px solid #000; padding: 4px;">
                                                 <span t-field="move.x_remark"/>
@@ -198,6 +201,7 @@
 
                         </div>
 
+                        <!-- FOOTER SECTION (Ipo chini kabisa) -->
                         <t t-if="page_index == len(pages) - 1">
                             <div class="footer-at-bottom">
                                 <table style="width: 100%; border-collapse: collapse; vertical-align: top;">
