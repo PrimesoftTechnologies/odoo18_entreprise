@@ -150,14 +150,34 @@
 
         <xpath expr="//div[hasclass('page')]" position="replace">
 
-            <div class="page"
-                 style="font-family: Arial, sans-serif;
-                        font-size: 11px;
-                        color: #000;
-                        padding: 0;
-                        margin: 0;">
+            <!-- =====================================================
+                 IMPORTANT:
+                 Do NOT use class="page" here.
+                 Odoo already provides the report page wrapper.
+                 ===================================================== -->
+
+            <div class="apex-delivery-root"
+                 style="
+                    font-family: Arial, sans-serif;
+                    font-size: 11px;
+                    color: #000;
+                    padding: 0;
+                    margin: 0;
+                 ">
 
                 <style type="text/css">
+
+                    /* ==================================================
+                       ROOT
+                       ================================================== */
+
+                    .apex-delivery-root {
+                        width: 100% !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        box-sizing: border-box !important;
+                    }
+
 
                     /* ==================================================
                        HIDE DEFAULT ODOO DELIVERY INFORMATION
@@ -173,9 +193,10 @@
 
 
                     /* ==================================================
-                       PAGE
+                       MANUAL PAGE
 
-                       Reserve enough space for footer.
+                       Each page is 250mm high.
+                       Footer is placed inside this page.
                        ================================================== */
 
                     .page-box {
@@ -213,7 +234,9 @@
                     /* ==================================================
                        CONTENT AREA
 
-                       Footer occupies 40mm.
+                       205mm content
+                       40mm footer
+                       8mm bottom spacing
                        ================================================== */
 
                     .content-container {
@@ -237,8 +260,6 @@
 
                     /* ==================================================
                        FOOTER
-
-                       40mm high and raised 8mm from bottom.
                        ================================================== */
 
                     .footer-at-bottom {
@@ -452,10 +473,6 @@
 
                     /* ==================================================
                        STAMP MESSAGE
-
-                       IMPORTANT:
-                       Positioned INSIDE the footer itself.
-                       It cannot create another PDF page.
                        ================================================== */
 
                     .footer-stamp {
@@ -543,7 +560,7 @@
 
 
                     /* ==================================================
-                       FORCE FOOTER VISIBILITY
+                       FOOTER VISIBILITY
                        ================================================== */
 
                     .footer-at-bottom,
