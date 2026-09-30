@@ -64,17 +64,17 @@
 
     <!-- ============================================================
          4. SALES ORDER + QUOTATION REPORT
-         
+
          Product line:
          - Unit Price = number only
          - Amount = number only
-         
+
          Amount heading:
          - Amount (TZS)
          - Amount (USD)
          - Amount (EUR)
          - etc.
-         
+
          Totals:
          - Keep currency
          ============================================================ -->
@@ -84,12 +84,7 @@
 
         <!-- ========================================================
              4.1 AMOUNT COLUMN HEADER
-             
-             Dynamic currency:
-             
-             TZS -> Amount (TZS)
-             USD -> Amount (USD)
-             EUR -> Amount (EUR)
+             Dynamic currency
              ======================================================== -->
         <xpath expr="//th[@name='th_subtotal']"
                position="replace">
@@ -109,12 +104,7 @@
 
         <!-- ========================================================
              4.2 UNIT PRICE
-             
-             BEFORE:
-             TZS 1,500,000.00
-             
-             AFTER:
-             1,500,000.00
+             Number only - no currency
              ======================================================== -->
         <xpath expr="//td[@name='td_priceunit']"
                position="replace">
@@ -135,12 +125,7 @@
 
         <!-- ========================================================
              4.3 LINE AMOUNT / SUBTOTAL
-             
-             BEFORE:
-             TZS 3,000,000.00
-             
-             AFTER:
-             3,000,000.00
+             Number only - no currency
              ======================================================== -->
         <xpath expr="//td[@name='td_subtotal']"
                position="replace">
@@ -164,7 +149,7 @@
 
     <!-- ============================================================
          5. DELIVERY ORDER FORM
-         
+
          Add:
          - Delivery Details
          - Delivery Terms
@@ -273,26 +258,31 @@
 
 
                     /* ==================================================
-                       FOOTER
+                       SEPARATE FOOTER
+                       No border / no box
                        ================================================== */
                     .footer-at-bottom {
                         width: 100%;
                         margin-top: auto;
                         padding-top: 10px;
                         padding-bottom: 0;
+
                         border: none !important;
                         outline: none !important;
                         box-shadow: none !important;
+
+                        background: transparent !important;
                     }
 
 
                     /* ==================================================
-                       REMOVE FOOTER BORDERS
+                       FOOTER CHILDREN
+                       Explicitly remove all borders
                        ================================================== */
-                    .footer-at-bottom table,
-                    .footer-at-bottom tr,
-                    .footer-at-bottom td,
-                    .footer-at-bottom div {
+                    .footer-at-bottom,
+                    .footer-at-bottom div,
+                    .footer-at-bottom span,
+                    .footer-at-bottom p {
                         border: none !important;
                         outline: none !important;
                         box-shadow: none !important;
@@ -928,158 +918,159 @@
 
 
                         <!-- ====================================================
-                             FOOTER
-                             PLAIN / NO BOX / BOTTOM OF EVERY PAGE
+                             SEPARATE FOOTER
+                             
+                             IMPORTANT:
+                             This is OUTSIDE the product table.
+                             No table / tr / td is used here.
+                             Therefore no product-line border surrounds it.
                              ==================================================== -->
-                        <div class="footer-at-bottom"
-                             style="
-                                width: 100%;
-                                margin-top: auto;
-                                padding-top: 10px;
-                                padding-bottom: 0;
-                                border: none !important;
-                                outline: none !important;
-                                box-shadow: none !important;
-                             ">
+                        <div class="footer-at-bottom">
 
 
                             <!-- ==================================================
-                                 FOOTER CONTENT
-                                 ================================================== -->
-                            <table style="
-                                width: 100%;
-                                border-collapse: collapse;
-                                border: none !important;
-                                outline: none !important;
-                                box-shadow: none !important;
-                            ">
-
-
-                                <tr style="
-                                    border: none !important;
-                                ">
-
-
-                                    <!-- LEFT SIDE - TERMS -->
-                                    <td style="
-                                        width: 60%;
-                                        padding: 3px 5px;
-                                        vertical-align: top;
-                                        font-size: 9px;
-                                        border: none !important;
-                                        outline: none !important;
-                                    ">
-
-
-                                        <div style="
-                                            margin: 0 0 2px 0;
-                                            border: none !important;
-                                        ">
-
-                                            a) goods once sold cannot be returned
-
-                                        </div>
-
-
-                                        <div style="
-                                            margin: 0 0 2px 0;
-                                            border: none !important;
-                                        ">
-
-                                            b) no responsibility can be accepted for shortage or damage in transit
-
-                                        </div>
-
-
-                                        <div style="
-                                            margin: 0;
-                                            border: none !important;
-                                        ">
-
-                                            c) all the above goods received in good order and condition
-
-                                        </div>
-
-
-                                    </td>
-
-
-                                    <!-- RIGHT SIDE - RECEIVED BY -->
-                                    <td style="
-                                        width: 40%;
-                                        padding: 3px 5px;
-                                        vertical-align: top;
-                                        font-size: 9px;
-                                        border: none !important;
-                                        outline: none !important;
-                                    ">
-
-
-                                        <div style="
-                                            font-weight: bold;
-                                            margin: 0 0 3px 0;
-                                            border: none !important;
-                                        ">
-
-                                            Received By:
-
-                                        </div>
-
-
-                                        <div style="
-                                            margin: 0 0 3px 0;
-                                            border: none !important;
-                                        ">
-
-                                            Name: ______________________
-
-                                        </div>
-
-
-                                        <div style="
-                                            margin: 0 0 3px 0;
-                                            border: none !important;
-                                        ">
-
-                                            Date: ______________________
-
-                                        </div>
-
-
-                                        <div style="
-                                            margin: 0;
-                                            border: none !important;
-                                        ">
-
-                                            Signature: __________________
-
-                                        </div>
-
-
-                                    </td>
-
-
-                                </tr>
-
-
-                            </table>
-
-
-                            <!-- ==================================================
-                                 STAMP MESSAGE
+                                 FOOTER INNER CONTAINER
                                  ================================================== -->
                             <div style="
                                 width: 100%;
-                                margin-top: 4px;
-                                padding: 3px 5px;
                                 font-size: 9px;
-                                color: #555;
+                                line-height: 1.4;
                                 border: none !important;
                                 outline: none !important;
                                 box-shadow: none !important;
+                                background: transparent !important;
                             ">
 
-                                Please stamp upon acknowledgement of Goods &amp; Services
+
+                                <!-- ==================================================
+                                     LEFT SIDE TERMS
+                                     ================================================== -->
+                                <div style="
+                                    width: 60%;
+                                    float: left;
+                                    border: none !important;
+                                    outline: none !important;
+                                    box-shadow: none !important;
+                                ">
+
+
+                                    <div style="
+                                        margin: 0 0 2px 0;
+                                        border: none !important;
+                                    ">
+
+                                        a) goods once sold cannot be returned
+
+                                    </div>
+
+
+                                    <div style="
+                                        margin: 0 0 2px 0;
+                                        border: none !important;
+                                    ">
+
+                                        b) no responsibility can be accepted for shortage or damage in transit
+
+                                    </div>
+
+
+                                    <div style="
+                                        margin: 0;
+                                        border: none !important;
+                                    ">
+
+                                        c) all the above goods received in good order and condition
+
+                                    </div>
+
+
+                                </div>
+
+
+                                <!-- ==================================================
+                                     RIGHT SIDE RECEIVED BY
+                                     ================================================== -->
+                                <div style="
+                                    width: 40%;
+                                    float: right;
+                                    border: none !important;
+                                    outline: none !important;
+                                    box-shadow: none !important;
+                                ">
+
+
+                                    <div style="
+                                        font-weight: bold;
+                                        margin: 0 0 3px 0;
+                                        border: none !important;
+                                    ">
+
+                                        Received By:
+
+                                    </div>
+
+
+                                    <div style="
+                                        margin: 0 0 3px 0;
+                                        border: none !important;
+                                    ">
+
+                                        Name: ______________________
+
+                                    </div>
+
+
+                                    <div style="
+                                        margin: 0 0 3px 0;
+                                        border: none !important;
+                                    ">
+
+                                        Date: ______________________
+
+                                    </div>
+
+
+                                    <div style="
+                                        margin: 0;
+                                        border: none !important;
+                                    ">
+
+                                        Signature: __________________
+
+                                    </div>
+
+
+                                </div>
+
+
+                                <!-- ==================================================
+                                     CLEAR FLOAT
+                                     ================================================== -->
+                                <div style="
+                                    clear: both;
+                                    border: none !important;
+                                "></div>
+
+
+                                <!-- ==================================================
+                                     STAMP MESSAGE
+                                     ================================================== -->
+                                <div style="
+                                    width: 100%;
+                                    margin-top: 6px;
+                                    padding: 3px 5px;
+                                    font-size: 9px;
+                                    color: #555;
+                                    border: none !important;
+                                    outline: none !important;
+                                    box-shadow: none !important;
+                                    background: transparent !important;
+                                ">
+
+                                    Please stamp upon acknowledgement of Goods &amp; Services
+
+                                </div>
+
 
                             </div>
 
@@ -1103,3 +1094,5 @@
 
 
 </odoo>
+
+
