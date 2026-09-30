@@ -205,8 +205,7 @@
 
                     /* =================================================
                        MAIN CONTENT
-                       Leave space for the footer so products do not
-                       overlap the footer.
+                       Leave space for the footer
                        ================================================= */
 
                     .content-container {
@@ -219,7 +218,6 @@
                     /* =================================================
                        FOOTER
                        Every page gets its own footer.
-                       Footer is always at the bottom of THIS page.
                        ================================================= */
 
                     .footer-at-bottom {
@@ -307,10 +305,6 @@
 
                 <!-- ====================================================
                      LOOP THROUGH EVERY PAGE
-
-                     IMPORTANT:
-                     The footer is INSIDE this loop.
-                     Therefore every page gets its own footer.
                      ==================================================== -->
 
                 <t t-foreach="pages" t-as="page_lines">
@@ -445,7 +439,10 @@
                                     <tr>
 
 
-                                        <!-- CUSTOMER DETAILS -->
+                                        <!-- =================================
+                                             CUSTOMER DETAILS
+                                             EXPLICIT FIELDS
+                                             ================================= -->
 
                                         <td rowspan="3"
                                             style="
@@ -454,25 +451,126 @@
                                                 padding: 8px;
                                                 vertical-align: top;
                                                 font-size: 10px;
+                                                line-height: 1.45;
                                                 box-sizing: border-box;
                                             ">
 
-                                            <div t-field="o.partner_id"
-                                                 t-options='{
-                                                     "widget": "contact",
-                                                     "fields": [
-                                                         "address",
-                                                         "name",
-                                                         "vat",
-                                                         "company_registry"
-                                                     ],
-                                                     "no_marker": true
-                                                 }'/>
+                                            <!-- CUSTOMER NAME -->
+
+                                            <div style="
+                                                font-weight: bold;
+                                                font-size: 11px;
+                                                margin-bottom: 4px;
+                                            ">
+
+                                                <span t-field="o.partner_id.name"/>
+
+                                            </div>
+
+
+                                            <!-- STREET -->
+
+                                            <t t-if="o.partner_id.street">
+
+                                                <div>
+                                                    <span t-field="o.partner_id.street"/>
+                                                </div>
+
+                                            </t>
+
+
+                                            <!-- STREET 2 -->
+
+                                            <t t-if="o.partner_id.street2">
+
+                                                <div>
+                                                    <span t-field="o.partner_id.street2"/>
+                                                </div>
+
+                                            </t>
+
+
+                                            <!-- CITY -->
+
+                                            <t t-if="o.partner_id.city">
+
+                                                <div>
+                                                    <span t-field="o.partner_id.city"/>
+                                                </div>
+
+                                            </t>
+
+
+                                            <!-- STATE -->
+
+                                            <t t-if="o.partner_id.state_id">
+
+                                                <div>
+                                                    <span t-field="o.partner_id.state_id.name"/>
+                                                </div>
+
+                                            </t>
+
+
+                                            <!-- ZIP / POSTAL CODE -->
+
+                                            <t t-if="o.partner_id.zip">
+
+                                                <div>
+                                                    <span t-field="o.partner_id.zip"/>
+                                                </div>
+
+                                            </t>
+
+
+                                            <!-- COUNTRY -->
+
+                                            <t t-if="o.partner_id.country_id">
+
+                                                <div>
+                                                    <span t-field="o.partner_id.country_id.name"/>
+                                                </div>
+
+                                            </t>
+
+
+                                            <!-- VAT -->
+
+                                            <t t-if="o.partner_id.vat">
+
+                                                <div style="
+                                                    margin-top: 4px;
+                                                ">
+
+                                                    <strong>VAT:</strong>
+
+                                                    <span t-field="o.partner_id.vat"/>
+
+                                                </div>
+
+                                            </t>
+
+
+                                            <!-- COMPANY REGISTRATION -->
+
+                                            <t t-if="o.partner_id.company_registry">
+
+                                                <div>
+
+                                                    <strong>Company Reg:</strong>
+
+                                                    <span t-field="o.partner_id.company_registry"/>
+
+                                                </div>
+
+                                            </t>
 
                                         </td>
 
 
-                                        <!-- PURCHASE ORDER NUMBER -->
+                                        <!-- =================================
+                                             PURCHASE ORDER NUMBER
+                                             ================================= -->
 
                                         <td style="
                                             width: 16.67%;
@@ -489,7 +587,9 @@
                                         </td>
 
 
-                                        <!-- DOCUMENT DATE -->
+                                        <!-- =================================
+                                             DOCUMENT DATE
+                                             ================================= -->
 
                                         <td style="
                                             width: 16.67%;
@@ -507,7 +607,9 @@
                                         </td>
 
 
-                                        <!-- DELIVERY NOTE NUMBER -->
+                                        <!-- =================================
+                                             DELIVERY NOTE NUMBER
+                                             ================================= -->
 
                                         <td style="
                                             width: 16.66%;
@@ -538,6 +640,8 @@
                                     ">
 
 
+                                        <!-- DELIVERY DETAILS -->
+
                                         <td style="
                                             border: 1px solid #000;
                                             padding: 5px;
@@ -549,6 +653,8 @@
                                         </td>
 
 
+                                        <!-- DELIVERY TERMS -->
+
                                         <td style="
                                             border: 1px solid #000;
                                             padding: 5px;
@@ -559,6 +665,8 @@
 
                                         </td>
 
+
+                                        <!-- GRN NUMBER -->
 
                                         <td style="
                                             border: 1px solid #000;
@@ -887,7 +995,6 @@
                         <!-- =================================================
                              FOOTER
                              THIS FOOTER BELONGS TO THIS PAGE ONLY
-                             AND IS ALWAYS AT THE BOTTOM.
                              ================================================= -->
 
                         <div class="footer-at-bottom">
