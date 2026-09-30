@@ -81,7 +81,7 @@
                         border: none !important;
                         box-shadow: none !important;
                     }
-                    .o_address_format span[itemprop="telephone"], .o_address_format span[itemprop="fax"] {
+                    .o_address_format span[itemprop="telephone"], .o_address_format span[itemprop="fax"], .o_address_format span[itemprop="email"] {
                         display: none !important;
                     }
                 </style>
@@ -110,9 +110,9 @@
 
                                 <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
                                     <tr>
-                                        <!-- Customer Details (Upande wa Kushoto) - Amewekwa na Urefu Sawia -->
+                                        <!-- Customer Details (Upande wa Kushoto) - Imeondolewa fixed height ili isitoe nafasi tupu -->
                                         <td style="width: 50%; vertical-align: top; padding: 0;">
-                                            <div style="border: 1px solid #000; padding: 6px; height: 95px; box-sizing: border-box;">
+                                            <div style="border: 1px solid #000; padding: 6px; height: 100%; box-sizing: border-box;">
                                                 <div style="font-weight: bold; margin-bottom: 3px;">Customer Details</div>
                                                 <div t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name", "vat", "company_registry"], "no_marker": True}'/>
                                             </div>
