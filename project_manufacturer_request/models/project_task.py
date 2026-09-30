@@ -74,8 +74,7 @@ class ProjectTask(models.Model):
         # Weka state ya task kuwa wait_approval
         self.manufacturer_request_state = "wait_approval"
         
-        # Safisha temporary lines za kwenye task
-        self.manufacturing_line_ids.unlink()
+        # TUMEFUTA `self.manufacturing_line_ids.unlink()` ILI BIDHAA ZISIPOTEE BADA YA KUSUBMIT!
 
         # Rainbow Success Effect na jina la Sequence
         return {
