@@ -76,6 +76,10 @@
                         padding-top: 15px;
                         padding-bottom: 5px;
                     }
+                    .footer-at-bottom table, .footer-at-bottom td {
+                        border: none !important;
+                        box-shadow: none !important;
+                    }
                     .o_address_format span[itemprop="telephone"] {
                         display: none !important;
                     }
@@ -99,7 +103,7 @@
                         <div class="content-container">
                             
                             <t t-if="page_index == 0">
-                                <div style="text-align: center; font-weight: bold; font-size: 18px; margin-top: 10px; margin-bottom: 15px; text-transform: uppercase; color: #003366;">
+                                <div style="text-align: center; font-weight: bold; font-size: 23px; margin-top: 10px; margin-bottom: 15px; text-transform: uppercase; color: #003366;">
                                     Delivery Note
                                 </div>
 
@@ -110,9 +114,9 @@
                                             <div style="font-weight: bold; margin-bottom: 3px;">Customer Details</div>
                                             <div t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name", "vat", "company_registry"], "no_marker": True}'/>
                                         </td>
-                                        <td style="width: 2%;"></td>
+                                        <td style="width: 2%; border: none;"></td>
                                         <!-- Reference Boxes -->
-                                        <td style="width: 48%; vertical-align: top; padding: 0;">
+                                        <td style="width: 48%; vertical-align: top; padding: 0; border: none;">
                                             <table style="width: 100%; border-collapse: collapse; text-align: center;">
                                                 <tr style="background-color: #f2f2f2; font-weight: bold;">
                                                     <td style="border: 1px solid #000; padding: 3px; font-size: 9px; width: 33%;">Purchase Order No.</td>
@@ -152,7 +156,7 @@
                                 </table>
                             </t>
 
-                            <!-- JEDWALI LA BIDHAA (Na Nyongeza ya Space Juu Yake) -->
+                            <!-- JEDWALI LA BIDHAA -->
                             <table style="width: 100%; border-collapse: collapse; margin-top: 25px;">
                                 <thead>
                                     <tr style="background-color: #e9ecef; text-align: center; font-weight: bold; font-size: 11px;">
@@ -200,16 +204,16 @@
 
                         </div>
 
-                        <!-- FOOTER SECTION (Bila Box / Normal, Imejitenga na Iko Chini Kabisa ya Kila Ukurasa) -->
+                        <!-- FOOTER SECTION (Bila Box Wala Border Yoyote Kabisa) -->
                         <div class="footer-at-bottom">
-                            <table style="width: 100%; border-collapse: collapse; vertical-align: top;">
-                                <tr>
-                                    <td style="width: 60%; padding: 4px; vertical-align: top; font-size: 9px; border: none;">
+                            <table style="width: 100%; border-collapse: collapse; vertical-align: top; border: none !important;">
+                                <tr style="border: none !important;">
+                                    <td style="width: 60%; padding: 4px; vertical-align: top; font-size: 9px; border: none !important;">
                                         <div style="margin-bottom: 2px;">a) goods once sold cannot be returned</div>
                                         <div style="margin-bottom: 2px;">b) no responsibility can be accepted for shortage or damage in transit</div>
                                         <div>c) all the above goods received in good order and condition</div>
                                     </td>
-                                    <td style="width: 40%; padding: 4px; vertical-align: top; font-size: 9px; border: none;">
+                                    <td style="width: 40%; padding: 4px; vertical-align: top; font-size: 9px; border: none !important;">
                                         <div style="font-weight: bold; margin-bottom: 3px;">Received By:</div>
                                         <div style="margin-bottom: 3px;">Name: ______________________</div>
                                         <div style="margin-bottom: 3px;">Date: ______________________</div>
@@ -218,9 +222,9 @@
                                 </tr>
                             </table>
 
-                            <table style="width: 100%; border-collapse: collapse; margin-top: 3px;">
-                                <tr>
-                                    <td style="padding: 4px; height: 25px; vertical-align: top; font-size: 9px; color: #555; border: none;">
+                            <table style="width: 100%; border-collapse: collapse; margin-top: 3px; border: none !important;">
+                                <tr style="border: none !important;">
+                                    <td style="padding: 4px; height: 25px; vertical-align: top; font-size: 9px; color: #555; border: none !important;">
                                         Please stamp upon acknowledgement of Goods &amp; Services
                                     </td>
                                 </tr>
