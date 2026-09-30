@@ -155,6 +155,7 @@
 
     <!-- ============================================================
          6. CUSTOM DELIVERY NOTE REPORT
+         Footer Fixed At Bottom Of Every Printed Page
          ============================================================ -->
     <template id="report_delivery_document_apex_custom"
               inherit_id="stock.report_delivery_document">
@@ -184,19 +185,33 @@
 
 
                     /* =================================================
-                       EACH PRINTED PAGE
+                       MAIN PRINTED PAGE
+                       A4 PRINTABLE AREA
                        ================================================= */
 
                     .page-box {
                         position: relative;
+
+                        /*
+                         * Fixed printable height.
+                         * This makes the footer position predictable
+                         * in the PDF renderer.
+                         */
+                        height: 265mm;
+
                         width: 100%;
-                        min-height: 100vh;
+
                         box-sizing: border-box;
+
                         page-break-after: always;
+
+                        overflow: hidden;
                     }
 
 
-                    /* Do not create an extra blank page after last page */
+                    /* =================================================
+                       REMOVE PAGE BREAK AFTER LAST PAGE
+                       ================================================= */
 
                     .page-box:last-child {
                         page-break-after: avoid;
@@ -204,22 +219,27 @@
 
 
                     /* =================================================
-                       MAIN CONTENT
-                       Leave space for the footer so products do not
-                       overlap the footer.
+                       MAIN CONTENT AREA
+                       IMPORTANT:
+                       Reserve enough space at the bottom for footer.
+                       Product rows will therefore not overlap footer.
                        ================================================= */
 
                     .content-container {
                         width: 100%;
-                        padding-bottom: 150px;
+
+                        /*
+                         * Reserve footer area.
+                         */
+                        padding-bottom: 43mm;
+
                         box-sizing: border-box;
                     }
 
 
                     /* =================================================
-                       FOOTER
-                       Every page gets its own footer.
-                       Footer is always at the bottom of THIS page.
+                       FOOTER AREA
+                       FIXED TO BOTTOM OF EVERY PAGE-BOX
                        ================================================= */
 
                     .footer-at-bottom {
@@ -227,11 +247,18 @@
 
                         left: 0;
                         right: 0;
+
                         bottom: 0;
 
                         width: 100%;
 
-                        padding-bottom: 5px;
+                        height: 39mm;
+
+                        box-sizing: border-box;
+
+                        padding: 0 0 2mm 0;
+
+                        margin: 0;
 
                         border: none !important;
                         outline: none !important;
@@ -239,12 +266,12 @@
 
                         background: transparent !important;
 
-                        box-sizing: border-box;
+                        overflow: hidden;
                     }
 
 
                     /* =================================================
-                       FORCE FOOTER TO HAVE NO BORDER
+                       FORCE ALL FOOTER CHILDREN TO HAVE NO BORDER
                        ================================================= */
 
                     .footer-at-bottom,
@@ -254,6 +281,156 @@
                         border: none !important;
                         outline: none !important;
                         box-shadow: none !important;
+                        background: transparent !important;
+                    }
+
+
+                    /* =================================================
+                       FOOTER CONTENT
+                       ================================================= */
+
+                    .footer-content {
+                        width: 100%;
+
+                        font-size: 9px;
+
+                        line-height: 1.35;
+
+                        box-sizing: border-box;
+
+                        border: none !important;
+
+                        background: transparent !important;
+                    }
+
+
+                    /* =================================================
+                       LEFT TERMS SECTION
+                       ================================================= */
+
+                    .footer-terms {
+                        width: 58%;
+
+                        float: left;
+
+                        box-sizing: border-box;
+
+                        padding-right: 10px;
+
+                        border: none !important;
+
+                        background: transparent !important;
+                    }
+
+
+                    /* =================================================
+                       RIGHT RECEIVED BY SECTION
+                       ================================================= */
+
+                    .footer-received {
+                        width: 42%;
+
+                        float: right;
+
+                        box-sizing: border-box;
+
+                        padding-left: 10px;
+
+                        border: none !important;
+
+                        background: transparent !important;
+                    }
+
+
+                    /* =================================================
+                       TERM ROW
+                       ================================================= */
+
+                    .footer-term {
+                        margin: 0 0 2px 0;
+
+                        padding: 0;
+
+                        border: none !important;
+
+                        background: transparent !important;
+                    }
+
+
+                    /* =================================================
+                       RECEIVED BY TITLE
+                       ================================================= */
+
+                    .footer-received-title {
+                        font-weight: bold;
+
+                        margin: 0 0 3px 0;
+
+                        padding: 0;
+
+                        border: none !important;
+
+                        background: transparent !important;
+                    }
+
+
+                    /* =================================================
+                       RECEIVED BY ROW
+                       ================================================= */
+
+                    .footer-received-row {
+                        margin: 0 0 3px 0;
+
+                        padding: 0;
+
+                        border: none !important;
+
+                        background: transparent !important;
+                    }
+
+
+                    /* =================================================
+                       STAMP MESSAGE
+                       ================================================= */
+
+                    .footer-stamp {
+                        clear: both;
+
+                        width: 100%;
+
+                        margin-top: 7px;
+
+                        padding: 3px 0;
+
+                        font-size: 9px;
+
+                        color: #555;
+
+                        box-sizing: border-box;
+
+                        border: none !important;
+
+                        outline: none !important;
+
+                        box-shadow: none !important;
+
+                        background: transparent !important;
+                    }
+
+
+                    /* =================================================
+                       CLEAR FLOAT
+                       ================================================= */
+
+                    .footer-clear {
+                        clear: both;
+
+                        height: 0;
+
+                        line-height: 0;
+
+                        border: none !important;
+
                         background: transparent !important;
                     }
 
@@ -278,9 +455,16 @@
                 <t t-set="lines"
                    t-value="o.move_ids_without_package"/>
 
-                <!-- Maximum products per page -->
+
+                <!-- ====================================================
+                     NUMBER OF PRODUCT LINES PER PAGE
+
+                     Footer has its own reserved area.
+                     ==================================================== -->
+
                 <t t-set="chunk_size"
                    t-value="14"/>
+
 
                 <t t-set="total_lines"
                    t-value="len(lines)"/>
@@ -300,23 +484,20 @@
                 <t t-else="">
 
                     <t t-set="pages"
-                       t-value="[lines[i:i + chunk_size] for i in range(0, total_lines, chunk_size)]"/>
+                       t-value="
+                           [lines[i:i + chunk_size]
+                            for i in range(0, total_lines, chunk_size)]
+                       "/>
 
                 </t>
 
 
                 <!-- ====================================================
-                     LOOP THROUGH EVERY PAGE
-
-                     IMPORTANT:
-                     The footer is INSIDE this loop.
-                     Therefore every page gets its own footer.
+                     LOOP THROUGH EVERY PRINTED PAGE
                      ==================================================== -->
 
-                <t t-foreach="pages" t-as="page_lines">
-
-                    <t t-set="page_index"
-                       t-value="pages.index(page_lines)"/>
+                <t t-foreach="pages"
+                   t-as="page_lines">
 
 
                     <!-- =================================================
@@ -327,7 +508,7 @@
 
 
                         <!-- =============================================
-                             MAIN PAGE CONTENT
+                             MAIN CONTENT AREA
                              ============================================= -->
 
                         <div class="content-container">
@@ -335,13 +516,15 @@
 
                             <!-- =========================================
                                  DELIVERY NOTE HEADER
-                                 ONLY ON FIRST PAGE
+                                 FIRST PAGE ONLY
                                  ========================================= -->
 
-                            <t t-if="page_index == 0">
+                            <t t-if="page_lines == pages[0]">
 
 
-                                <!-- DELIVERY NOTE TITLE -->
+                                <!-- =====================================
+                                     DELIVERY NOTE TITLE
+                                     ===================================== -->
 
                                 <div style="
                                     text-align: center;
@@ -886,45 +1069,34 @@
 
                         <!-- =================================================
                              FOOTER
-                             THIS FOOTER BELONGS TO THIS PAGE ONLY
-                             AND IS ALWAYS AT THE BOTTOM.
+                             =================================================
+                             IMPORTANT:
+
+                             This is INSIDE page-box.
+
+                             Therefore EVERY page gets its own footer.
+
+                             position:absolute + bottom:0 means the footer
+                             stays at the bottom of the current page-box,
+                             regardless of how many product rows exist.
                              ================================================= -->
 
                         <div class="footer-at-bottom">
 
 
-                            <div style="
-                                width: 100%;
-                                font-size: 9px;
-                                line-height: 1.4;
-                                border: none !important;
-                                outline: none !important;
-                                box-shadow: none !important;
-                                background: transparent !important;
-                            ">
+                            <div class="footer-content">
 
 
                                 <!-- =====================================
                                      LEFT SIDE TERMS
                                      ===================================== -->
 
-                                <div style="
-                                    width: 60%;
-                                    float: left;
-                                    border: none !important;
-                                    outline: none !important;
-                                    box-shadow: none !important;
-                                    background: transparent !important;
-                                ">
+                                <div class="footer-terms">
 
 
                                     <!-- TERM A -->
 
-                                    <div style="
-                                        margin: 0 0 2px 0;
-                                        border: none !important;
-                                        background: transparent !important;
-                                    ">
+                                    <div class="footer-term">
 
                                         a) goods once sold cannot be returned
 
@@ -933,11 +1105,7 @@
 
                                     <!-- TERM B -->
 
-                                    <div style="
-                                        margin: 0 0 2px 0;
-                                        border: none !important;
-                                        background: transparent !important;
-                                    ">
+                                    <div class="footer-term">
 
                                         b) no responsibility can be accepted for shortage or damage in transit
 
@@ -946,11 +1114,7 @@
 
                                     <!-- TERM C -->
 
-                                    <div style="
-                                        margin: 0;
-                                        border: none !important;
-                                        background: transparent !important;
-                                    ">
+                                    <div class="footer-term">
 
                                         c) all the above goods received in good order and condition
 
@@ -963,24 +1127,12 @@
                                      RIGHT SIDE RECEIVED BY
                                      ===================================== -->
 
-                                <div style="
-                                    width: 40%;
-                                    float: right;
-                                    border: none !important;
-                                    outline: none !important;
-                                    box-shadow: none !important;
-                                    background: transparent !important;
-                                ">
+                                <div class="footer-received">
 
 
                                     <!-- RECEIVED BY -->
 
-                                    <div style="
-                                        font-weight: bold;
-                                        margin: 0 0 3px 0;
-                                        border: none !important;
-                                        background: transparent !important;
-                                    ">
+                                    <div class="footer-received-title">
 
                                         Received By:
 
@@ -989,11 +1141,7 @@
 
                                     <!-- NAME -->
 
-                                    <div style="
-                                        margin: 0 0 3px 0;
-                                        border: none !important;
-                                        background: transparent !important;
-                                    ">
+                                    <div class="footer-received-row">
 
                                         Name: ______________________
 
@@ -1002,11 +1150,7 @@
 
                                     <!-- DATE -->
 
-                                    <div style="
-                                        margin: 0 0 3px 0;
-                                        border: none !important;
-                                        background: transparent !important;
-                                    ">
+                                    <div class="footer-received-row">
 
                                         Date: ______________________
 
@@ -1015,11 +1159,7 @@
 
                                     <!-- SIGNATURE -->
 
-                                    <div style="
-                                        margin: 0;
-                                        border: none !important;
-                                        background: transparent !important;
-                                    ">
+                                    <div class="footer-received-row">
 
                                         Signature: __________________
 
@@ -1032,28 +1172,14 @@
                                      CLEAR FLOAT
                                      ===================================== -->
 
-                                <div style="
-                                    clear: both;
-                                    border: none !important;
-                                    background: transparent !important;
-                                "></div>
+                                <div class="footer-clear"></div>
 
 
                                 <!-- =====================================
                                      STAMP MESSAGE
                                      ===================================== -->
 
-                                <div style="
-                                    width: 100%;
-                                    margin-top: 6px;
-                                    padding: 3px 5px;
-                                    font-size: 9px;
-                                    color: #555;
-                                    border: none !important;
-                                    outline: none !important;
-                                    box-shadow: none !important;
-                                    background: transparent !important;
-                                ">
+                                <div class="footer-stamp">
 
                                     Please stamp upon acknowledgement of Goods &amp; Services
 
