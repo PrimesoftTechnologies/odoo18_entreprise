@@ -10,6 +10,19 @@
         <field name="inherit_id" ref="project.view_task_form2"/>
         <field name="arch" type="xml">
 
+            <!-- Weka Smart Button ndani ya button_box kwenye Form ya Task -->
+            <xpath expr="//sheet//div[@name='button_box']" position="inside">
+                <button
+                    name="action_view_manufacturing_request"
+                    type="object"
+                    class="oe_stat_button"
+                    icon="fa-cubes"
+                    invisible="manufacturer_request_count == 0"
+                >
+                    <field name="manufacturer_request_count" widget="statinfo" string="Material Request"/>
+                </button>
+            </xpath>
+
             <!-- Vitufe kwenye Header ya Task -->
             <xpath expr="//header" position="inside">
                 <!-- 1. Kitufe cha Submit -->
@@ -49,7 +62,6 @@
                     string="Product Request"
                     icon="fa-cubes"
                 >
-                    <!-- Hapa ndipo tulibadilisha iwe manufacturing_line_ids ili iendane na Python -->
                     <field
                         name="manufacturing_line_ids"
                         mode="list"

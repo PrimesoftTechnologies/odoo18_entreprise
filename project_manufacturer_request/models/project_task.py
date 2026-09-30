@@ -54,14 +54,14 @@ class ProjectTask(models.Model):
                   "because they are Service products:\n%s") % products
             )
 
-        # 1. Tengeneza Manufacturing Request Kuu (Header) ikiwa kwenye state ya 'wait_approval'
+        # 1. Tengeneza Manufacturing Request Kuu (Header)
         request_vals = {
             "task_id": self.id,
             "state": "wait_approval",
         }
         main_request = self.env["project.manufacturing.request"].create(request_vals)
 
-        # 2. Hamishia zile bidhaa kwenda kwenye zile lines za Manufacturing Request Kuu
+        # 2. Hamishia zile bidhaa kwenye lines za Manufacturing Request
         for line in lines:
             self.env["project.manufacturing.request.line"].create({
                 "request_id": main_request.id,
@@ -73,16 +73,26 @@ class ProjectTask(models.Model):
 
         # Weka state ya task kuwa wait_approval
         self.manufacturer_request_state = "wait_approval"
-        
-        # TUMEFUTA `self.manufacturing_line_ids.unlink()` ILI BIDHAA ZISIPOTEE BADA YA KUSUBMIT!
 
-        # Rainbow Success Effect na jina la Sequence
+        # 3. Rudisha Success Effect (Rainbow Man) hapa hapa bila kuhama ukurasa
         return {
             'effect': {
                 'fadeout': 'slow',
-                'message': _('Material Request %s Submitted (Wait for Approval)! 🎉') % main_request.name,
+                'message': _('Material Request %s Submitted Successfully! 🎉') % main_request.name,
                 'type': 'rainbow_man',
-            }
+            },
+        }
+
+    def action_view_manufacturing_request(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Material Request'),
+            'res_model': 'project.manufacturing.request',
+            'view_mode': 'form',
+            'domain': [('task_id', '=', self.id)],
+            'res_id': self.env['project.manufacturing.request'].search([('task_id', '=', self.id)], limit=1).id,
+            'target': 'current',
         }
 
     def action_reset_task_manufacturing_request(self):
