@@ -190,7 +190,7 @@
                     .page-box {
                         position: relative;
                         width: 100%;
-                        min-height: 200mm;
+                        min-height: 170mm;
                         box-sizing: border-box;
                     }
 
