@@ -56,14 +56,14 @@
                         readonly="manufacturer_request_state != 'draft'"
                     >
                         <list editable="bottom">
-                            <field name="product_id"/>
-                            <field name="quantity"/>
-                            <field name="uom_id"/>
-                            <field name="notes" optional="show"/>
+                            <field name="product_id" readonly="parent.manufacturer_request_state != 'draft'"/>
+                            <field name="quantity" readonly="parent.manufacturer_request_state != 'draft'"/>
+                            <field name="uom_id" readonly="parent.manufacturer_request_state != 'draft'"/>
+                            <field name="notes" optional="show" readonly="parent.manufacturer_request_state != 'draft'"/>
                         </list>
                     </field>
 
-                    <div class="text-muted mt-2">
+                    <div class="text-muted mt-2" invisible="manufacturer_request_state != 'draft'">
                         Add the products required for manufacturing, specify
                         the quantity and unit, then click
                         <strong>Submit Material Request</strong> above.
