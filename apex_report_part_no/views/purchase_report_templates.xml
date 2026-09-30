@@ -43,13 +43,9 @@
     <record id="view_order_form_inherit_client_order_ref"
             model="ir.ui.view">
 
-        <field name="name">
-            sale.order.form.inherit.client.order.ref
-        </field>
+        <field name="name">sale.order.form.inherit.client.order.ref</field>
 
-        <field name="model">
-            sale.order
-        </field>
+        <field name="model">sale.order</field>
 
         <field name="inherit_id"
                ref="sale.view_order_form"/>
@@ -153,13 +149,9 @@
     <record id="view_picking_form_inherit_apex_details"
             model="ir.ui.view">
 
-        <field name="name">
-            stock.picking.form.inherit.apex.details
-        </field>
+        <field name="name">stock.picking.form.inherit.apex.details </field>
 
-        <field name="model">
-            stock.picking
-        </field>
+        <field name="model">stock.picking</field>
 
         <field name="inherit_id"
                ref="stock.view_picking_form"/>
