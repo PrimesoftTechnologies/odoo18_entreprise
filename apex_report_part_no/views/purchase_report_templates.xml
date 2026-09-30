@@ -9,7 +9,9 @@
               inherit_id="purchase.report_purchaseorder_document">
 
         <xpath expr="//span[@t-field='line.name']" position="replace">
+
             <span t-field="line.product_id.name"/>
+
         </xpath>
 
     </template>
@@ -23,7 +25,9 @@
               inherit_id="purchase.report_purchasequotation_document">
 
         <xpath expr="//span[@t-field='order_line.name']" position="replace">
+
             <span t-field="order_line.product_id.name"/>
+
         </xpath>
 
     </template>
@@ -33,20 +37,29 @@
          3. SALES ORDER FORM
          Change Customer Reference label to Purchase Order No.
          ============================================================ -->
-    <record id="view_order_form_inherit_client_order_ref" model="ir.ui.view">
+    <record id="view_order_form_inherit_client_order_ref"
+            model="ir.ui.view">
 
-        <field name="name">sale.order.form.inherit.client.order.ref</field>
+        <field name="name">
+            sale.order.form.inherit.client.order.ref
+        </field>
 
-        <field name="model">sale.order</field>
+        <field name="model">
+            sale.order
+        </field>
 
-        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="inherit_id"
+               ref="sale.view_order_form"/>
 
-        <field name="arch" type="xml">
+        <field name="arch"
+               type="xml">
 
             <xpath expr="//field[@name='client_order_ref']"
                    position="attributes">
 
-                <attribute name="string">Purchase Order No.</attribute>
+                <attribute name="string">
+                    Purchase Order No.
+                </attribute>
 
             </xpath>
 
@@ -57,7 +70,8 @@
 
     <!-- ============================================================
          4. DELIVERY ORDER FORM
-         Add Delivery Details, Delivery Terms, GRN No. and Remarks
+         Add Delivery Details, Delivery Terms, GRN No.
+         and Remarks
          ============================================================ -->
     <record id="view_picking_form_inherit_apex_details"
             model="ir.ui.view">
@@ -66,24 +80,35 @@
             stock.picking.form.inherit.apex.details
         </field>
 
-        <field name="model">stock.picking</field>
+        <field name="model">
+            stock.picking
+        </field>
 
-        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="inherit_id"
+               ref="stock.view_picking_form"/>
 
-        <field name="arch" type="xml">
+        <field name="arch"
+               type="xml">
 
-            <!-- Delivery Information -->
+
+            <!-- ================================================
+                 DELIVERY INFORMATION
+                 ================================================ -->
             <xpath expr="//field[@name='location_dest_id']"
                    position="after">
 
                 <field name="delivery_details"/>
+
                 <field name="delivery_terms"/>
+
                 <field name="grn_no"/>
 
             </xpath>
 
 
-            <!-- Remarks on Delivery Lines -->
+            <!-- ================================================
+                 REMARKS ON DELIVERY LINES
+                 ================================================ -->
             <xpath expr="//field[@name='move_ids_without_package']//field[@name='product_uom_qty']"
                    position="after">
 
@@ -102,19 +127,24 @@
     <template id="report_delivery_document_apex_custom"
               inherit_id="stock.report_delivery_document">
 
-        <xpath expr="//div[hasclass('page')]" position="replace">
+        <xpath expr="//div[hasclass('page')]"
+               position="replace">
+
 
             <div class="page"
-                 style="font-family: Arial, sans-serif;
-                        font-size: 11px;
-                        color: #000;">
+                 style="
+                    font-family: Arial, sans-serif;
+                    font-size: 11px;
+                    color: #000;
+                 ">
 
 
                 <!-- ====================================================
-                     PAGE STYLE
+                     PAGE / GENERAL STYLE
                      ==================================================== -->
                 <style>
 
+                    /* Hide default Odoo delivery sections */
                     .row.mt-3.mb-3,
                     div[name="right_box"],
                     div[name="div_outgoing_address"],
@@ -123,37 +153,75 @@
                         display: none !important;
                     }
 
+
+                    /* ================================================
+                       PAGE STRUCTURE
+                       ================================================ */
                     .page-box {
                         position: relative;
+
                         display: flex;
+
                         flex-direction: column;
+
                         justify-content: space-between;
+
                         height: 100vh;
+
                         box-sizing: border-box;
+
                         page-break-after: always;
                     }
+
 
                     .page-box:last-child {
                         page-break-after: avoid;
                     }
 
+
+                    /* ================================================
+                       MAIN CONTENT
+                       ================================================ */
                     .content-container {
                         flex: 1;
                     }
 
+
+                    /* ================================================
+                       FOOTER
+                       Always pushed to bottom of page
+                       ================================================ */
                     .footer-at-bottom {
                         width: 100%;
-                        margin-top: auto;
-                        padding-top: 15px;
-                        padding-bottom: 5px;
-                    }
 
-                    .footer-at-bottom table,
-                    .footer-at-bottom td {
+                        margin-top: auto;
+
+                        padding-top: 10px;
+
+                        padding-bottom: 0;
+
                         border: none !important;
+
+                        outline: none !important;
+
                         box-shadow: none !important;
                     }
 
+
+                    /* Remove ALL borders from footer tables/cells */
+                    .footer-at-bottom table,
+                    .footer-at-bottom tr,
+                    .footer-at-bottom td,
+                    .footer-at-bottom div {
+                        border: none !important;
+
+                        outline: none !important;
+
+                        box-shadow: none !important;
+                    }
+
+
+                    /* Hide phone, fax and email from customer address */
                     .o_address_format span[itemprop="telephone"],
                     .o_address_format span[itemprop="fax"],
                     .o_address_format span[itemprop="email"] {
@@ -169,14 +237,18 @@
                 <t t-set="lines"
                    t-value="o.move_ids_without_package"/>
 
+
                 <t t-set="chunk_size"
                    t-value="14"/>
+
 
                 <t t-set="total_lines"
                    t-value="len(lines)"/>
 
 
-                <!-- No Lines -->
+                <!-- ====================================================
+                     CREATE PAGES
+                     ==================================================== -->
                 <t t-if="total_lines == 0">
 
                     <t t-set="pages"
@@ -184,8 +256,6 @@
 
                 </t>
 
-
-                <!-- Has Lines -->
                 <t t-else="">
 
                     <t t-set="pages"
@@ -195,17 +265,25 @@
 
 
                 <!-- ====================================================
-                     PAGES
+                     LOOP THROUGH PAGES
                      ==================================================== -->
                 <t t-foreach="pages"
                    t-as="page_lines">
+
 
                     <t t-set="page_index"
                        t-value="pages.index(page_lines)"/>
 
 
+                    <!-- ==================================================
+                         PAGE CONTAINER
+                         ================================================== -->
                     <div class="page-box">
 
+
+                        <!-- ==================================================
+                             MAIN CONTENT
+                             ================================================== -->
                         <div class="content-container">
 
 
@@ -214,7 +292,10 @@
                                  ================================================= -->
                             <t t-if="page_index == 0">
 
-                                <!-- TITLE -->
+
+                                <!-- =============================================
+                                     REPORT TITLE
+                                     ============================================= -->
                                 <div style="
                                     text-align: center;
                                     font-weight: bold;
@@ -238,6 +319,7 @@
                                     margin-top: 5px;
                                 ">
 
+
                                     <!-- =================================================
                                          HEADER ROW
                                          ================================================= -->
@@ -247,7 +329,8 @@
                                         text-align: center;
                                     ">
 
-                                        <!-- Customer -->
+
+                                        <!-- CUSTOMER DETAILS -->
                                         <td style="
                                             width: 50%;
                                             border: 1px solid #000;
@@ -259,7 +342,7 @@
                                         </td>
 
 
-                                        <!-- Purchase Order -->
+                                        <!-- PURCHASE ORDER -->
                                         <td style="
                                             width: 16.67%;
                                             border: 1px solid #000;
@@ -270,7 +353,7 @@
                                         </td>
 
 
-                                        <!-- Document Date -->
+                                        <!-- DOCUMENT DATE -->
                                         <td style="
                                             width: 16.67%;
                                             border: 1px solid #000;
@@ -281,7 +364,7 @@
                                         </td>
 
 
-                                        <!-- Delivery Note -->
+                                        <!-- DELIVERY NOTE -->
                                         <td style="
                                             width: 16.66%;
                                             border: 1px solid #000;
@@ -291,6 +374,7 @@
                                             Delivery Note No.
                                         </td>
 
+
                                     </tr>
 
 
@@ -299,10 +383,10 @@
                                          ================================================= -->
                                     <tr>
 
-                                        <!-- ============================================
+
+                                        <!-- =============================================
                                              CUSTOMER DETAILS
-                                             rowspan = 3
-                                             ============================================ -->
+                                             ============================================= -->
                                         <td rowspan="3"
                                             style="
                                                 width: 50%;
@@ -328,9 +412,9 @@
                                         </td>
 
 
-                                        <!-- ============================================
-                                             PURCHASE ORDER NO.
-                                             ============================================ -->
+                                        <!-- =============================================
+                                             PURCHASE ORDER NUMBER
+                                             ============================================= -->
                                         <td style="
                                             width: 16.67%;
                                             border: 1px solid #000;
@@ -341,14 +425,16 @@
                                             height: 30px;
                                         ">
 
-                                            <span t-esc="o.sale_id.client_order_ref or ''"/>
+                                            <span t-esc="
+                                                o.sale_id.client_order_ref or ''
+                                            "/>
 
                                         </td>
 
 
-                                        <!-- ============================================
+                                        <!-- =============================================
                                              DOCUMENT DATE
-                                             ============================================ -->
+                                             ============================================= -->
                                         <td style="
                                             width: 16.67%;
                                             border: 1px solid #000;
@@ -365,9 +451,9 @@
                                         </td>
 
 
-                                        <!-- ============================================
-                                             DELIVERY NOTE NO.
-                                             ============================================ -->
+                                        <!-- =============================================
+                                             DELIVERY NOTE NUMBER
+                                             ============================================= -->
                                         <td style="
                                             width: 16.66%;
                                             border: 1px solid #000;
@@ -383,6 +469,7 @@
 
                                         </td>
 
+
                                     </tr>
 
 
@@ -395,8 +482,8 @@
                                         text-align: center;
                                     ">
 
-                                        <!-- Customer cell is occupied by rowspan -->
 
+                                        <!-- DELIVERY DETAILS -->
                                         <td style="
                                             border: 1px solid #000;
                                             padding: 5px;
@@ -406,6 +493,7 @@
                                         </td>
 
 
+                                        <!-- DELIVERY TERMS -->
                                         <td style="
                                             border: 1px solid #000;
                                             padding: 5px;
@@ -415,6 +503,7 @@
                                         </td>
 
 
+                                        <!-- GRN NUMBER -->
                                         <td style="
                                             border: 1px solid #000;
                                             padding: 5px;
@@ -422,6 +511,7 @@
                                         ">
                                             GRN No.
                                         </td>
+
 
                                     </tr>
 
@@ -431,9 +521,10 @@
                                          ================================================= -->
                                     <tr>
 
-                                        <!-- ============================================
+
+                                        <!-- =============================================
                                              DELIVERY DETAILS
-                                             ============================================ -->
+                                             ============================================= -->
                                         <td style="
                                             border: 1px solid #000;
                                             padding: 8px;
@@ -444,14 +535,16 @@
                                             min-height: 30px;
                                         ">
 
-                                            <span t-esc="o.delivery_details or ''"/>
+                                            <span t-esc="
+                                                o.delivery_details or ''
+                                            "/>
 
                                         </td>
 
 
-                                        <!-- ============================================
+                                        <!-- =============================================
                                              DELIVERY TERMS
-                                             ============================================ -->
+                                             ============================================= -->
                                         <td style="
                                             border: 1px solid #000;
                                             padding: 8px;
@@ -462,14 +555,16 @@
                                             min-height: 30px;
                                         ">
 
-                                            <span t-esc="o.delivery_terms or ''"/>
+                                            <span t-esc="
+                                                o.delivery_terms or ''
+                                            "/>
 
                                         </td>
 
 
-                                        <!-- ============================================
+                                        <!-- =============================================
                                              GRN NUMBER
-                                             ============================================ -->
+                                             ============================================= -->
                                         <td style="
                                             border: 1px solid #000;
                                             padding: 8px;
@@ -480,11 +575,15 @@
                                             min-height: 30px;
                                         ">
 
-                                            <span t-esc="o.grn_no or ''"/>
+                                            <span t-esc="
+                                                o.grn_no or ''
+                                            "/>
 
                                         </td>
+
 
                                     </tr>
+
 
                                 </table>
 
@@ -502,6 +601,10 @@
                                 table-layout: fixed;
                             ">
 
+
+                                <!-- =================================================
+                                     PRODUCTS HEADER
+                                     ================================================= -->
                                 <thead>
 
                                     <tr style="
@@ -511,6 +614,8 @@
                                         font-size: 11px;
                                     ">
 
+
+                                        <!-- ITEM CODE -->
                                         <td style="
                                             border: 1px solid #000;
                                             padding: 5px;
@@ -520,6 +625,7 @@
                                         </td>
 
 
+                                        <!-- DESCRIPTION -->
                                         <td style="
                                             border: 1px solid #000;
                                             padding: 5px;
@@ -529,6 +635,7 @@
                                         </td>
 
 
+                                        <!-- PART NUMBER -->
                                         <td style="
                                             border: 1px solid #000;
                                             padding: 5px;
@@ -538,6 +645,7 @@
                                         </td>
 
 
+                                        <!-- QUANTITY -->
                                         <td style="
                                             border: 1px solid #000;
                                             padding: 5px;
@@ -547,6 +655,7 @@
                                         </td>
 
 
+                                        <!-- UNITS -->
                                         <td style="
                                             border: 1px solid #000;
                                             padding: 5px;
@@ -556,6 +665,7 @@
                                         </td>
 
 
+                                        <!-- REMARKS -->
                                         <td style="
                                             border: 1px solid #000;
                                             padding: 5px;
@@ -564,19 +674,28 @@
                                             Remarks
                                         </td>
 
+
                                     </tr>
 
                                 </thead>
 
 
+                                <!-- =================================================
+                                     PRODUCTS BODY
+                                     ================================================= -->
                                 <tbody>
+
 
                                     <t t-foreach="page_lines"
                                        t-as="move">
 
+
                                         <tr>
 
-                                            <!-- Item Code -->
+
+                                            <!-- =====================================
+                                                 ITEM CODE
+                                                 ===================================== -->
                                             <td style="
                                                 border: 1px solid #000;
                                                 padding: 4px;
@@ -586,21 +705,28 @@
                                             </td>
 
 
-                                            <!-- Description -->
+                                            <!-- =====================================
+                                                 DESCRIPTION
+                                                 ===================================== -->
                                             <td style="
                                                 border: 1px solid #000;
                                                 padding: 4px;
                                             ">
 
+
                                                 <div>
+
                                                     <span t-field="move.product_id.name"/>
+
                                                 </div>
 
 
+                                                <!-- SALE DESCRIPTION -->
                                                 <t t-if="
                                                     move.sale_line_id
                                                     and move.sale_line_id.name
                                                 ">
+
 
                                                     <t t-set="full_desc"
                                                        t-value="move.sale_line_id.name"/>
@@ -609,6 +735,7 @@
                                                     <t t-if="
                                                         full_desc != move.product_id.name
                                                     ">
+
 
                                                         <div style="
                                                             color: #333;
@@ -630,64 +757,87 @@
 
                                                         </div>
 
+
                                                     </t>
+
 
                                                 </t>
 
+
                                             </td>
 
 
-                                            <!-- Part Number -->
+                                            <!-- =====================================
+                                                 PART NUMBER
+                                                 ===================================== -->
                                             <td style="
                                                 border: 1px solid #000;
                                                 padding: 4px;
                                                 text-align: center;
                                             ">
 
-                                                <span t-field="move.product_id.default_code"/>
+                                                <span t-field="
+                                                    move.product_id.default_code
+                                                "/>
 
                                             </td>
 
 
-                                            <!-- Quantity -->
+                                            <!-- =====================================
+                                                 QUANTITY
+                                                 ===================================== -->
                                             <td style="
                                                 border: 1px solid #000;
                                                 padding: 4px;
                                                 text-align: center;
                                             ">
 
-                                                <span t-field="move.product_uom_qty"/>
+                                                <span t-field="
+                                                    move.product_uom_qty
+                                                "/>
 
                                             </td>
 
 
-                                            <!-- Units -->
+                                            <!-- =====================================
+                                                 UNITS
+                                                 ===================================== -->
                                             <td style="
                                                 border: 1px solid #000;
                                                 padding: 4px;
                                                 text-align: center;
                                             ">
 
-                                                <span t-field="move.product_uom.name"/>
+                                                <span t-field="
+                                                    move.product_uom.name
+                                                "/>
 
                                             </td>
 
 
-                                            <!-- Remarks -->
+                                            <!-- =====================================
+                                                 REMARKS
+                                                 ===================================== -->
                                             <td style="
                                                 border: 1px solid #000;
                                                 padding: 4px;
                                             ">
 
-                                                <span t-field="move.x_remark"/>
+                                                <span t-field="
+                                                    move.x_remark
+                                                "/>
 
                                             </td>
+
 
                                         </tr>
 
+
                                     </t>
 
+
                                 </tbody>
+
 
                             </table>
 
@@ -697,114 +847,149 @@
 
                         <!-- ====================================================
                              FOOTER
+                             PLAIN / NO BOX / BOTTOM OF EVERY PAGE
                              ==================================================== -->
-                        <div class="footer-at-bottom">
+                        <div class="footer-at-bottom"
+                             style="
+                                width: 100%;
+                                margin-top: auto;
+                                padding-top: 10px;
+                                padding-bottom: 0;
+                                border: none !important;
+                                outline: none !important;
+                                box-shadow: none !important;
+                             ">
 
 
-                            <!-- RECEIVED BY SECTION -->
+                            <!-- ==================================================
+                                 FOOTER CONTENT
+                                 ================================================== -->
                             <table style="
                                 width: 100%;
                                 border-collapse: collapse;
-                                vertical-align: top;
                                 border: none !important;
+                                outline: none !important;
+                                box-shadow: none !important;
                             ">
+
 
                                 <tr style="
                                     border: none !important;
                                 ">
 
-                                    <!-- Terms -->
+
+                                    <!-- ==========================================
+                                         LEFT SIDE - TERMS
+                                         ========================================== -->
                                     <td style="
                                         width: 60%;
-                                        padding: 4px;
+                                        padding: 3px 5px;
                                         vertical-align: top;
                                         font-size: 9px;
                                         border: none !important;
+                                        outline: none !important;
                                     ">
 
-                                        <div style="margin-bottom: 2px;">
+
+                                        <div style="
+                                            margin: 0 0 2px 0;
+                                            border: none !important;
+                                        ">
                                             a) goods once sold cannot be returned
                                         </div>
 
-                                        <div style="margin-bottom: 2px;">
+
+                                        <div style="
+                                            margin: 0 0 2px 0;
+                                            border: none !important;
+                                        ">
                                             b) no responsibility can be accepted for shortage or damage in transit
                                         </div>
 
-                                        <div>
+
+                                        <div style="
+                                            margin: 0;
+                                            border: none !important;
+                                        ">
                                             c) all the above goods received in good order and condition
                                         </div>
+
 
                                     </td>
 
 
-                                    <!-- Received By -->
+                                    <!-- ==========================================
+                                         RIGHT SIDE - RECEIVED BY
+                                         ========================================== -->
                                     <td style="
                                         width: 40%;
-                                        padding: 4px;
+                                        padding: 3px 5px;
                                         vertical-align: top;
                                         font-size: 9px;
                                         border: none !important;
+                                        outline: none !important;
                                     ">
+
 
                                         <div style="
                                             font-weight: bold;
-                                            margin-bottom: 3px;
+                                            margin: 0 0 3px 0;
+                                            border: none !important;
                                         ">
                                             Received By:
                                         </div>
 
 
-                                        <div style="margin-bottom: 3px;">
+                                        <div style="
+                                            margin: 0 0 3px 0;
+                                            border: none !important;
+                                        ">
                                             Name: ______________________
                                         </div>
 
 
-                                        <div style="margin-bottom: 3px;">
+                                        <div style="
+                                            margin: 0 0 3px 0;
+                                            border: none !important;
+                                        ">
                                             Date: ______________________
                                         </div>
 
 
-                                        <div>
+                                        <div style="
+                                            margin: 0;
+                                            border: none !important;
+                                        ">
                                             Signature: __________________
                                         </div>
 
+
                                     </td>
 
+
                                 </tr>
+
 
                             </table>
 
 
-                            <!-- ====================================================
+                            <!-- ==================================================
                                  STAMP MESSAGE
-                                 ==================================================== -->
-                            <table style="
+                                 ================================================== -->
+                            <div style="
                                 width: 100%;
-                                border-collapse: collapse;
-                                margin-top: 3px;
+                                margin-top: 4px;
+                                padding: 3px 5px;
+                                font-size: 9px;
+                                color: #555;
                                 border: none !important;
+                                outline: none !important;
+                                box-shadow: none !important;
                             ">
 
-                                <tr style="
-                                    border: none !important;
-                                ">
+                                Please stamp upon acknowledgement of Goods &amp; Services
 
-                                    <td style="
-                                        padding: 4px;
-                                        height: 25px;
-                                        vertical-align: top;
-                                        font-size: 9px;
-                                        color: #555;
-                                        border: none !important;
-                                    ">
-
-                                        Please stamp upon acknowledgement of Goods &amp; Services
-
-                                    </td>
-
-                                </tr>
-
-                            </table>
+                            </div>
 
 
                         </div>
@@ -812,12 +997,17 @@
 
                     </div>
 
+
                 </t>
+
 
             </div>
 
+
         </xpath>
 
+
     </template>
+
 
 </odoo>
