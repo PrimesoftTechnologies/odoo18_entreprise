@@ -29,24 +29,32 @@
         </field>
     </record>
 
-    <!-- 4. Kuongeza Fields kwenye Fomu ya Delivery Order (Stock Picking Form View) -->
+    <!-- 4. Kuhamisha Fields kwenye Fomu ya Odoo (UI) ziwe chini ya Destination Location -->
     <record id="view_picking_form_inherit_apex_details" model="ir.ui.view">
         <field name="name">stock.picking.form.inherit.apex.details</field>
         <field name="model">stock.picking</field>
         <field name="inherit_id" ref="stock.view_picking_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='date_done']" position="after">
+            <!-- Kuondoa fields hizi zilipokuwa hapo awali kama zipo -->
+            <xpath expr="//field[@name='delivery_details']" position="delete"/>
+            <xpath expr="//field[@name='delivery_terms']" position="delete"/>
+            <xpath expr="//field[@name='grn_no']" position="delete"/>
+
+            <!-- Kuziongeza chini ya Destination Location upande wa kushoto -->
+            <xpath expr="//field[@name='location_dest_id']" position="after">
                 <field name="delivery_details"/>
                 <field name="delivery_terms"/>
                 <field name="grn_no"/>
             </xpath>
+
+            <!-- Remarks kwenye mistari ya bidhaa -->
             <xpath expr="//field[@name='move_ids_without_package']//field[@name='product_uom_qty']" position="after">
                 <field name="x_remark"/>
             </xpath>
         </field>
     </record>
 
-    <!-- 5. Muundo wa Apex Delivery Note Layout -->
+    <!-- 5. Muundo wa Apex Delivery Note Layout (PDF Report) -->
     <template id="report_delivery_document_apex_custom" inherit_id="stock.report_delivery_document">
         <xpath expr="//div[hasclass('page')]" position="replace">
             <div class="page" style="font-family: Arial, sans-serif; font-size: 11px; color: #000;">
@@ -111,12 +119,10 @@
                                     <tr>
                                         <!-- Customer Details & Delivery Extra Details (Upande wa Kushoto) -->
                                         <td style="width: 50%; vertical-align: top; padding: 0;">
-                                            <!-- Customer Details Box -->
                                             <div style="border: 1px solid #000; padding: 6px; margin-bottom: 5px;">
                                                 <div style="font-weight: bold; margin-bottom: 3px;">Customer Details</div>
                                                 <div t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name", "vat", "company_registry"], "no_marker": True}'/>
                                             </div>
-                                            <!-- Delivery Details, Terms & GRN chini ya Customer Details -->
                                             <table style="width: 100%; border-collapse: collapse;">
                                                 <tr style="background-color: #f2f2f2; font-weight: bold;">
                                                     <td style="border: 1px solid #000; padding: 3px; font-size: 9px; width: 33%;">Delivery Details</td>
@@ -156,6 +162,7 @@
                                                         <span t-field="o.name"/>
                                                     </td>
                                                 </tr>
+            
                                             </table>
                                         </td>
                                     </tr>
