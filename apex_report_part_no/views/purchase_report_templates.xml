@@ -5,7 +5,6 @@
          1. PURCHASE ORDER
          Show Product Name Only
          ============================================================ -->
-
     <template id="report_purchaseorder_document_inherit_part_no"
               inherit_id="purchase.report_purchaseorder_document">
 
@@ -20,7 +19,6 @@
          2. PURCHASE QUOTATION / RFQ
          Show Product Name Only
          ============================================================ -->
-
     <template id="report_purchasequotation_document_inherit_part_no"
               inherit_id="purchase.report_purchasequotation_document">
 
@@ -35,7 +33,6 @@
          3. SALES ORDER FORM
          Rename Customer Reference to Purchase Order No.
          ============================================================ -->
-
     <record id="view_order_form_inherit_client_order_ref"
             model="ir.ui.view">
 
@@ -64,10 +61,10 @@
          Remove Currency From Unit Price and Amount
          Dynamic Currency Header
          ============================================================ -->
-
     <template id="report_saleorder_document_remove_line_currency"
               inherit_id="sale.report_saleorder_document">
 
+        <!-- Dynamic Amount Header -->
         <xpath expr="//th[@name='th_subtotal']" position="replace">
 
             <th name="th_subtotal"
@@ -82,6 +79,8 @@
 
         </xpath>
 
+
+        <!-- Unit Price Without Currency -->
         <xpath expr="//td[@name='td_priceunit']" position="replace">
 
             <td name="td_priceunit"
@@ -97,6 +96,8 @@
 
         </xpath>
 
+
+        <!-- Amount Without Currency -->
         <xpath expr="//td[@name='td_subtotal']" position="replace">
 
             <td name="td_subtotal"
@@ -119,7 +120,6 @@
          5. DELIVERY ORDER FORM
          Add Delivery Details / Terms / GRN / Remarks
          ============================================================ -->
-
     <record id="view_picking_form_inherit_apex_details"
             model="ir.ui.view">
 
@@ -129,6 +129,7 @@
 
         <field name="arch" type="xml">
 
+            <!-- Delivery Information -->
             <xpath expr="//field[@name='location_dest_id']"
                    position="after">
 
@@ -138,6 +139,8 @@
 
             </xpath>
 
+
+            <!-- Product Remark -->
             <xpath expr="//field[@name='move_ids_without_package']//field[@name='product_uom_qty']"
                    position="after">
 
@@ -152,10 +155,7 @@
 
     <!-- ============================================================
          6. CUSTOM DELIVERY NOTE REPORT
-         Dynamic Product Pagination
-         Full Product Description
          ============================================================ -->
-
     <template id="report_delivery_document_apex_custom"
               inherit_id="stock.report_delivery_document">
 
@@ -171,7 +171,7 @@
                 <style>
 
                     /* =================================================
-                       HIDE DEFAULT ODOO ADDRESS SECTIONS
+                       HIDE DEFAULT ODOO DELIVERY INFORMATION
                        ================================================= */
 
                     .row.mt-3.mb-3,
@@ -184,110 +184,68 @@
 
 
                     /* =================================================
-                       PAGE CONTAINER
+                       EACH PRINTED PAGE
                        ================================================= */
 
                     .page-box {
                         position: relative;
                         width: 100%;
-                        min-height: 170mm;
+                        min-height: 100vh;
                         box-sizing: border-box;
+                        page-break-after: always;
                     }
 
 
-                    /*
-                     * Every generated page after the first one
-                     * starts on a new physical page.
-                     */
+                    /* Do not create an extra blank page after last page */
 
-                    .page-box + .page-box {
-                        page-break-before: always;
-                        break-before: page;
+                    .page-box:last-child {
+                        page-break-after: avoid;
                     }
 
 
                     /* =================================================
-                       CONTENT AREA
+                       MAIN CONTENT
+                       Leave space for the footer so products do not
+                       overlap the footer.
                        ================================================= */
 
                     .content-container {
                         width: 100%;
+                        padding-bottom: 150px;
                         box-sizing: border-box;
-                        padding-bottom: 135px;
-                    }
-
-
-                    /* =================================================
-                       PRODUCT TABLE
-                       ================================================= */
-
-                    .products-table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        table-layout: fixed;
-                    }
-
-
-                    /*
-                     * Do not split an individual product row
-                     * between two pages.
-                     */
-
-                    .products-table tr {
-                        page-break-inside: avoid !important;
-                        break-inside: avoid !important;
-                    }
-
-
-                    .products-table td {
-                        vertical-align: top;
-                        word-wrap: break-word;
-                        overflow-wrap: break-word;
-                        white-space: normal;
-                    }
-
-
-                    /* =================================================
-                       PRODUCT DESCRIPTION
-                       FULL DESCRIPTION - NO HEIGHT LIMIT
-                       ================================================= */
-
-                    .product-description {
-                        color: #333;
-                        font-size: 9px;
-                        line-height: 13px;
-                        width: 100%;
-                        word-wrap: break-word;
-                        overflow-wrap: break-word;
-                        white-space: normal;
-                        height: auto !important;
-                        max-height: none !important;
-                        overflow: visible !important;
                     }
 
 
                     /* =================================================
                        FOOTER
+                       Every page gets its own footer.
+                       Footer is always at the bottom of THIS page.
                        ================================================= */
 
                     .footer-at-bottom {
                         position: absolute;
+
                         left: 0;
                         right: 0;
                         bottom: 0;
+
                         width: 100%;
-                        height: 210px;
-                        padding: 0 0 5px 0;
-                        box-sizing: border-box;
+
+                        padding-bottom: 5px;
 
                         border: none !important;
                         outline: none !important;
                         box-shadow: none !important;
+
                         background: transparent !important;
 
-                        display: block;
+                        box-sizing: border-box;
                     }
 
+
+                    /* =================================================
+                       FORCE FOOTER TO HAVE NO BORDER
+                       ================================================= */
 
                     .footer-at-bottom,
                     .footer-at-bottom div,
@@ -301,7 +259,7 @@
 
 
                     /* =================================================
-                       HIDE CONTACT INFORMATION
+                       HIDE PHONE / FAX / EMAIL
                        ================================================= */
 
                     .o_address_format span[itemprop="telephone"],
@@ -310,376 +268,411 @@
                         display: none !important;
                     }
 
-
-                    /* =================================================
-                       TABLE PAGE BREAK CONTROL
-                       ================================================= */
-
-                    .content-container table {
-                        page-break-inside: auto;
-                    }
-
-                    .content-container tr {
-                        page-break-inside: avoid;
-                        break-inside: avoid;
-                    }
-
                 </style>
 
 
-                <!-- =====================================================
-                     ALL DELIVERY MOVES
-                     ===================================================== -->
+                <!-- ====================================================
+                     DELIVERY LINES
+                     ==================================================== -->
 
                 <t t-set="lines"
                    t-value="o.move_ids_without_package"/>
 
+                <!-- Maximum products per page -->
+                <t t-set="chunk_size"
+                   t-value="14"/>
 
-                <!-- =====================================================
-                     FIRST PAGE HEADER HEIGHT ESTIMATE
-                     ===================================================== -->
-
-                <t t-set="first_page_header_space"
-                   t-value="155"/>
-
-
-                <!-- =====================================================
-                     NORMAL PAGE AVAILABLE SPACE
-                     ===================================================== -->
-
-                <t t-set="normal_page_space"
-                   t-value="420"/>
+                <t t-set="total_lines"
+                   t-value="len(lines)"/>
 
 
-                <!-- =====================================================
-                     NOTE
+                <!-- ====================================================
+                     CREATE PAGES
+                     ==================================================== -->
 
-                     We intentionally do NOT use:
+                <t t-if="total_lines == 0">
 
-                         chunk_size = 10
+                    <t t-set="pages"
+                       t-value="[[]]"/>
 
-                     because descriptions can have different heights.
+                </t>
 
-                     Instead, products are rendered naturally and
-                     individual rows are prevented from splitting.
-                     ===================================================== -->
+                <t t-else="">
 
+                    <t t-set="pages"
+                       t-value="[lines[i:i + chunk_size] for i in range(0, total_lines, chunk_size)]"/>
 
-                <!-- =====================================================
-                     PAGE 1
-                     ===================================================== -->
-
-                <div class="page-box">
-
-                    <div class="content-container">
+                </t>
 
 
-                        <!-- =============================================
-                             DELIVERY NOTE TITLE
-                             ============================================= -->
+                <!-- ====================================================
+                     LOOP THROUGH EVERY PAGE
 
-                        <div style="
-                            text-align: center;
-                            font-weight: bold;
-                            font-size: 18px;
-                            margin-top: 10px;
-                            margin-bottom: 15px;
-                            text-transform: uppercase;
-                            color: #003366;
-                        ">
-                            DELIVERY NOTE
-                        </div>
+                     IMPORTANT:
+                     The footer is INSIDE this loop.
+                     Therefore every page gets its own footer.
+                     ==================================================== -->
+
+                <t t-foreach="pages" t-as="page_lines">
+
+                    <t t-set="page_index"
+                       t-value="pages.index(page_lines)"/>
+
+
+                    <!-- =================================================
+                         PAGE CONTAINER
+                         ================================================= -->
+
+                    <div class="page-box">
 
 
                         <!-- =============================================
-                             CUSTOMER INFORMATION
+                             MAIN PAGE CONTENT
                              ============================================= -->
 
-                        <table style="
-                            width: 100%;
-                            border-collapse: collapse;
-                            table-layout: fixed;
-                            margin-top: 5px;
-                        ">
-
-                            <tr style="
-                                background-color: #f2f2f2;
-                                font-weight: bold;
-                                text-align: center;
-                            ">
-
-                                <td style="
-                                    width: 50%;
-                                    border: 1px solid #000;
-                                    padding: 5px;
-                                    font-size: 9px;
-                                    text-align: left;
-                                ">
-                                    Customer Details
-                                </td>
-
-                                <td style="
-                                    width: 16.67%;
-                                    border: 1px solid #000;
-                                    padding: 5px;
-                                    font-size: 9px;
-                                ">
-                                    Purchase Order No.
-                                </td>
-
-                                <td style="
-                                    width: 16.67%;
-                                    border: 1px solid #000;
-                                    padding: 5px;
-                                    font-size: 9px;
-                                ">
-                                    Document Dated
-                                </td>
-
-                                <td style="
-                                    width: 16.66%;
-                                    border: 1px solid #000;
-                                    padding: 5px;
-                                    font-size: 9px;
-                                ">
-                                    Delivery Note No.
-                                </td>
-
-                            </tr>
+                        <div class="content-container">
 
 
-                            <tr>
+                            <!-- =========================================
+                                 DELIVERY NOTE HEADER
+                                 ONLY ON FIRST PAGE
+                                 ========================================= -->
 
-                                <td rowspan="3"
-                                    style="
-                                        width: 50%;
-                                        border: 1px solid #000;
-                                        padding: 8px;
-                                        vertical-align: top;
-                                        font-size: 10px;
-                                        box-sizing: border-box;
-                                    ">
-
-                                    <div t-field="o.partner_id"
-                                         t-options='{
-                                             "widget": "contact",
-                                             "fields": [
-                                                 "address",
-                                                 "name",
-                                                 "vat",
-                                                 "company_registry"
-                                             ],
-                                             "no_marker": true
-                                         }'/>
-
-                                </td>
+                            <t t-if="page_index == 0">
 
 
-                                <td style="
-                                    width: 16.67%;
-                                    border: 1px solid #000;
-                                    padding: 8px;
-                                    text-align: center;
-                                    font-size: 10px;
-                                    vertical-align: middle;
-                                    height: 30px;
-                                ">
-                                    <span t-esc="o.sale_id.client_order_ref or ''"/>
-                                </td>
+                                <!-- DELIVERY NOTE TITLE -->
 
-
-                                <td style="
-                                    width: 16.67%;
-                                    border: 1px solid #000;
-                                    padding: 8px;
-                                    text-align: center;
-                                    font-size: 10px;
-                                    vertical-align: middle;
-                                    height: 30px;
-                                ">
-                                    <span t-field="o.scheduled_date"
-                                          t-options="{'widget': 'date'}"/>
-                                </td>
-
-
-                                <td style="
-                                    width: 16.66%;
-                                    border: 1px solid #000;
-                                    padding: 8px;
-                                    text-align: center;
-                                    font-size: 10px;
-                                    font-weight: bold;
-                                    vertical-align: middle;
-                                    height: 30px;
-                                ">
-                                    <span t-field="o.name"/>
-                                </td>
-
-                            </tr>
-
-
-                            <tr style="
-                                background-color: #f2f2f2;
-                                font-weight: bold;
-                                text-align: center;
-                            ">
-
-                                <td style="
-                                    border: 1px solid #000;
-                                    padding: 5px;
-                                    font-size: 9px;
-                                ">
-                                    Delivery Details
-                                </td>
-
-                                <td style="
-                                    border: 1px solid #000;
-                                    padding: 5px;
-                                    font-size: 9px;
-                                ">
-                                    Delivery Terms
-                                </td>
-
-                                <td style="
-                                    border: 1px solid #000;
-                                    padding: 5px;
-                                    font-size: 9px;
-                                ">
-                                    GRN No.
-                                </td>
-
-                            </tr>
-
-
-                            <tr>
-
-                                <td style="
-                                    border: 1px solid #000;
-                                    padding: 8px;
-                                    text-align: center;
-                                    font-size: 10px;
-                                    vertical-align: middle;
-                                    height: 30px;
-                                ">
-                                    <span t-esc="o.delivery_details or ''"/>
-                                </td>
-
-                                <td style="
-                                    border: 1px solid #000;
-                                    padding: 8px;
-                                    text-align: center;
-                                    font-size: 10px;
-                                    vertical-align: middle;
-                                    height: 30px;
-                                ">
-                                    <span t-esc="o.delivery_terms or ''"/>
-                                </td>
-
-                                <td style="
-                                    border: 1px solid #000;
-                                    padding: 8px;
-                                    text-align: center;
-                                    font-size: 10px;
-                                    vertical-align: middle;
-                                    height: 30px;
-                                ">
-                                    <span t-esc="o.grn_no or ''"/>
-                                </td>
-
-                            </tr>
-
-                        </table>
-
-
-                        <!-- =============================================
-                             PRODUCTS TABLE
-                             ============================================= -->
-
-                        <table class="products-table"
-                               style="
-                                   width: 100%;
-                                   border-collapse: collapse;
-                                   margin-top: 25px;
-                                   table-layout: fixed;
-                               ">
-
-                            <thead>
-
-                                <tr style="
-                                    background-color: #e9ecef;
+                                <div style="
                                     text-align: center;
                                     font-weight: bold;
-                                    font-size: 11px;
+                                    font-size: 18px;
+                                    margin-top: 10px;
+                                    margin-bottom: 15px;
+                                    text-transform: uppercase;
+                                    color: #003366;
                                 ">
 
-                                    <td style="
-                                        border: 1px solid #000;
-                                        padding: 5px;
-                                        width: 12%;
+                                    DELIVERY NOTE
+
+                                </div>
+
+
+                                <!-- =====================================
+                                     CUSTOMER INFORMATION TABLE
+                                     ===================================== -->
+
+                                <table style="
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                    table-layout: fixed;
+                                    margin-top: 5px;
+                                ">
+
+
+                                    <!-- HEADER ROW -->
+
+                                    <tr style="
+                                        background-color: #f2f2f2;
+                                        font-weight: bold;
+                                        text-align: center;
                                     ">
-                                        Item Code
-                                    </td>
-
-                                    <td style="
-                                        border: 1px solid #000;
-                                        padding: 5px;
-                                        width: 42%;
-                                    ">
-                                        Description of Goods &amp; Services
-                                    </td>
-
-                                    <td style="
-                                        border: 1px solid #000;
-                                        padding: 5px;
-                                        width: 14%;
-                                    ">
-                                        Part Number
-                                    </td>
-
-                                    <td style="
-                                        border: 1px solid #000;
-                                        padding: 5px;
-                                        width: 7%;
-                                    ">
-                                        Qty
-                                    </td>
-
-                                    <td style="
-                                        border: 1px solid #000;
-                                        padding: 5px;
-                                        width: 7%;
-                                    ">
-                                        Units
-                                    </td>
-
-                                    <td style="
-                                        border: 1px solid #000;
-                                        padding: 5px;
-                                        width: 18%;
-                                    ">
-                                        Remarks
-                                    </td>
-
-                                </tr>
-
-                            </thead>
 
 
-                            <tbody>
+                                        <!-- CUSTOMER -->
 
-                                <t t-foreach="lines"
-                                   t-as="move">
+                                        <td style="
+                                            width: 50%;
+                                            border: 1px solid #000;
+                                            padding: 5px;
+                                            font-size: 9px;
+                                            text-align: left;
+                                        ">
+
+                                            Customer Details
+
+                                        </td>
+
+
+                                        <!-- PO NUMBER -->
+
+                                        <td style="
+                                            width: 16.67%;
+                                            border: 1px solid #000;
+                                            padding: 5px;
+                                            font-size: 9px;
+                                        ">
+
+                                            Purchase Order No.
+
+                                        </td>
+
+
+                                        <!-- DOCUMENT DATE -->
+
+                                        <td style="
+                                            width: 16.67%;
+                                            border: 1px solid #000;
+                                            padding: 5px;
+                                            font-size: 9px;
+                                        ">
+
+                                            Document Dated
+
+                                        </td>
+
+
+                                        <!-- DELIVERY NOTE -->
+
+                                        <td style="
+                                            width: 16.66%;
+                                            border: 1px solid #000;
+                                            padding: 5px;
+                                            font-size: 9px;
+                                        ">
+
+                                            Delivery Note No.
+
+                                        </td>
+
+                                    </tr>
+
+
+                                    <!-- =================================
+                                         CUSTOMER DETAILS ROW
+                                         ================================= -->
 
                                     <tr>
+
+
+                                        <!-- CUSTOMER DETAILS -->
+
+                                        <td rowspan="3"
+                                            style="
+                                                width: 50%;
+                                                border: 1px solid #000;
+                                                padding: 8px;
+                                                vertical-align: top;
+                                                font-size: 10px;
+                                                box-sizing: border-box;
+                                            ">
+
+                                            <div t-field="o.partner_id"
+                                                 t-options='{
+                                                     "widget": "contact",
+                                                     "fields": [
+                                                         "address",
+                                                         "name",
+                                                         "vat",
+                                                         "company_registry"
+                                                     ],
+                                                     "no_marker": true
+                                                 }'/>
+
+                                        </td>
+
+
+                                        <!-- PURCHASE ORDER NUMBER -->
+
+                                        <td style="
+                                            width: 16.67%;
+                                            border: 1px solid #000;
+                                            padding: 8px;
+                                            text-align: center;
+                                            font-size: 10px;
+                                            vertical-align: middle;
+                                            height: 30px;
+                                        ">
+
+                                            <span t-esc="o.sale_id.client_order_ref or ''"/>
+
+                                        </td>
+
+
+                                        <!-- DOCUMENT DATE -->
+
+                                        <td style="
+                                            width: 16.67%;
+                                            border: 1px solid #000;
+                                            padding: 8px;
+                                            text-align: center;
+                                            font-size: 10px;
+                                            vertical-align: middle;
+                                            height: 30px;
+                                        ">
+
+                                            <span t-field="o.scheduled_date"
+                                                  t-options="{'widget': 'date'}"/>
+
+                                        </td>
+
+
+                                        <!-- DELIVERY NOTE NUMBER -->
+
+                                        <td style="
+                                            width: 16.66%;
+                                            border: 1px solid #000;
+                                            padding: 8px;
+                                            text-align: center;
+                                            font-size: 10px;
+                                            font-weight: bold;
+                                            vertical-align: middle;
+                                            height: 30px;
+                                        ">
+
+                                            <span t-field="o.name"/>
+
+                                        </td>
+
+                                    </tr>
+
+
+                                    <!-- =================================
+                                         SECOND HEADER
+                                         ================================= -->
+
+                                    <tr style="
+                                        background-color: #f2f2f2;
+                                        font-weight: bold;
+                                        text-align: center;
+                                    ">
+
+
+                                        <td style="
+                                            border: 1px solid #000;
+                                            padding: 5px;
+                                            font-size: 9px;
+                                        ">
+
+                                            Delivery Details
+
+                                        </td>
+
+
+                                        <td style="
+                                            border: 1px solid #000;
+                                            padding: 5px;
+                                            font-size: 9px;
+                                        ">
+
+                                            Delivery Terms
+
+                                        </td>
+
+
+                                        <td style="
+                                            border: 1px solid #000;
+                                            padding: 5px;
+                                            font-size: 9px;
+                                        ">
+
+                                            GRN No.
+
+                                        </td>
+
+                                    </tr>
+
+
+                                    <!-- =================================
+                                         SECOND INFORMATION ROW
+                                         ================================= -->
+
+                                    <tr>
+
+
+                                        <!-- DELIVERY DETAILS -->
+
+                                        <td style="
+                                            border: 1px solid #000;
+                                            padding: 8px;
+                                            text-align: center;
+                                            font-size: 10px;
+                                            vertical-align: middle;
+                                            height: 30px;
+                                            min-height: 30px;
+                                        ">
+
+                                            <span t-esc="o.delivery_details or ''"/>
+
+                                        </td>
+
+
+                                        <!-- DELIVERY TERMS -->
+
+                                        <td style="
+                                            border: 1px solid #000;
+                                            padding: 8px;
+                                            text-align: center;
+                                            font-size: 10px;
+                                            vertical-align: middle;
+                                            height: 30px;
+                                            min-height: 30px;
+                                        ">
+
+                                            <span t-esc="o.delivery_terms or ''"/>
+
+                                        </td>
+
+
+                                        <!-- GRN NUMBER -->
+
+                                        <td style="
+                                            border: 1px solid #000;
+                                            padding: 8px;
+                                            text-align: center;
+                                            font-size: 10px;
+                                            vertical-align: middle;
+                                            height: 30px;
+                                            min-height: 30px;
+                                        ">
+
+                                            <span t-esc="o.grn_no or ''"/>
+
+                                        </td>
+
+                                    </tr>
+
+                                </table>
+
+                            </t>
+
+
+                            <!-- =================================================
+                                 PRODUCTS TABLE
+                                 ================================================= -->
+
+                            <table style="
+                                width: 100%;
+                                border-collapse: collapse;
+                                margin-top: 25px;
+                                table-layout: fixed;
+                            ">
+
+
+                                <!-- =========================================
+                                     PRODUCTS TABLE HEADER
+                                     ========================================= -->
+
+                                <thead>
+
+                                    <tr style="
+                                        background-color: #e9ecef;
+                                        text-align: center;
+                                        font-weight: bold;
+                                        font-size: 11px;
+                                    ">
+
 
                                         <!-- ITEM CODE -->
 
                                         <td style="
                                             border: 1px solid #000;
-                                            padding: 4px;
-                                            text-align: center;
-                                            vertical-align: top;
+                                            padding: 5px;
+                                            width: 12%;
                                         ">
+
+                                            Item Code
+
                                         </td>
 
 
@@ -687,60 +680,11 @@
 
                                         <td style="
                                             border: 1px solid #000;
-                                            padding: 4px;
-                                            vertical-align: top;
+                                            padding: 5px;
+                                            width: 42%;
                                         ">
 
-                                            <!-- PRODUCT NAME -->
-
-                                            <div style="
-                                                font-size: 10px;
-                                                line-height: 13px;
-                                                word-wrap: break-word;
-                                                overflow-wrap: break-word;
-                                                white-space: normal;
-                                            ">
-
-                                                <span t-field="move.product_id.name"/>
-
-                                            </div>
-
-
-                                            <!-- FULL SALES DESCRIPTION -->
-
-                                            <t t-if="
-                                                move.sale_line_id
-                                                and move.sale_line_id.name
-                                            ">
-
-                                                <t t-set="full_desc"
-                                                   t-value="move.sale_line_id.name"/>
-
-
-                                                <t t-if="
-                                                    full_desc
-                                                    != move.product_id.name
-                                                ">
-
-                                                    <div class="product-description">
-
-                                                        <span t-esc="
-                                                            full_desc.replace(
-                                                                '[' + str(
-                                                                    move.product_id.default_code or ''
-                                                                ) + ']',
-                                                                ''
-                                                            ).replace(
-                                                                move.product_id.name,
-                                                                ''
-                                                            ).strip()
-                                                        "/>
-
-                                                    </div>
-
-                                                </t>
-
-                                            </t>
+                                            Description of Goods &amp; Services
 
                                         </td>
 
@@ -749,26 +693,24 @@
 
                                         <td style="
                                             border: 1px solid #000;
-                                            padding: 4px;
-                                            text-align: center;
-                                            vertical-align: top;
+                                            padding: 5px;
+                                            width: 14%;
                                         ">
 
-                                            <span t-field="move.product_id.default_code"/>
+                                            Part Number
 
                                         </td>
 
 
-                                        <!-- QUANTITY -->
+                                        <!-- QTY -->
 
                                         <td style="
                                             border: 1px solid #000;
-                                            padding: 4px;
-                                            text-align: center;
-                                            vertical-align: top;
+                                            padding: 5px;
+                                            width: 7%;
                                         ">
 
-                                            <span t-field="move.product_uom_qty"/>
+                                            Qty
 
                                         </td>
 
@@ -777,12 +719,11 @@
 
                                         <td style="
                                             border: 1px solid #000;
-                                            padding: 4px;
-                                            text-align: center;
-                                            vertical-align: top;
+                                            padding: 5px;
+                                            width: 7%;
                                         ">
 
-                                            <span t-field="move.product_uom.name"/>
+                                            Units
 
                                         </td>
 
@@ -791,167 +732,350 @@
 
                                         <td style="
                                             border: 1px solid #000;
-                                            padding: 4px;
-                                            vertical-align: top;
-                                            word-wrap: break-word;
-                                            overflow-wrap: break-word;
+                                            padding: 5px;
+                                            width: 18%;
                                         ">
 
-                                            <span t-field="move.x_remark"/>
+                                            Remarks
 
                                         </td>
 
                                     </tr>
 
-                                </t>
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
+                                </thead>
 
 
-                    <!-- =================================================
-                         FOOTER
-                         ================================================= -->
+                                <!-- =========================================
+                                     PRODUCT ROWS
+                                     ========================================= -->
 
-                    <div class="footer-at-bottom">
+                                <tbody>
 
-                        <div style="
-                            width: 100%;
-                            font-size: 10px;
-                            line-height: 1.5;
-                            border: none !important;
-                            outline: none !important;
-                            box-shadow: none !important;
-                            background: transparent !important;
-                        ">
+                                    <t t-foreach="page_lines"
+                                       t-as="move">
 
 
-                            <!-- LEFT -->
-
-                            <div style="
-                                width: 60%;
-                                float: left;
-                                border: none !important;
-                                outline: none !important;
-                                box-shadow: none !important;
-                                background: transparent !important;
-                            ">
-
-                                <div style="
-                                    margin: 0 0 3px 0;
-                                    border: none !important;
-                                    background: transparent !important;
-                                    font-size: 10px;
-                                ">
-                                    a) goods once sold cannot be returned
-                                </div>
-
-                                <div style="
-                                    margin: 0 0 3px 0;
-                                    border: none !important;
-                                    background: transparent !important;
-                                    font-size: 10px;
-                                ">
-                                    b) no responsibility can be accepted for shortage or damage in transit
-                                </div>
-
-                                <div style="
-                                    margin: 0;
-                                    border: none !important;
-                                    background: transparent !important;
-                                    font-size: 10px;
-                                ">
-                                    c) all the above goods received in good order and condition
-                                </div>
-
-                            </div>
+                                        <tr>
 
 
-                            <!-- RIGHT -->
+                                            <!-- ITEM CODE -->
 
-                            <div style="
-                                width: 40%;
-                                float: right;
-                                border: none !important;
-                                outline: none !important;
-                                box-shadow: none !important;
-                                background: transparent !important;
-                                font-size: 10px;
-                            ">
+                                            <td style="
+                                                border: 1px solid #000;
+                                                padding: 4px;
+                                                text-align: center;
+                                                height: 18px;
+                                            ">
 
-                                <div style="
-                                    font-weight: bold;
-                                    margin: 0 0 4px 0;
-                                    border: none !important;
-                                    background: transparent !important;
-                                    font-size: 10px;
-                                ">
-                                    Received By:
-                                </div>
-
-                                <div style="
-                                    margin: 0 0 4px 0;
-                                    border: none !important;
-                                    background: transparent !important;
-                                    font-size: 10px;
-                                ">
-                                    Name: ______________________
-                                </div>
-
-                                <div style="
-                                    margin: 0 0 4px 0;
-                                    border: none !important;
-                                    background: transparent !important;
-                                    font-size: 10px;
-                                ">
-                                    Date: ______________________
-                                </div>
-
-                                <div style="
-                                    margin: 0;
-                                    border: none !important;
-                                    background: transparent !important;
-                                    font-size: 10px;
-                                ">
-                                    Signature: __________________
-                                </div>
-
-                            </div>
+                                            </td>
 
 
-                            <div style="
-                                clear: both;
-                                border: none !important;
-                                background: transparent !important;
-                            ">
-                            </div>
+                                            <!-- DESCRIPTION -->
+
+                                            <td style="
+                                                border: 1px solid #000;
+                                                padding: 4px;
+                                            ">
+
+                                                <!-- PRODUCT NAME -->
+
+                                                <div>
+
+                                                    <span t-field="move.product_id.name"/>
+
+                                                </div>
 
 
-                            <!-- STAMP MESSAGE -->
+                                                <!-- ADDITIONAL SALES DESCRIPTION -->
+
+                                                <t t-if="move.sale_line_id and move.sale_line_id.name">
+
+                                                    <t t-set="full_desc"
+                                                       t-value="move.sale_line_id.name"/>
+
+
+                                                    <t t-if="full_desc != move.product_id.name">
+
+                                                        <div style="
+                                                            color: #333;
+                                                            font-size: 9px;
+                                                            margin-top: 2px;
+                                                        ">
+
+                                                            <span t-esc="
+                                                                full_desc.replace(
+                                                                    '[' + str(
+                                                                        move.product_id.default_code or ''
+                                                                    ) + ']',
+                                                                    ''
+                                                                ).replace(
+                                                                    move.product_id.name,
+                                                                    ''
+                                                                ).strip()
+                                                            "/>
+
+                                                        </div>
+
+                                                    </t>
+
+                                                </t>
+
+                                            </td>
+
+
+                                            <!-- PART NUMBER -->
+
+                                            <td style="
+                                                border: 1px solid #000;
+                                                padding: 4px;
+                                                text-align: center;
+                                            ">
+
+                                                <span t-field="move.product_id.default_code"/>
+
+                                            </td>
+
+
+                                            <!-- QUANTITY -->
+
+                                            <td style="
+                                                border: 1px solid #000;
+                                                padding: 4px;
+                                                text-align: center;
+                                            ">
+
+                                                <span t-field="move.product_uom_qty"/>
+
+                                            </td>
+
+
+                                            <!-- UNITS -->
+
+                                            <td style="
+                                                border: 1px solid #000;
+                                                padding: 4px;
+                                                text-align: center;
+                                            ">
+
+                                                <span t-field="move.product_uom.name"/>
+
+                                            </td>
+
+
+                                            <!-- REMARKS -->
+
+                                            <td style="
+                                                border: 1px solid #000;
+                                                padding: 4px;
+                                            ">
+
+                                                <span t-field="move.x_remark"/>
+
+                                            </td>
+
+                                        </tr>
+
+                                    </t>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+
+                        <!-- =================================================
+                             FOOTER
+                             THIS FOOTER BELONGS TO THIS PAGE ONLY
+                             AND IS ALWAYS AT THE BOTTOM.
+                             ================================================= -->
+
+                        <div class="footer-at-bottom">
 
                             <div style="
                                 width: 100%;
-                                margin-top: 8px;
-                                padding: 3px 5px;
                                 font-size: 10px;
-                                line-height: 1.4;
-                                color: #555;
+                                line-height: 1.5;
                                 border: none !important;
                                 outline: none !important;
                                 box-shadow: none !important;
                                 background: transparent !important;
                             ">
-                                Please stamp upon acknowledgement of Goods &amp; Services
+
+
+                                <!-- =====================================
+                                     LEFT SIDE TERMS
+                                     ===================================== -->
+
+                                <div style="
+                                    width: 60%;
+                                    float: left;
+                                    border: none !important;
+                                    outline: none !important;
+                                    box-shadow: none !important;
+                                    background: transparent !important;
+                                ">
+
+
+                                    <!-- TERM A -->
+
+                                    <div style="
+                                        margin: 0 0 3px 0;
+                                        border: none !important;
+                                        background: transparent !important;
+                                        font-size: 10px;
+                                    ">
+
+                                        a) goods once sold cannot be returned
+
+                                    </div>
+
+
+                                    <!-- TERM B -->
+
+                                    <div style="
+                                        margin: 0 0 3px 0;
+                                        border: none !important;
+                                        background: transparent !important;
+                                        font-size: 10px;
+                                    ">
+
+                                        b) no responsibility can be accepted for shortage or damage in transit
+
+                                    </div>
+
+
+                                    <!-- TERM C -->
+
+                                    <div style="
+                                        margin: 0;
+                                        border: none !important;
+                                        background: transparent !important;
+                                        font-size: 10px;
+                                    ">
+
+                                        c) all the above goods received in good order and condition
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- =====================================
+                                     RIGHT SIDE RECEIVED BY
+                                     ===================================== -->
+
+                                <div style="
+                                    width: 40%;
+                                    float: right;
+                                    border: none !important;
+                                    outline: none !important;
+                                    box-shadow: none !important;
+                                    background: transparent !important;
+                                    font-size: 10px;
+                                ">
+
+
+                                    <!-- RECEIVED BY -->
+
+                                    <div style="
+                                        font-weight: bold;
+                                        margin: 0 0 4px 0;
+                                        border: none !important;
+                                        background: transparent !important;
+                                        font-size: 10px;
+                                    ">
+
+                                        Received By:
+
+                                    </div>
+
+
+                                    <!-- NAME -->
+
+                                    <div style="
+                                        margin: 0 0 4px 0;
+                                        border: none !important;
+                                        background: transparent !important;
+                                        font-size: 10px;
+                                    ">
+
+                                        Name: ______________________
+
+                                    </div>
+
+
+                                    <!-- DATE -->
+
+                                    <div style="
+                                        margin: 0 0 4px 0;
+                                        border: none !important;
+                                        background: transparent !important;
+                                        font-size: 10px;
+                                    ">
+
+                                        Date: ______________________
+
+                                    </div>
+
+
+                                    <!-- SIGNATURE -->
+
+                                    <div style="
+                                        margin: 0;
+                                        border: none !important;
+                                        background: transparent !important;
+                                        font-size: 10px;
+                                    ">
+
+                                        Signature: __________________
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- =====================================
+                                     CLEAR FLOAT
+                                     ===================================== -->
+
+                                <div style="
+                                    clear: both;
+                                    border: none !important;
+                                    background: transparent !important;
+                                "></div>
+
+
+                                <!-- =====================================
+                                     STAMP MESSAGE
+                                     ===================================== -->
+
+                                <div style="
+                                    width: 100%;
+                                    margin-top: 8px;
+                                    padding: 3px 5px;
+                                    font-size: 10px;
+                                    line-height: 1.4;
+                                    color: #555;
+                                    border: none !important;
+                                    outline: none !important;
+                                    box-shadow: none !important;
+                                    background: transparent !important;
+                                ">
+
+                                    Please stamp upon acknowledgement of Goods &amp; Services
+
+                                </div>
+
+
                             </div>
 
                         </div>
 
+
                     </div>
 
-                </div>
+                </t>
 
             </div>
 
