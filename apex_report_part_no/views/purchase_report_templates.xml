@@ -35,14 +35,12 @@
         <field name="model">stock.picking</field>
         <field name="inherit_id" ref="stock.view_picking_form"/>
         <field name="arch" type="xml">
-            <!-- Kuongeza fields chini ya Destination Location upande wa kushoto -->
             <xpath expr="//field[@name='location_dest_id']" position="after">
                 <field name="delivery_details"/>
                 <field name="delivery_terms"/>
                 <field name="grn_no"/>
             </xpath>
 
-            <!-- Remarks kwenye mistari ya bidhaa -->
             <xpath expr="//field[@name='move_ids_without_package']//field[@name='product_uom_qty']" position="after">
                 <field name="x_remark"/>
             </xpath>
@@ -107,17 +105,18 @@
                             
                             <t t-if="page_index == 0">
                                 <div style="text-align: center; font-weight: bold; font-size: 18px; margin-top: 10px; margin-bottom: 15px; text-transform: uppercase; color: #003366;">
-                                    Delivery Notes
+                                    Delivery Note
                                 </div>
 
                                 <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
                                     <tr>
                                         <!-- Customer Details & Delivery Extra Details (Upande wa Kushoto) -->
                                         <td style="width: 50%; vertical-align: top; padding: 0;">
-                                            <div style="border: 1px solid #000; padding: 6px; margin-bottom: 5px;">
+                                            <div style="border: 1px solid #000; padding: 6px; margin-bottom: 4px;">
                                                 <div style="font-weight: bold; margin-bottom: 3px;">Customer Details</div>
                                                 <div t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name", "vat", "company_registry"], "no_marker": True}'/>
                                             </div>
+                                            <!-- Delivery Details, Terms & GRN chini ya Customer Details -->
                                             <table style="width: 100%; border-collapse: collapse;">
                                                 <tr style="background-color: #f2f2f2; font-weight: bold;">
                                                     <td style="border: 1px solid #000; padding: 3px; font-size: 9px; width: 33%;">Delivery Details</td>
@@ -147,7 +146,7 @@
                                                     <td style="border: 1px solid #000; padding: 3px; font-size: 9px; width: 34%;">Delivery Note No.</td>
                                                 </tr>
                                                 <tr>
-                                                    <td style="border: 1px solid #000; padding: 5px; font-size: 10px; height: 43px; vertical-align: middle;">
+                                                    <td style="border: 1px solid #000; padding: 5px; font-size: 10px; height: 68px; vertical-align: middle;">
                                                         <span t-esc="o.sale_id.client_order_ref"/>
                                                     </td>
                                                     <td style="border: 1px solid #000; padding: 5px; font-size: 10px; vertical-align: middle;">
