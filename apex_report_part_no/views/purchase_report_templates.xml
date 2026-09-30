@@ -35,13 +35,11 @@
         <field name="model">stock.picking</field>
         <field name="inherit_id" ref="stock.view_picking_form"/>
         <field name="arch" type="xml">
-            <!-- Kuongeza delivery_details, delivery_terms, na grn_no kwenye fomu -->
             <xpath expr="//field[@name='date_done']" position="after">
                 <field name="delivery_details"/>
                 <field name="delivery_terms"/>
                 <field name="grn_no"/>
             </xpath>
-            <!-- Sahihi: Kulenga uwanja uliopo ndani ya jedwali la bidhaa -->
             <xpath expr="//field[@name='move_ids_without_package']//field[@name='product_uom_qty']" position="after">
                 <field name="x_remark"/>
             </xpath>
@@ -53,7 +51,6 @@
         <xpath expr="//div[hasclass('page')]" position="replace">
             <div class="page" style="font-family: Arial, sans-serif; font-size: 11px; color: #000;">
                 
-                <!-- CSS ya kuficha sehemu ya asili na kupangilia ukurasa -->
                 <style>
                     .row.mt-3.mb-3, div[name="right_box"], div[name="div_outgoing_address"], div[name="div_incoming_address"], div[name="div_partner_invoice"] {
                         display: none !important;
@@ -76,11 +73,13 @@
                     .footer-at-bottom {
                         width: 100%;
                         margin-top: auto;
-                        padding-bottom: 20px;
+                        padding-bottom: 5px;
+                    }
+                    .o_address_format span[itemprop="telephone"] {
+                        display: none !important;
                     }
                 </style>
 
-                <!-- Tunagawanya bidhaa ziwe 14 kwa kila ukurasa -->
                 <t t-set="lines" t-value="o.move_ids_without_package"/>
                 <t t-set="chunk_size" t-value="14"/>
                 <t t-set="total_lines" t-value="len(lines)"/>
@@ -92,63 +91,57 @@
                     <t t-set="pages" t-value="[lines[i:i + chunk_size] for i in range(0, total_lines, chunk_size)]"/>
                 </t>
 
-                <!-- Tunazungusha kupitia kurasa zote zilizopatikana -->
                 <t t-foreach="pages" t-as="page_lines">
                     <t t-set="page_index" t-value="pages.index(page_lines)"/>
                     
                     <div class="page-box">
                         <div class="content-container">
                             
-                            <!-- HEADER: Inaonekana UKURASA WA KWANZA TU -->
                             <t t-if="page_index == 0">
-                                
-                                <!-- KICHWA CHA JUU: Delivery Notes (Dark Blue & Bold) -->
-                                <div style="text-align: center; font-weight: bold; font-size: 25px; margin-bottom: 15px; text-transform: uppercase; color: #003366;">
+                                <div style="text-align: center; font-weight: bold; font-size: 18px; margin-top: 10px; margin-bottom: 10px; text-transform: uppercase; color: #003366;">
                                     Delivery Notes
                                 </div>
 
                                 <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
                                     <tr>
-                                        <!-- Customer Name Box -->
-                                        <td style="width: 50%; border: 1px solid #000; padding: 8px; vertical-align: top;">
-                                            <div style="font-weight: bold; margin-bottom: 3px;">Customer Name</div>
-                                            <div t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True}'/>
+                                        <td style="width: 50%; border: 1px solid #000; padding: 6px; vertical-align: top;">
+                                            <div style="font-weight: bold; margin-bottom: 3px;">Customer</div>
+                                            <div t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
                                         </td>
                                         <td style="width: 2%;"></td>
-                                        <!-- Reference Boxes -->
                                         <td style="width: 48%; vertical-align: top; padding: 0;">
                                             <table style="width: 100%; border-collapse: collapse; text-align: center;">
                                                 <tr style="background-color: #f2f2f2; font-weight: bold;">
-                                                    <td style="border: 1px solid #000; padding: 4px; font-size: 10px;">Purchase Order No.</td>
-                                                    <td style="border: 1px solid #000; padding: 4px; font-size: 10px;">Document Dated</td>
-                                                    <td style="border: 1px solid #000; padding: 4px; font-size: 10px;">Delivery Note No.</td>
+                                                    <td style="border: 1px solid #000; padding: 3px; font-size: 9px;">Purchase Order No.</td>
+                                                    <td style="border: 1px solid #000; padding: 3px; font-size: 9px;">Document Dated</td>
+                                                    <td style="border: 1px solid #000; padding: 3px; font-size: 9px;">Delivery Note No.</td>
                                                 </tr>
                                                 <tr>
-                                                    <td style="border: 1px solid #000; padding: 6px; font-size: 11px;">
+                                                    <td style="border: 1px solid #000; padding: 5px; font-size: 10px;">
                                                         <span t-esc="o.sale_id.client_order_ref"/>
                                                     </td>
-                                                    <td style="border: 1px solid #000; padding: 6px; font-size: 11px;">
+                                                    <td style="border: 1px solid #000; padding: 5px; font-size: 10px;">
                                                         <span t-field="o.scheduled_date" t-options="{'widget': 'date'}"/>
                                                     </td>
-                                                    <td style="border: 1px solid #000; padding: 6px; font-size: 11px; font-weight: bold;">
+                                                    <td style="border: 1px solid #000; padding: 5px; font-size: 10px; font-weight: bold;">
                                                         <span t-field="o.name"/>
                                                     </td>
                                                 </tr>
                                             </table>
-                                            <table style="width: 100%; border-collapse: collapse; text-align: center; margin-top: 5px;">
+                                            <table style="width: 100%; border-collapse: collapse; text-align: center; margin-top: 4px;">
                                                 <tr style="background-color: #f2f2f2; font-weight: bold;">
-                                                    <td style="border: 1px solid #000; padding: 4px; font-size: 10px;">Delivery Details</td>
-                                                    <td style="border: 1px solid #000; padding: 4px; font-size: 10px;">Delivery Terms</td>
-                                                    <td style="border: 1px solid #000; padding: 4px; font-size: 10px;">GRN No.</td>
+                                                    <td style="border: 1px solid #000; padding: 3px; font-size: 9px;">Delivery Details</td>
+                                                    <td style="border: 1px solid #000; padding: 3px; font-size: 9px;">Delivery Terms</td>
+                                                    <td style="border: 1px solid #000; padding: 3px; font-size: 9px;">GRN No.</td>
                                                 </tr>
                                                 <tr>
-                                                    <td style="border: 1px solid #000; padding: 6px; height: 20px;">
+                                                    <td style="border: 1px solid #000; padding: 5px; height: 18px;">
                                                         <span t-field="o.delivery_details"/>
                                                     </td>
-                                                    <td style="border: 1px solid #000; padding: 6px;">
+                                                    <td style="border: 1px solid #000; padding: 5px;">
                                                         <span t-field="o.delivery_terms"/>
                                                     </td>
-                                                    <td style="border: 1px solid #000; padding: 6px;">
+                                                    <td style="border: 1px solid #000; padding: 5px;">
                                                         <span t-field="o.grn_no"/>
                                                     </td>
                                                 </tr>
@@ -158,45 +151,44 @@
                                 </table>
                             </t>
 
-                            <!-- JEDWALI LA BIDHAA -->
-                            <table style="width: 100%; border-collapse: collapse; margin-top: 25px;">
+                            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
                                 <thead>
                                     <tr style="background-color: #e9ecef; text-align: center; font-weight: bold; font-size: 11px;">
-                                        <td style="border: 1px solid #000; padding: 6px; width: 15%;">Item Code</td>
-                                        <td style="border: 1px solid #000; padding: 6px; width: 35%;">Description of Goods &amp; Services</td>
-                                        <td style="border: 1px solid #000; padding: 6px; width: 8%;">Qty</td>
-                                        <td style="border: 1px solid #000; padding: 6px; width: 8%;">Units</td>
-                                        <td style="border: 1px solid #000; padding: 6px; width: 14%;">Part Number</td>
-                                        <td style="border: 1px solid #000; padding: 6px; width: 20%;">Remarks</td>
+                                        <td style="border: 1px solid #000; padding: 5px; width: 15%;">Item Code</td>
+                                        <td style="border: 1px solid #000; padding: 5px; width: 37%;">Description of Goods &amp; Services</td>
+                                        <td style="border: 1px solid #000; padding: 5px; width: 8%;">Qty</td>
+                                        <td style="border: 1px solid #000; padding: 5px; width: 8%;">Units</td>
+                                        <td style="border: 1px solid #000; padding: 5px; width: 14%;">Part Number</td>
+                                        <td style="border: 1px solid #000; padding: 5px; width: 18%;">Remarks</td>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <t t-foreach="page_lines" t-as="move">
                                         <tr>
-                                            <td style="border: 1px solid #000; padding: 5px; text-align: center; height: 20px;"></td>
-                                            <td style="border: 1px solid #000; padding: 5px;">
+                                            <td style="border: 1px solid #000; padding: 4px; text-align: center; height: 18px;"></td>
+                                            <td style="border: 1px solid #000; padding: 4px;">
                                                 <div>
                                                     <span t-field="move.product_id.name"/>
                                                 </div>
                                                 <t t-if="move.sale_line_id and move.sale_line_id.name">
                                                     <t t-set="full_desc" t-value="move.sale_line_id.name"/>
                                                     <t t-if="full_desc != move.product_id.name">
-                                                        <div style="color: #333; font-size: 10px; margin-top: 2px;">
+                                                        <div style="color: #333; font-size: 9px; margin-top: 2px;">
                                                             <span t-esc="full_desc.replace('[' + str(move.product_id.default_code or '') + ']', '').replace(move.product_id.name, '').strip()"/>
                                                         </div>
                                                     </t>
                                                 </t>
                                             </td>
-                                            <td style="border: 1px solid #000; padding: 5px; text-align: center;">
+                                            <td style="border: 1px solid #000; padding: 4px; text-align: center;">
                                                 <span t-field="move.product_uom_qty"/>
                                             </td>
-                                            <td style="border: 1px solid #000; padding: 5px; text-align: center;">
+                                            <td style="border: 1px solid #000; padding: 4px; text-align: center;">
                                                 <span t-field="move.product_uom.name"/>
                                             </td>
-                                            <td style="border: 1px solid #000; padding: 5px; text-align: center;">
+                                            <td style="border: 1px solid #000; padding: 4px; text-align: center;">
                                                 <span t-field="move.product_id.default_code"/>
                                             </td>
-                                            <td style="border: 1px solid #000; padding: 5px;">
+                                            <td style="border: 1px solid #000; padding: 4px;">
                                                 <span t-field="move.x_remark"/>
                                             </td>
                                         </tr>
@@ -206,28 +198,27 @@
 
                         </div>
 
-                        <!-- FOOTER SECTION -->
                         <t t-if="page_index == len(pages) - 1">
                             <div class="footer-at-bottom">
                                 <table style="width: 100%; border-collapse: collapse; vertical-align: top;">
                                     <tr>
-                                        <td style="width: 60%; border: 1px solid #000; padding: 8px; vertical-align: top; font-size: 10px;">
-                                            <div style="margin-bottom: 3px;">a) goods once sold cannot be returned</div>
-                                            <div style="margin-bottom: 3px;">b) no responsibility can be accepted for shortage or damage in transit</div>
+                                        <td style="width: 60%; border: 1px solid #000; padding: 6px; vertical-align: top; font-size: 9px;">
+                                            <div style="margin-bottom: 2px;">a) goods once sold cannot be returned</div>
+                                            <div style="margin-bottom: 2px;">b) no responsibility can be accepted for shortage or damage in transit</div>
                                             <div>c) all the above goods received in good order and condition</div>
                                         </td>
-                                        <td style="width: 40%; border: 1px solid #000; padding: 8px; vertical-align: top; font-size: 10px;">
-                                            <div style="font-weight: bold; margin-bottom: 5px;">Received By:</div>
-                                            <div style="margin-bottom: 4px;">Name: ______________________</div>
-                                            <div style="margin-bottom: 4px;">Date: ______________________</div>
+                                        <td style="width: 40%; border: 1px solid #000; padding: 6px; vertical-align: top; font-size: 9px;">
+                                            <div style="font-weight: bold; margin-bottom: 3px;">Received By:</div>
+                                            <div style="margin-bottom: 3px;">Name: ______________________</div>
+                                            <div style="margin-bottom: 3px;">Date: ______________________</div>
                                             <div>Signature: __________________</div>
                                         </td>
                                     </tr>
                                 </table>
 
-                                <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
+                                <table style="width: 100%; border-collapse: collapse; margin-top: 3px;">
                                     <tr>
-                                        <td style="border: 1px solid #000; padding: 8px; height: 40px; vertical-align: top; font-size: 10px; color: #555;">
+                                        <td style="border: 1px solid #000; padding: 6px; height: 30px; vertical-align: top; font-size: 9px; color: #555;">
                                             Please stamp upon acknowledgement of Goods &amp; Services
                                         </td>
                                     </tr>
