@@ -280,7 +280,7 @@
 
                 <!-- Maximum products per page -->
                 <t t-set="chunk_size"
-                   t-value="14"/>
+                   t-value="12"/>
 
                 <t t-set="total_lines"
                    t-value="len(lines)"/>
