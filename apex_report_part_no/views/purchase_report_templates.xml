@@ -3,8 +3,9 @@
 
     <!-- ============================================================
          1. PURCHASE ORDER
-         Show Product Name Only
+         SHOW PRODUCT NAME ONLY
          ============================================================ -->
+
     <template id="report_purchaseorder_document_inherit_part_no"
               inherit_id="purchase.report_purchaseorder_document">
 
@@ -17,8 +18,9 @@
 
     <!-- ============================================================
          2. PURCHASE QUOTATION / RFQ
-         Show Product Name Only
+         SHOW PRODUCT NAME ONLY
          ============================================================ -->
+
     <template id="report_purchasequotation_document_inherit_part_no"
               inherit_id="purchase.report_purchasequotation_document">
 
@@ -31,8 +33,9 @@
 
     <!-- ============================================================
          3. SALES ORDER FORM
-         Rename Customer Reference to Purchase Order No.
+         RENAME CUSTOMER REFERENCE
          ============================================================ -->
+
     <record id="view_order_form_inherit_client_order_ref"
             model="ir.ui.view">
 
@@ -58,14 +61,18 @@
 
     <!-- ============================================================
          4. SALES ORDER + QUOTATION REPORT
-         Remove Currency From Unit Price and Amount
-         Dynamic Currency Header
+         REMOVE CURRENCY FROM LINE VALUES
+         DYNAMIC CURRENCY HEADER
          ============================================================ -->
+
     <template id="report_saleorder_document_remove_line_currency"
               inherit_id="sale.report_saleorder_document">
 
-        <!-- Dynamic Amount Header -->
-        <xpath expr="//th[@name='th_subtotal']" position="replace">
+
+        <!-- AMOUNT HEADER -->
+
+        <xpath expr="//th[@name='th_subtotal']"
+               position="replace">
 
             <th name="th_subtotal"
                 class="text-end text-nowrap">
@@ -80,8 +87,10 @@
         </xpath>
 
 
-        <!-- Unit Price Without Currency -->
-        <xpath expr="//td[@name='td_priceunit']" position="replace">
+        <!-- UNIT PRICE WITHOUT CURRENCY -->
+
+        <xpath expr="//td[@name='td_priceunit']"
+               position="replace">
 
             <td name="td_priceunit"
                 class="text-end text-nowrap">
@@ -97,8 +106,10 @@
         </xpath>
 
 
-        <!-- Amount Without Currency -->
-        <xpath expr="//td[@name='td_subtotal']" position="replace">
+        <!-- AMOUNT WITHOUT CURRENCY -->
+
+        <xpath expr="//td[@name='td_subtotal']"
+               position="replace">
 
             <td name="td_subtotal"
                 class="text-end o_price_total">
@@ -118,8 +129,8 @@
 
     <!-- ============================================================
          5. DELIVERY ORDER FORM
-         Add Delivery Details / Terms / GRN / Remarks
          ============================================================ -->
+
     <record id="view_picking_form_inherit_apex_details"
             model="ir.ui.view">
 
@@ -129,7 +140,9 @@
 
         <field name="arch" type="xml">
 
-            <!-- Delivery Information -->
+
+            <!-- DELIVERY DETAILS -->
+
             <xpath expr="//field[@name='location_dest_id']"
                    position="after">
 
@@ -140,7 +153,8 @@
             </xpath>
 
 
-            <!-- Product Remark -->
+            <!-- PRODUCT REMARK -->
+
             <xpath expr="//field[@name='move_ids_without_package']//field[@name='product_uom_qty']"
                    position="after">
 
@@ -156,10 +170,14 @@
     <!-- ============================================================
          6. CUSTOM DELIVERY NOTE REPORT
          ============================================================ -->
+
     <template id="report_delivery_document_apex_custom"
               inherit_id="stock.report_delivery_document">
 
-        <xpath expr="//div[hasclass('page')]" position="replace">
+
+        <xpath expr="//div[hasclass('page')]"
+               position="replace">
+
 
             <div class="page"
                  style="
@@ -167,6 +185,7 @@
                     font-size: 11px;
                     color: #000;
                  ">
+
 
                 <style>
 
@@ -185,15 +204,42 @@
 
                     /* =================================================
                        PAGE CONTAINER
+
+                       IMPORTANT:
+                       We give EVERY generated page its own fixed
+                       printable height.
+
+                       This prevents page 2 / page 3 from becoming
+                       only as tall as the product content.
                        ================================================= */
 
                     .page-box {
                         position: relative;
+
                         width: 100%;
+
+                        /*
+                         * A4 printable/content height.
+                         * This works with the normal Odoo A4 report
+                         * layout and keeps footer at page bottom.
+                         */
+                        height: 277mm;
+
+                        min-height: 277mm;
+                        max-height: 277mm;
+
                         box-sizing: border-box;
+
                         page-break-after: always;
+
+                        overflow: hidden;
                     }
 
+
+                    /*
+                     * Last generated page should not force another
+                     * blank page.
+                     */
 
                     .page-box:last-child {
                         page-break-after: avoid;
@@ -202,30 +248,31 @@
 
                     /* =================================================
                        MAIN CONTENT
-                       
-                       Reserve space at bottom so products do not
-                       overlap the fixed footer.
+
+                       Reserve enough space for footer.
                        ================================================= */
 
                     .content-container {
                         width: 100%;
-                        padding-bottom: 150px;
+
                         box-sizing: border-box;
+
+                        padding-bottom: 48mm;
                     }
 
 
                     /* =================================================
-                       FIXED FOOTER
+                       FOOTER
 
-                       IMPORTANT:
-                       This footer is outside the page loop.
+                       This footer belongs to EACH page-box.
 
-                       wkhtmltopdf will render it at the bottom
-                       of every physical PDF page.
+                       Because page-box has a fixed height of 277mm,
+                       bottom: 0 always means the physical bottom of
+                       THAT generated page.
                        ================================================= */
 
                     .footer-at-bottom {
-                        position: fixed;
+                        position: absolute;
 
                         left: 0;
                         right: 0;
@@ -233,17 +280,17 @@
 
                         width: 100%;
 
-                        padding-bottom: 5px;
+                        min-height: 38mm;
+
+                        padding-bottom: 2mm;
+
+                        box-sizing: border-box;
 
                         border: none !important;
                         outline: none !important;
                         box-shadow: none !important;
 
                         background: transparent !important;
-
-                        box-sizing: border-box;
-
-                        z-index: 9999;
                     }
 
 
@@ -263,7 +310,7 @@
 
 
                     /* =================================================
-                       HIDE PHONE / FAX / EMAIL
+                       ADDRESS CLEANUP
                        ================================================= */
 
                     .o_address_format span[itemprop="telephone"],
@@ -282,9 +329,14 @@
                 <t t-set="lines"
                    t-value="o.move_ids_without_package"/>
 
-                <!-- Maximum 14 products per generated page -->
+
+                <!-- ====================================================
+                     PRODUCTS PER PAGE
+                     ==================================================== -->
+
                 <t t-set="chunk_size"
                    t-value="14"/>
+
 
                 <t t-set="total_lines"
                    t-value="len(lines)"/>
@@ -310,20 +362,29 @@
 
 
                 <!-- ====================================================
-                     LOOP THROUGH PRODUCT PAGES
+                     EVERY PAGE
+
+                     FOOTER IS INSIDE THIS LOOP.
                      ==================================================== -->
 
-                <t t-foreach="pages" t-as="page_lines">
+                <t t-foreach="pages"
+                   t-as="page_lines">
+
 
                     <t t-set="page_index"
                        t-value="pages.index(page_lines)"/>
 
 
                     <!-- =================================================
-                         ONE PAGE CONTENT
+                         PAGE BOX
                          ================================================= -->
 
                     <div class="page-box">
+
+
+                        <!-- =============================================
+                             CONTENT
+                             ============================================= -->
 
                         <div class="content-container">
 
@@ -354,7 +415,7 @@
 
 
                                 <!-- =====================================
-                                     CUSTOMER INFORMATION TABLE
+                                     CUSTOMER INFORMATION
                                      ===================================== -->
 
                                 <table style="
@@ -365,13 +426,16 @@
                                 ">
 
 
-                                    <!-- HEADER -->
+                                    <!-- HEADER ROW -->
 
                                     <tr style="
                                         background-color: #f2f2f2;
                                         font-weight: bold;
                                         text-align: center;
                                     ">
+
+
+                                        <!-- CUSTOMER -->
 
                                         <td style="
                                             width: 50%;
@@ -380,8 +444,13 @@
                                             font-size: 9px;
                                             text-align: left;
                                         ">
+
                                             Customer Details
+
                                         </td>
+
+
+                                        <!-- PO -->
 
                                         <td style="
                                             width: 16.67%;
@@ -389,8 +458,13 @@
                                             padding: 5px;
                                             font-size: 9px;
                                         ">
+
                                             Purchase Order No.
+
                                         </td>
+
+
+                                        <!-- DATE -->
 
                                         <td style="
                                             width: 16.67%;
@@ -398,8 +472,13 @@
                                             padding: 5px;
                                             font-size: 9px;
                                         ">
+
                                             Document Dated
+
                                         </td>
+
+
+                                        <!-- DELIVERY NOTE -->
 
                                         <td style="
                                             width: 16.66%;
@@ -407,15 +486,22 @@
                                             padding: 5px;
                                             font-size: 9px;
                                         ">
+
                                             Delivery Note No.
+
                                         </td>
 
                                     </tr>
 
 
-                                    <!-- CUSTOMER DETAILS -->
+                                    <!-- =================================
+                                         CUSTOMER ROW
+                                         ================================= -->
 
                                     <tr>
+
+
+                                        <!-- CUSTOMER DETAILS -->
 
                                         <td rowspan="3"
                                             style="
@@ -497,7 +583,9 @@
                                     </tr>
 
 
-                                    <!-- SECOND HEADER -->
+                                    <!-- =================================
+                                         SECOND HEADER
+                                         ================================= -->
 
                                     <tr style="
                                         background-color: #f2f2f2;
@@ -505,36 +593,50 @@
                                         text-align: center;
                                     ">
 
+
                                         <td style="
                                             border: 1px solid #000;
                                             padding: 5px;
                                             font-size: 9px;
                                         ">
+
                                             Delivery Details
+
                                         </td>
+
 
                                         <td style="
                                             border: 1px solid #000;
                                             padding: 5px;
                                             font-size: 9px;
                                         ">
+
                                             Delivery Terms
+
                                         </td>
+
 
                                         <td style="
                                             border: 1px solid #000;
                                             padding: 5px;
                                             font-size: 9px;
                                         ">
+
                                             GRN No.
+
                                         </td>
 
                                     </tr>
 
 
-                                    <!-- SECOND INFORMATION ROW -->
+                                    <!-- =================================
+                                         INFORMATION ROW
+                                         ================================= -->
 
                                     <tr>
+
+
+                                        <!-- DELIVERY DETAILS -->
 
                                         <td style="
                                             border: 1px solid #000;
@@ -550,6 +652,9 @@
 
                                         </td>
 
+
+                                        <!-- DELIVERY TERMS -->
+
                                         <td style="
                                             border: 1px solid #000;
                                             padding: 8px;
@@ -563,6 +668,9 @@
                                             <span t-esc="o.delivery_terms or ''"/>
 
                                         </td>
+
+
+                                        <!-- GRN -->
 
                                         <td style="
                                             border: 1px solid #000;
@@ -595,6 +703,11 @@
                                 margin-top: 25px;
                                 table-layout: fixed;
                             ">
+
+
+                                <!-- =========================================
+                                     TABLE HEADER
+                                     ========================================= -->
 
                                 <thead>
 
@@ -645,7 +758,7 @@
                                         </td>
 
 
-                                        <!-- QTY -->
+                                        <!-- QUANTITY -->
 
                                         <td style="
                                             border: 1px solid #000;
@@ -688,10 +801,16 @@
                                 </thead>
 
 
+                                <!-- =========================================
+                                     PRODUCT ROWS
+                                     ========================================= -->
+
                                 <tbody>
+
 
                                     <t t-foreach="page_lines"
                                        t-as="move">
+
 
                                         <tr>
 
@@ -714,6 +833,9 @@
                                                 padding: 4px;
                                             ">
 
+
+                                                <!-- PRODUCT NAME -->
+
                                                 <div>
 
                                                     <span t-field="move.product_id.name"/>
@@ -730,6 +852,7 @@
 
 
                                                     <t t-if="full_desc != move.product_id.name">
+
 
                                                         <div style="
                                                             color: #333;
@@ -818,195 +941,197 @@
 
                         </div>
 
+
+                        <!-- =================================================
+                             FOOTER FOR THIS PAGE
+
+                             IMPORTANT:
+                             This is INSIDE page-box and INSIDE pages loop.
+
+                             Therefore:
+                             Page 1 = Footer
+                             Page 2 = Footer
+                             Page 3 = Footer
+                             ================================================= -->
+
+                        <div class="footer-at-bottom">
+
+
+                            <div style="
+                                width: 100%;
+                                font-size: 9px;
+                                line-height: 1.4;
+                                border: none !important;
+                                outline: none !important;
+                                box-shadow: none !important;
+                                background: transparent !important;
+                            ">
+
+
+                                <!-- =====================================
+                                     LEFT SIDE TERMS
+                                     ===================================== -->
+
+                                <div style="
+                                    width: 60%;
+                                    float: left;
+                                    border: none !important;
+                                    outline: none !important;
+                                    box-shadow: none !important;
+                                    background: transparent !important;
+                                ">
+
+
+                                    <!-- TERM A -->
+
+                                    <div style="
+                                        margin: 0 0 2px 0;
+                                        border: none !important;
+                                        background: transparent !important;
+                                    ">
+
+                                        a) goods once sold cannot be returned
+
+                                    </div>
+
+
+                                    <!-- TERM B -->
+
+                                    <div style="
+                                        margin: 0 0 2px 0;
+                                        border: none !important;
+                                        background: transparent !important;
+                                    ">
+
+                                        b) no responsibility can be accepted for shortage or damage in transit
+
+                                    </div>
+
+
+                                    <!-- TERM C -->
+
+                                    <div style="
+                                        margin: 0;
+                                        border: none !important;
+                                        background: transparent !important;
+                                    ">
+
+                                        c) all the above goods received in good order and condition
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- =====================================
+                                     RIGHT SIDE RECEIVED BY
+                                     ===================================== -->
+
+                                <div style="
+                                    width: 40%;
+                                    float: right;
+                                    border: none !important;
+                                    outline: none !important;
+                                    box-shadow: none !important;
+                                    background: transparent !important;
+                                ">
+
+
+                                    <!-- RECEIVED BY -->
+
+                                    <div style="
+                                        font-weight: bold;
+                                        margin: 0 0 3px 0;
+                                        border: none !important;
+                                        background: transparent !important;
+                                    ">
+
+                                        Received By:
+
+                                    </div>
+
+
+                                    <!-- NAME -->
+
+                                    <div style="
+                                        margin: 0 0 3px 0;
+                                        border: none !important;
+                                        background: transparent !important;
+                                    ">
+
+                                        Name: ______________________
+
+                                    </div>
+
+
+                                    <!-- DATE -->
+
+                                    <div style="
+                                        margin: 0 0 3px 0;
+                                        border: none !important;
+                                        background: transparent !important;
+                                    ">
+
+                                        Date: ______________________
+
+                                    </div>
+
+
+                                    <!-- SIGNATURE -->
+
+                                    <div style="
+                                        margin: 0;
+                                        border: none !important;
+                                        background: transparent !important;
+                                    ">
+
+                                        Signature: __________________
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- =====================================
+                                     CLEAR FLOAT
+                                     ===================================== -->
+
+                                <div style="
+                                    clear: both;
+                                    border: none !important;
+                                    background: transparent !important;
+                                "></div>
+
+
+                                <!-- =====================================
+                                     STAMP MESSAGE
+                                     ===================================== -->
+
+                                <div style="
+                                    width: 100%;
+                                    margin-top: 6px;
+                                    padding: 3px 5px;
+                                    font-size: 9px;
+                                    color: #555;
+                                    border: none !important;
+                                    outline: none !important;
+                                    box-shadow: none !important;
+                                    background: transparent !important;
+                                ">
+
+                                    Please stamp upon acknowledgement of Goods &amp; Services
+
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+
                     </div>
 
                 </t>
-
-
-                <!-- ========================================================
-                     ONE FIXED FOOTER
-
-                     IMPORTANT:
-                     This is OUTSIDE the pages loop.
-
-                     wkhtmltopdf renders position: fixed content
-                     at the bottom of EVERY physical PDF page.
-                     ======================================================== -->
-
-                <div class="footer-at-bottom">
-
-
-                    <div style="
-                        width: 100%;
-                        font-size: 9px;
-                        line-height: 1.4;
-                        border: none !important;
-                        outline: none !important;
-                        box-shadow: none !important;
-                        background: transparent !important;
-                    ">
-
-
-                        <!-- =============================================
-                             LEFT SIDE TERMS
-                             ============================================= -->
-
-                        <div style="
-                            width: 60%;
-                            float: left;
-                            border: none !important;
-                            outline: none !important;
-                            box-shadow: none !important;
-                            background: transparent !important;
-                        ">
-
-
-                            <!-- TERM A -->
-
-                            <div style="
-                                margin: 0 0 2px 0;
-                                border: none !important;
-                                background: transparent !important;
-                            ">
-
-                                a) goods once sold cannot be returned
-
-                            </div>
-
-
-                            <!-- TERM B -->
-
-                            <div style="
-                                margin: 0 0 2px 0;
-                                border: none !important;
-                                background: transparent !important;
-                            ">
-
-                                b) no responsibility can be accepted for shortage or damage in transit
-
-                            </div>
-
-
-                            <!-- TERM C -->
-
-                            <div style="
-                                margin: 0;
-                                border: none !important;
-                                background: transparent !important;
-                            ">
-
-                                c) all the above goods received in good order and condition
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- =============================================
-                             RIGHT SIDE RECEIVED BY
-                             ============================================= -->
-
-                        <div style="
-                            width: 40%;
-                            float: right;
-                            border: none !important;
-                            outline: none !important;
-                            box-shadow: none !important;
-                            background: transparent !important;
-                        ">
-
-
-                            <!-- RECEIVED BY -->
-
-                            <div style="
-                                font-weight: bold;
-                                margin: 0 0 3px 0;
-                                border: none !important;
-                                background: transparent !important;
-                            ">
-
-                                Received By:
-
-                            </div>
-
-
-                            <!-- NAME -->
-
-                            <div style="
-                                margin: 0 0 3px 0;
-                                border: none !important;
-                                background: transparent !important;
-                            ">
-
-                                Name: ______________________
-
-                            </div>
-
-
-                            <!-- DATE -->
-
-                            <div style="
-                                margin: 0 0 3px 0;
-                                border: none !important;
-                                background: transparent !important;
-                            ">
-
-                                Date: ______________________
-
-                            </div>
-
-
-                            <!-- SIGNATURE -->
-
-                            <div style="
-                                margin: 0;
-                                border: none !important;
-                                background: transparent !important;
-                            ">
-
-                                Signature: __________________
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- =============================================
-                             CLEAR FLOAT
-                             ============================================= -->
-
-                        <div style="
-                            clear: both;
-                            border: none !important;
-                            background: transparent !important;
-                        "></div>
-
-
-                        <!-- =============================================
-                             STAMP MESSAGE
-                             ============================================= -->
-
-                        <div style="
-                            width: 100%;
-                            margin-top: 6px;
-                            padding: 3px 5px;
-                            font-size: 9px;
-                            color: #555;
-                            border: none !important;
-                            outline: none !important;
-                            box-shadow: none !important;
-                            background: transparent !important;
-                        ">
-
-                            Please stamp upon acknowledgement of Goods &amp; Services
-
-                        </div>
-
-
-                    </div>
-
-                </div>
-
 
             </div>
 
