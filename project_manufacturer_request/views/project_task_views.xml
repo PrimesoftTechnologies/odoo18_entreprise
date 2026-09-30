@@ -50,7 +50,7 @@
                     icon="fa-cubes"
                 >
                     <field
-                        name="manufacturing_line_ids"
+                        name="manufacturer_request_ids"
                         mode="list"
                         context="{'default_task_id': id}"
                         readonly="manufacturer_request_state != 'draft'"
