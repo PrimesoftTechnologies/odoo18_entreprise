@@ -75,7 +75,6 @@
                         margin-top: auto;
                         padding-bottom: 5px;
                     }
-                    /* Kuficha namba ya simu na kuonyesha TIN/VRN za mteja */
                     .o_address_format span[itemprop="telephone"] {
                         display: none !important;
                     }
@@ -111,13 +110,16 @@
                                             <div t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name", "vat", "company_registry"], "no_marker": True}'/>
                                         </td>
                                         <td style="width: 2%;"></td>
+                                        <!-- Reference Boxes (Imeunganishwa kwenye Table moja kuu ili kuzuia kupishana kwa mistari) -->
                                         <td style="width: 48%; vertical-align: top; padding: 0;">
                                             <table style="width: 100%; border-collapse: collapse; text-align: center;">
+                                                <!-- Row 1: Headers -->
                                                 <tr style="background-color: #f2f2f2; font-weight: bold;">
-                                                    <td style="border: 1px solid #000; padding: 3px; font-size: 9px;">Purchase Order No.</td>
-                                                    <td style="border: 1px solid #000; padding: 3px; font-size: 9px;">Document Dated</td>
-                                                    <td style="border: 1px solid #000; padding: 3px; font-size: 9px;">Delivery Note No.</td>
+                                                    <td style="border: 1px solid #000; padding: 3px; font-size: 9px; width: 33%;">Purchase Order No.</td>
+                                                    <td style="border: 1px solid #000; padding: 3px; font-size: 9px; width: 33%;">Document Dated</td>
+                                                    <td style="border: 1px solid #000; padding: 3px; font-size: 9px; width: 34%;">Delivery Note No.</td>
                                                 </tr>
+                                                <!-- Row 2: Values -->
                                                 <tr>
                                                     <td style="border: 1px solid #000; padding: 5px; font-size: 10px;">
                                                         <span t-esc="o.sale_id.client_order_ref"/>
@@ -129,13 +131,13 @@
                                                         <span t-field="o.name"/>
                                                     </td>
                                                 </tr>
-                                            </table>
-                                            <table style="width: 100%; border-collapse: collapse; text-align: center; margin-top: 4px;">
+                                                <!-- Row 3: Headers (Delivery Details, Terms, GRN) -->
                                                 <tr style="background-color: #f2f2f2; font-weight: bold;">
                                                     <td style="border: 1px solid #000; padding: 3px; font-size: 9px;">Delivery Details</td>
                                                     <td style="border: 1px solid #000; padding: 3px; font-size: 9px;">Delivery Terms</td>
                                                     <td style="border: 1px solid #000; padding: 3px; font-size: 9px;">GRN No.</td>
                                                 </tr>
+                                                <!-- Row 4: Values -->
                                                 <tr>
                                                     <td style="border: 1px solid #000; padding: 5px; height: 18px;">
                                                         <span t-field="o.delivery_details"/>
@@ -153,7 +155,7 @@
                                 </table>
                             </t>
 
-                            <!-- JEDWALI LA BIDHAA: Part Number imesogezwa mbele kabla ya Qty -->
+                            <!-- JEDWALI LA BIDHAA -->
                             <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
                                 <thead>
                                     <tr style="background-color: #e9ecef; text-align: center; font-weight: bold; font-size: 11px;">
@@ -201,7 +203,7 @@
 
                         </div>
 
-                        <!-- FOOTER SECTION (Ipo chini kabisa) -->
+                        <!-- FOOTER SECTION -->
                         <t t-if="page_index == len(pages) - 1">
                             <div class="footer-at-bottom">
                                 <table style="width: 100%; border-collapse: collapse; vertical-align: top;">
