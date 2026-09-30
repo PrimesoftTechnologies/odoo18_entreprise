@@ -92,10 +92,7 @@
                 class="text-end text-nowrap">
 
                 <span t-esc="line.price_unit"
-                      t-options="{
-                          'widget': 'float',
-                          'precision': 2
-                      }"/>
+                      t-options="{'widget': 'float', 'precision': 2}"/>
 
             </td>
 
@@ -111,10 +108,7 @@
                 class="text-end o_price_total">
 
                 <span t-esc="line.price_subtotal"
-                      t-options="{
-                          'widget': 'float',
-                          'precision': 2
-                      }"/>
+                      t-options="{'widget': 'float', 'precision': 2}"/>
 
             </td>
 
@@ -136,7 +130,7 @@
 
         <field name="arch" type="xml">
 
-            <!-- DELIVERY INFORMATION -->
+            <!-- DELIVERY DETAILS -->
 
             <xpath expr="//field[@name='location_dest_id']"
                    position="after">
@@ -148,7 +142,7 @@
             </xpath>
 
 
-            <!-- REMARK -->
+            <!-- PRODUCT REMARK -->
 
             <xpath expr="//field[@name='move_ids_without_package']//field[@name='product_uom_qty']"
                    position="after">
@@ -173,11 +167,7 @@
                position="replace">
 
             <div class="page"
-                 style="
-                    font-family: Arial, sans-serif;
-                    font-size: 11px;
-                    color: #000;
-                 ">
+                 style="font-family: Arial, sans-serif; font-size: 11px; color: #000;">
 
                 <style>
 
@@ -191,33 +181,16 @@
 
 
                     /* ==================================================
-                       ONE PDF PAGE
-
-                       12 products are deliberately kept on each page.
-                       The page itself has a table layout so the footer
-                       can be pushed to the bottom without using
-                       position: fixed or 100vh.
+                       EACH GENERATED PAGE
                        ================================================== */
 
                     .delivery-page {
                         display: table;
-
                         width: 100%;
-
-                        /*
-                         * Printable A4 content area.
-                         * This is intentionally smaller than the full
-                         * 297mm paper height because Odoo already has
-                         * report margins.
-                         */
                         height: 255mm;
-
                         min-height: 255mm;
-
                         table-layout: fixed;
-
                         page-break-after: always;
-
                         position: relative;
                     }
 
@@ -233,120 +206,85 @@
 
                     .delivery-page-content {
                         display: table-row;
-
                         height: 100%;
                     }
 
 
                     .delivery-page-inner {
                         display: table-cell;
-
                         vertical-align: top;
-
                         width: 100%;
                     }
 
 
                     /* ==================================================
                        FOOTER ROW
-
-                       The footer is a separate row at the bottom.
-                       No border.
                        ================================================== */
 
                     .delivery-footer-row {
                         display: table-row;
-
                         height: 42mm;
                     }
 
 
                     .delivery-footer-cell {
                         display: table-cell;
-
                         vertical-align: bottom;
-
                         width: 100%;
-
                         padding: 0 0 2mm 0;
-
                         border: none !important;
-
                         background: transparent !important;
-
                         outline: none !important;
-
                         box-shadow: none !important;
                     }
 
 
                     /* ==================================================
-                       FOOTER CONTENT
+                       FOOTER
                        ================================================== */
 
                     .delivery-footer {
                         width: 100%;
-
                         border: none !important;
-
                         background: transparent !important;
-
                         outline: none !important;
-
                         box-shadow: none !important;
-
                         font-size: 9px;
-
                         line-height: 1.35;
                     }
 
 
                     .delivery-footer-left {
                         width: 60%;
-
                         float: left;
-
                         border: none !important;
-
                         background: transparent !important;
                     }
 
 
                     .delivery-footer-right {
                         width: 40%;
-
                         float: right;
-
                         border: none !important;
-
                         background: transparent !important;
                     }
 
 
                     .delivery-footer-clear {
                         clear: both;
-
                         height: 0;
-
                         line-height: 0;
-
                         border: none !important;
                     }
 
 
                     .delivery-footer-stamp {
                         width: 100%;
-
                         margin-top: 5px;
-
                         padding: 0;
-
                         border: none !important;
-
                         background: transparent !important;
-
                         color: #555;
-
                         font-size: 9px;
                     }
 
@@ -363,9 +301,7 @@
                         border-right: none !important;
                         border-top: none !important;
                         border-bottom: none !important;
-
                         outline: none !important;
-
                         box-shadow: none !important;
                     }
 
@@ -376,20 +312,15 @@
 
                     .delivery-info-table {
                         width: 100%;
-
                         border-collapse: collapse;
-
                         table-layout: fixed;
-
                         margin-top: 5px;
                     }
 
 
                     .delivery-info-table td {
                         border: 1px solid #000;
-
                         padding: 6px;
-
                         vertical-align: middle;
                     }
 
@@ -400,11 +331,8 @@
 
                     .delivery-products-table {
                         width: 100%;
-
                         border-collapse: collapse;
-
                         table-layout: fixed;
-
                         margin-top: 20px;
                     }
 
@@ -412,20 +340,15 @@
                     .delivery-products-table th,
                     .delivery-products-table td {
                         border: 1px solid #000;
-
                         padding: 4px;
-
                         vertical-align: middle;
                     }
 
 
                     .delivery-products-table th {
                         background-color: #e9ecef;
-
                         text-align: center;
-
                         font-weight: bold;
-
                         font-size: 10px;
                     }
 
@@ -436,43 +359,31 @@
 
 
                     /* ==================================================
-                       PREVENT PRODUCT ROW BREAKING
+                       KEEP PRODUCT ROW TOGETHER
                        ================================================== */
 
                     .delivery-products-table tr {
                         page-break-inside: avoid;
                     }
 
-
-                    /* ==================================================
-                       ADDRESS
-                       ================================================== */
-
-                    .o_address_format {
-                        font-size: 10px;
-                    }
-
                 </style>
 
 
                 <!-- ====================================================
-                     DELIVERY LINES
+                     ALL DELIVERY LINES
                      ==================================================== -->
 
-                <t t-set="lines"
-                   t-value="o.move_ids_without_package"/>
+                <t t-set="lines" t-value="o.move_ids_without_package"/>
 
 
                 <!-- ====================================================
                      EXACTLY 12 PRODUCTS PER PAGE
                      ==================================================== -->
 
-                <t t-set="chunk_size"
-                   t-value="12"/>
+                <t t-set="chunk_size" t-value="12"/>
 
 
-                <t t-set="total_lines"
-                   t-value="len(lines)"/>
+                <t t-set="total_lines" t-value="len(lines)"/>
 
 
                 <!-- ====================================================
@@ -481,8 +392,7 @@
 
                 <t t-if="total_lines == 0">
 
-                    <t t-set="pages"
-                       t-value="[[]]"/>
+                    <t t-set="pages" t-value="[[]]"/>
 
                 </t>
 
@@ -496,17 +406,11 @@
 
                 <!-- ====================================================
                      LOOP THROUGH PAGES
-
-                     PAGE 1 = PRODUCTS 1-12
-                     PAGE 2 = PRODUCTS 13-24
-                     PAGE 3 = PRODUCTS 25-36
                      ==================================================== -->
 
-                <t t-foreach="pages"
-                   t-as="page_lines">
+                <t t-foreach="pages" t-as="page_lines">
 
-                    <t t-set="page_index"
-                       t-value="pages.index(page_lines)"/>
+                    <t t-set="page_index" t-value="pages.index(page_lines)"/>
 
 
                     <!-- =================================================
@@ -517,7 +421,7 @@
 
 
                         <!-- =================================================
-                             PAGE CONTENT
+                             CONTENT
                              ================================================= -->
 
                         <div class="delivery-page-content">
@@ -526,8 +430,8 @@
 
 
                                 <!-- =========================================
-                                     HEADER
-                                     FIRST PAGE ONLY
+                                     DELIVERY NOTE HEADER
+                                     PAGE 1 ONLY
                                      ========================================= -->
 
                                 <t t-if="page_index == 0">
@@ -535,15 +439,7 @@
 
                                     <!-- TITLE -->
 
-                                    <div style="
-                                        text-align: center;
-                                        font-weight: bold;
-                                        font-size: 18px;
-                                        margin-top: 5px;
-                                        margin-bottom: 12px;
-                                        text-transform: uppercase;
-                                        color: #003366;
-                                    ">
+                                    <div style="text-align: center; font-weight: bold; font-size: 18px; margin-top: 5px; margin-bottom: 12px; text-transform: uppercase; color: #003366;">
 
                                         DELIVERY NOTE
 
@@ -557,50 +453,32 @@
                                     <table class="delivery-info-table">
 
 
-                                        <!-- HEADER -->
+                                        <!-- HEADER ROW -->
 
-                                        <tr style="
-                                            background-color: #f2f2f2;
-                                            font-weight: bold;
-                                            text-align: center;
-                                        ">
+                                        <tr style="background-color: #f2f2f2; font-weight: bold; text-align: center;">
 
-
-                                            <td style="
-                                                width: 50%;
-                                                text-align: left;
-                                                font-size: 9px;
-                                            ">
+                                            <td style="width: 50%; text-align: left; font-size: 9px;">
 
                                                 Customer Details
 
                                             </td>
 
 
-                                            <td style="
-                                                width: 16.67%;
-                                                font-size: 9px;
-                                            ">
+                                            <td style="width: 16.67%; font-size: 9px;">
 
                                                 Purchase Order No.
 
                                             </td>
 
 
-                                            <td style="
-                                                width: 16.67%;
-                                                font-size: 9px;
-                                            ">
+                                            <td style="width: 16.67%; font-size: 9px;">
 
                                                 Document Dated
 
                                             </td>
 
 
-                                            <td style="
-                                                width: 16.66%;
-                                                font-size: 9px;
-                                            ">
+                                            <td style="width: 16.66%; font-size: 9px;">
 
                                                 Delivery Note No.
 
@@ -609,7 +487,7 @@
                                         </tr>
 
 
-                                        <!-- CUSTOMER / PO / DATE / DN -->
+                                        <!-- CUSTOMER / PO / DATE / DELIVERY NOTE -->
 
                                         <tr>
 
@@ -617,52 +495,26 @@
                                             <!-- CUSTOMER -->
 
                                             <td rowspan="3"
-                                                style="
-                                                    width: 50%;
-                                                    vertical-align: top;
-                                                    padding: 8px;
-                                                    font-size: 10px;
-                                                ">
+                                                style="width: 50%; vertical-align: top; padding: 8px; font-size: 10px;">
 
                                                 <div t-field="o.partner_id"
-                                                     t-options='{
-                                                         "widget": "contact",
-                                                         "fields": [
-                                                             "address",
-                                                             "name",
-                                                             "vat",
-                                                             "company_registry"
-                                                         ],
-                                                         "no_marker": true
-                                                     }'/>
+                                                     t-options='{"widget": "contact", "fields": ["address", "name", "vat", "company_registry"], "no_marker": true}'/>
 
                                             </td>
 
 
                                             <!-- PURCHASE ORDER -->
 
-                                            <td style="
-                                                width: 16.67%;
-                                                text-align: center;
-                                                height: 30px;
-                                                font-size: 10px;
-                                            ">
+                                            <td style="width: 16.67%; text-align: center; height: 30px; font-size: 10px;">
 
-                                                <span t-esc="
-                                                    o.sale_id.client_order_ref or ''
-                                                "/>
+                                                <span t-esc="o.sale_id.client_order_ref or ''"/>
 
                                             </td>
 
 
                                             <!-- DOCUMENT DATE -->
 
-                                            <td style="
-                                                width: 16.67%;
-                                                text-align: center;
-                                                height: 30px;
-                                                font-size: 10px;
-                                            ">
+                                            <td style="width: 16.67%; text-align: center; height: 30px; font-size: 10px;">
 
                                                 <span t-field="o.scheduled_date"
                                                       t-options="{'widget': 'date'}"/>
@@ -672,13 +524,7 @@
 
                                             <!-- DELIVERY NOTE -->
 
-                                            <td style="
-                                                width: 16.66%;
-                                                text-align: center;
-                                                height: 30px;
-                                                font-size: 10px;
-                                                font-weight: bold;
-                                            ">
+                                            <td style="width: 16.66%; text-align: center; height: 30px; font-size: 10px; font-weight: bold;">
 
                                                 <span t-field="o.name"/>
 
@@ -689,12 +535,7 @@
 
                                         <!-- SECOND HEADER -->
 
-                                        <tr style="
-                                            background-color: #f2f2f2;
-                                            font-weight: bold;
-                                            text-align: center;
-                                        ">
-
+                                        <tr style="background-color: #f2f2f2; font-weight: bold; text-align: center;">
 
                                             <td style="font-size: 9px;">
 
@@ -719,49 +560,27 @@
                                         </tr>
 
 
-                                        <!-- VALUES -->
+                                        <!-- SECOND INFORMATION ROW -->
 
                                         <tr>
 
+                                            <td style="text-align: center; height: 30px; min-height: 30px; font-size: 10px;">
 
-                                            <td style="
-                                                text-align: center;
-                                                height: 30px;
-                                                min-height: 30px;
-                                                font-size: 10px;
-                                            ">
-
-                                                <span t-esc="
-                                                    o.delivery_details or ''
-                                                "/>
+                                                <span t-esc="o.delivery_details or ''"/>
 
                                             </td>
 
 
-                                            <td style="
-                                                text-align: center;
-                                                height: 30px;
-                                                min-height: 30px;
-                                                font-size: 10px;
-                                            ">
+                                            <td style="text-align: center; height: 30px; min-height: 30px; font-size: 10px;">
 
-                                                <span t-esc="
-                                                    o.delivery_terms or ''
-                                                "/>
+                                                <span t-esc="o.delivery_terms or ''"/>
 
                                             </td>
 
 
-                                            <td style="
-                                                text-align: center;
-                                                height: 30px;
-                                                min-height: 30px;
-                                                font-size: 10px;
-                                            ">
+                                            <td style="text-align: center; height: 30px; min-height: 30px; font-size: 10px;">
 
-                                                <span t-esc="
-                                                    o.grn_no or ''
-                                                "/>
+                                                <span t-esc="o.grn_no or ''"/>
 
                                             </td>
 
@@ -780,65 +599,35 @@
 
 
                                     <!-- =========================================
-                                         PRODUCT HEADER
+                                         TABLE HEADER
                                          ========================================= -->
 
                                     <thead>
 
                                         <tr>
 
-
-                                            <!-- ITEM CODE -->
-
                                             <th style="width: 12%;">
-
                                                 Item Code
-
                                             </th>
-
-
-                                            <!-- DESCRIPTION -->
 
                                             <th style="width: 42%;">
-
                                                 Description of Goods &amp; Services
-
                                             </th>
-
-
-                                            <!-- PART NUMBER -->
 
                                             <th style="width: 14%;">
-
                                                 Part Number
-
                                             </th>
 
-
-                                            <!-- QTY -->
-
                                             <th style="width: 7%;">
-
                                                 Qty
-
                                             </th>
-
-
-                                            <!-- UNITS -->
 
                                             <th style="width: 7%;">
-
                                                 Units
-
                                             </th>
-
-
-                                            <!-- REMARKS -->
 
                                             <th style="width: 18%;">
-
                                                 Remarks
-
                                             </th>
 
                                         </tr>
@@ -848,29 +637,19 @@
 
                                     <!-- =========================================
                                          PRODUCT ROWS
-
-                                         Maximum = 12 rows
+                                         MAXIMUM 12 PER PAGE
                                          ========================================= -->
 
                                     <tbody>
 
-                                        <t t-foreach="page_lines"
-                                           t-as="move">
-
+                                        <t t-foreach="page_lines" t-as="move">
 
                                             <tr>
 
 
                                                 <!-- ITEM CODE -->
 
-                                                <td style="
-                                                    text-align: center;
-                                                    height: 20px;
-                                                ">
-
-                                                    <span>
-                                                    </span>
-
+                                                <td style="text-align: center; height: 20px;">
                                                 </td>
 
 
@@ -878,53 +657,26 @@
 
                                                 <td>
 
-
                                                     <!-- PRODUCT NAME -->
 
                                                     <div>
-
-                                                        <span t-field="
-                                                            move.product_id.name
-                                                        "/>
-
+                                                        <span t-field="move.product_id.name"/>
                                                     </div>
 
 
                                                     <!-- ADDITIONAL DESCRIPTION -->
 
-                                                    <t t-if="
-                                                        move.sale_line_id
-                                                        and move.sale_line_id.name
-                                                    ">
+                                                    <t t-if="move.sale_line_id and move.sale_line_id.name">
 
                                                         <t t-set="full_desc"
-                                                           t-value="
-                                                               move.sale_line_id.name
-                                                           "/>
+                                                           t-value="move.sale_line_id.name"/>
 
 
-                                                        <t t-if="
-                                                            full_desc
-                                                            != move.product_id.name
-                                                        ">
+                                                        <t t-if="full_desc != move.product_id.name">
 
-                                                            <div style="
-                                                                color: #333;
-                                                                font-size: 9px;
-                                                                margin-top: 2px;
-                                                            ">
+                                                            <div style="color: #333; font-size: 9px; margin-top: 2px;">
 
-                                                                <span t-esc="
-                                                                    full_desc.replace(
-                                                                        '[' + str(
-                                                                            move.product_id.default_code or ''
-                                                                        ) + ']',
-                                                                        ''
-                                                                    ).replace(
-                                                                        move.product_id.name,
-                                                                        ''
-                                                                    ).strip()
-                                                                "/>
+                                                                <span t-esc="full_desc.replace('[' + str(move.product_id.default_code or '') + ']', '').replace(move.product_id.name, '').strip()"/>
 
                                                             </div>
 
@@ -937,39 +689,27 @@
 
                                                 <!-- PART NUMBER -->
 
-                                                <td style="
-                                                    text-align: center;
-                                                ">
+                                                <td style="text-align: center;">
 
-                                                    <span t-field="
-                                                        move.product_id.default_code
-                                                    "/>
+                                                    <span t-field="move.product_id.default_code"/>
 
                                                 </td>
 
 
-                                                <!-- QTY -->
+                                                <!-- QUANTITY -->
 
-                                                <td style="
-                                                    text-align: center;
-                                                ">
+                                                <td style="text-align: center;">
 
-                                                    <span t-field="
-                                                        move.product_uom_qty
-                                                    "/>
+                                                    <span t-field="move.product_uom_qty"/>
 
                                                 </td>
 
 
                                                 <!-- UNITS -->
 
-                                                <td style="
-                                                    text-align: center;
-                                                ">
+                                                <td style="text-align: center;">
 
-                                                    <span t-field="
-                                                        move.product_uom.name
-                                                    "/>
+                                                    <span t-field="move.product_uom.name"/>
 
                                                 </td>
 
@@ -978,9 +718,7 @@
 
                                                 <td>
 
-                                                    <span t-field="
-                                                        move.x_remark
-                                                    "/>
+                                                    <span t-field="move.x_remark"/>
 
                                                 </td>
 
@@ -998,13 +736,9 @@
 
 
                         <!-- =================================================
-                             FOOTER ROW
+                             FOOTER
 
-                             THIS IS CREATED FOR EVERY PAGE.
-
-                             Page 1 -> Footer
-                             Page 2 -> Footer
-                             Page 3 -> Footer
+                             EVERY PAGE HAS ITS OWN FOOTER
                              ================================================= -->
 
                         <div class="delivery-footer-row">
@@ -1015,24 +749,19 @@
 
 
                                     <!-- =====================================
-                                         LEFT SIDE
+                                         LEFT SIDE TERMS
                                          ===================================== -->
 
                                     <div class="delivery-footer-left">
 
-
-                                        <div style="
-                                            margin-bottom: 2px;
-                                        ">
+                                        <div style="margin-bottom: 2px;">
 
                                             a) goods once sold cannot be returned
 
                                         </div>
 
 
-                                        <div style="
-                                            margin-bottom: 2px;
-                                        ">
+                                        <div style="margin-bottom: 2px;">
 
                                             b) no responsibility can be accepted for shortage or damage in transit
 
@@ -1049,34 +778,26 @@
 
 
                                     <!-- =====================================
-                                         RIGHT SIDE
+                                         RIGHT SIDE RECEIVED BY
                                          ===================================== -->
 
                                     <div class="delivery-footer-right">
 
-
-                                        <div style="
-                                            font-weight: bold;
-                                            margin-bottom: 3px;
-                                        ">
+                                        <div style="font-weight: bold; margin-bottom: 3px;">
 
                                             Received By:
 
                                         </div>
 
 
-                                        <div style="
-                                            margin-bottom: 3px;
-                                        ">
+                                        <div style="margin-bottom: 3px;">
 
                                             Name: ______________________
 
                                         </div>
 
 
-                                        <div style="
-                                            margin-bottom: 3px;
-                                        ">
+                                        <div style="margin-bottom: 3px;">
 
                                             Date: ______________________
 
@@ -1092,15 +813,13 @@
                                     </div>
 
 
-                                    <!-- CLEAR -->
+                                    <!-- CLEAR FLOAT -->
 
                                     <div class="delivery-footer-clear">
                                     </div>
 
 
-                                    <!-- =====================================
-                                         STAMP MESSAGE
-                                         ===================================== -->
+                                    <!-- STAMP -->
 
                                     <div class="delivery-footer-stamp">
 
@@ -1113,7 +832,6 @@
                             </div>
 
                         </div>
-
 
                     </div>
 
