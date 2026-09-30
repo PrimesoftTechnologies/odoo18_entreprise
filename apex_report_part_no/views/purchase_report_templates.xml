@@ -5,11 +5,14 @@
          1. PURCHASE ORDER
          Show Product Name Only
          ============================================================ -->
+
     <template id="report_purchaseorder_document_inherit_part_no"
               inherit_id="purchase.report_purchaseorder_document">
 
         <xpath expr="//span[@t-field='line.name']" position="replace">
+
             <span t-field="line.product_id.name"/>
+
         </xpath>
 
     </template>
@@ -19,11 +22,14 @@
          2. PURCHASE QUOTATION / RFQ
          Show Product Name Only
          ============================================================ -->
+
     <template id="report_purchasequotation_document_inherit_part_no"
               inherit_id="purchase.report_purchasequotation_document">
 
         <xpath expr="//span[@t-field='order_line.name']" position="replace">
+
             <span t-field="order_line.product_id.name"/>
+
         </xpath>
 
     </template>
@@ -33,14 +39,23 @@
          3. SALES ORDER FORM
          Rename Customer Reference to Purchase Order No.
          ============================================================ -->
+
     <record id="view_order_form_inherit_client_order_ref"
             model="ir.ui.view">
 
-        <field name="name">sale.order.form.inherit.client.order.ref</field>
-        <field name="model">sale.order</field>
-        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="name">
+            sale.order.form.inherit.client.order.ref
+        </field>
 
-        <field name="arch" type="xml">
+        <field name="model">
+            sale.order
+        </field>
+
+        <field name="inherit_id"
+               ref="sale.view_order_form"/>
+
+        <field name="arch"
+               type="xml">
 
             <xpath expr="//field[@name='client_order_ref']"
                    position="attributes">
@@ -61,11 +76,17 @@
          Remove Currency From Unit Price and Amount
          Dynamic Currency Header
          ============================================================ -->
+
     <template id="report_saleorder_document_remove_line_currency"
               inherit_id="sale.report_saleorder_document">
 
-        <!-- Dynamic Amount Header -->
-        <xpath expr="//th[@name='th_subtotal']" position="replace">
+
+        <!-- ========================================================
+             DYNAMIC AMOUNT HEADER
+             ======================================================== -->
+
+        <xpath expr="//th[@name='th_subtotal']"
+               position="replace">
 
             <th name="th_subtotal"
                 class="text-end text-nowrap">
@@ -80,8 +101,12 @@
         </xpath>
 
 
-        <!-- Unit Price Without Currency -->
-        <xpath expr="//td[@name='td_priceunit']" position="replace">
+        <!-- ========================================================
+             UNIT PRICE WITHOUT CURRENCY
+             ======================================================== -->
+
+        <xpath expr="//td[@name='td_priceunit']"
+               position="replace">
 
             <td name="td_priceunit"
                 class="text-end text-nowrap">
@@ -97,8 +122,12 @@
         </xpath>
 
 
-        <!-- Amount Without Currency -->
-        <xpath expr="//td[@name='td_subtotal']" position="replace">
+        <!-- ========================================================
+             AMOUNT WITHOUT CURRENCY
+             ======================================================== -->
+
+        <xpath expr="//td[@name='td_subtotal']"
+               position="replace">
 
             <td name="td_subtotal"
                 class="text-end o_price_total">
@@ -120,27 +149,45 @@
          5. DELIVERY ORDER FORM
          Add Delivery Details / Terms / GRN / Remarks
          ============================================================ -->
+
     <record id="view_picking_form_inherit_apex_details"
             model="ir.ui.view">
 
-        <field name="name">stock.picking.form.inherit.apex.details</field>
-        <field name="model">stock.picking</field>
-        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="name">
+            stock.picking.form.inherit.apex.details
+        </field>
 
-        <field name="arch" type="xml">
+        <field name="model">
+            stock.picking
+        </field>
 
-            <!-- Delivery Information -->
+        <field name="inherit_id"
+               ref="stock.view_picking_form"/>
+
+        <field name="arch"
+               type="xml">
+
+
+            <!-- ====================================================
+                 DELIVERY INFORMATION
+                 ==================================================== -->
+
             <xpath expr="//field[@name='location_dest_id']"
                    position="after">
 
                 <field name="delivery_details"/>
+
                 <field name="delivery_terms"/>
+
                 <field name="grn_no"/>
 
             </xpath>
 
 
-            <!-- Product Remark -->
+            <!-- ====================================================
+                 PRODUCT REMARK
+                 ==================================================== -->
+
             <xpath expr="//field[@name='move_ids_without_package']//field[@name='product_uom_qty']"
                    position="after">
 
@@ -155,109 +202,155 @@
 
     <!-- ============================================================
          6. CUSTOM DELIVERY NOTE REPORT
-         Footer At Bottom Of EVERY Printed Page
+         Footer At Bottom Of EVERY Physical Printed Page
          ============================================================ -->
+
     <template id="report_delivery_document_apex_custom"
               inherit_id="stock.report_delivery_document">
 
-        <xpath expr="//div[hasclass('page')]" position="replace">
+
+        <!-- ========================================================
+             REPLACE ODOO PAGE CONTENT
+             ======================================================== -->
+
+        <xpath expr="//div[hasclass('page')]"
+               position="replace">
+
 
             <div class="page"
                  style="
-                    font-family: Arial, sans-serif;
-                    font-size: 11px;
-                    color: #000;
+                     font-family: Arial, sans-serif;
+                     font-size: 11px;
+                     color: #000;
                  ">
 
-                <style>
 
-                    /* =================================================
+                <!-- ==================================================
+                     CUSTOM CSS
+                     ================================================== -->
+
+                <style type="text/css">
+
+
+                    /* ==================================================
                        HIDE DEFAULT ODOO DELIVERY INFORMATION
-                       ================================================= */
+                       ================================================== */
 
                     .row.mt-3.mb-3,
                     div[name="right_box"],
                     div[name="div_outgoing_address"],
                     div[name="div_incoming_address"],
                     div[name="div_partner_invoice"] {
+
                         display: none !important;
+
                     }
 
 
-                    /* =================================================
+                    /* ==================================================
                        PAGE CONTAINER
-                       =================================================
-                       Each page is its own container.
-                       Footer is positioned relative to this container.
-                       ================================================= */
+
+                       IMPORTANT:
+                       NO fixed height.
+                       NO min-height.
+                       NO overflow:hidden.
+
+                       Odoo/wkhtmltopdf controls the physical page.
+                       ================================================== */
 
                     .page-box {
-                        position: relative;
 
-                        width: 100%;
+                        width: 100% !important;
 
-                        min-height: 277mm;
+                        box-sizing: border-box !important;
 
-                        box-sizing: border-box;
+                        margin: 0 !important;
 
-                        page-break-after: always;
+                        padding: 0 !important;
 
-                        overflow: hidden;
+                        position: relative !important;
+
+                        page-break-after: always !important;
+
+                        overflow: visible !important;
+
                     }
 
 
-                    /* =================================================
+                    /* ==================================================
                        LAST PAGE
-                       ================================================= */
+                       ================================================== */
 
                     .page-box:last-child {
-                        page-break-after: avoid;
+
+                        page-break-after: avoid !important;
+
                     }
 
 
-                    /* =================================================
-                       MAIN CONTENT AREA
-                       =================================================
-                       Reserve space for footer.
-                       ================================================= */
+                    /* ==================================================
+                       MAIN CONTENT
+
+                       Reserve space for fixed footer.
+                       ================================================== */
 
                     .content-container {
-                        width: 100%;
 
-                        box-sizing: border-box;
+                        width: 100% !important;
 
-                        /*
-                         * Space reserved for footer.
-                         * Product table cannot use this area.
-                         */
-                        padding-bottom: 35mm;
+                        box-sizing: border-box !important;
+
+                        margin: 0 !important;
+
+                        padding-bottom: 35mm !important;
+
                     }
 
 
-                    /* =================================================
-                       FOOTER
-                       =================================================
-                       Always at the bottom of CURRENT page.
-                       ================================================= */
+                    /* ==================================================
+                       FIXED FOOTER
+
+                       THIS IS THE MAIN FIX.
+
+                       position:absolute:
+                       footer belongs to .page-box.
+
+                       position:fixed:
+                       footer belongs to the physical PDF page.
+
+                       Therefore it stays at the bottom of every
+                       printed page.
+                       ================================================== */
 
                     .footer-at-bottom {
-                        position: absolute;
 
-                        left: 0;
+                        position: fixed !important;
 
-                        right: 0;
+                        left: 0 !important;
 
-                        bottom: 0;
+                        right: 0 !important;
 
-                        width: 100%;
+                        bottom: 0 !important;
 
-                        height: 32mm;
+                        width: 100% !important;
 
-                        box-sizing: border-box;
+                        height: 31mm !important;
 
-                        margin: 0;
+                        box-sizing: border-box !important;
 
-                        padding: 0;
+                        margin: 0 !important;
+
+                        padding: 0 !important;
+
+                        background: #ffffff !important;
+
+                        z-index: 99999 !important;
+
+                        overflow: hidden !important;
+
+                        page-break-inside: avoid !important;
+
+                        break-inside: avoid !important;
 
                         border: none !important;
 
@@ -265,30 +358,30 @@
 
                         box-shadow: none !important;
 
-                        background: #fff !important;
-
-                        overflow: hidden;
                     }
 
 
-                    /* =================================================
+                    /* ==================================================
                        FOOTER CONTENT
-                       ================================================= */
+                       ================================================== */
 
                     .footer-content {
-                        width: 100%;
 
-                        height: 100%;
+                        width: 100% !important;
 
-                        box-sizing: border-box;
+                        height: 100% !important;
 
-                        margin: 0;
+                        box-sizing: border-box !important;
 
-                        padding: 0;
+                        margin: 0 !important;
 
-                        font-size: 9px;
+                        padding: 0 !important;
 
-                        line-height: 1.35;
+                        font-size: 9px !important;
+
+                        line-height: 1.35 !important;
+
+                        background: #ffffff !important;
 
                         border: none !important;
 
@@ -296,24 +389,26 @@
 
                         box-shadow: none !important;
 
-                        background: #fff !important;
                     }
 
 
-                    /* =================================================
+                    /* ==================================================
                        LEFT SIDE TERMS
-                       ================================================= */
+                       ================================================== */
 
                     .footer-terms {
-                        width: 58%;
 
-                        float: left;
+                        width: 58% !important;
 
-                        box-sizing: border-box;
+                        float: left !important;
 
-                        padding-right: 10px;
+                        box-sizing: border-box !important;
 
-                        margin: 0;
+                        padding-right: 10px !important;
+
+                        margin: 0 !important;
+
+                        background: transparent !important;
 
                         border: none !important;
 
@@ -321,24 +416,26 @@
 
                         box-shadow: none !important;
 
-                        background: transparent !important;
                     }
 
 
-                    /* =================================================
+                    /* ==================================================
                        RIGHT SIDE RECEIVED BY
-                       ================================================= */
+                       ================================================== */
 
                     .footer-received {
-                        width: 42%;
 
-                        float: right;
+                        width: 42% !important;
 
-                        box-sizing: border-box;
+                        float: right !important;
 
-                        padding-left: 10px;
+                        box-sizing: border-box !important;
 
-                        margin: 0;
+                        padding-left: 10px !important;
+
+                        margin: 0 !important;
+
+                        background: transparent !important;
 
                         border: none !important;
 
@@ -346,18 +443,20 @@
 
                         box-shadow: none !important;
 
-                        background: transparent !important;
                     }
 
 
-                    /* =================================================
-                       TERMS
-                       ================================================= */
+                    /* ==================================================
+                       FOOTER TERM
+                       ================================================== */
 
                     .footer-term {
-                        margin: 0 0 2px 0;
 
-                        padding: 0;
+                        margin: 0 0 2px 0 !important;
+
+                        padding: 0 !important;
+
+                        background: transparent !important;
 
                         border: none !important;
 
@@ -365,20 +464,22 @@
 
                         box-shadow: none !important;
 
-                        background: transparent !important;
                     }
 
 
-                    /* =================================================
+                    /* ==================================================
                        RECEIVED BY TITLE
-                       ================================================= */
+                       ================================================== */
 
                     .footer-received-title {
-                        font-weight: bold;
 
-                        margin: 0 0 3px 0;
+                        font-weight: bold !important;
 
-                        padding: 0;
+                        margin: 0 0 3px 0 !important;
+
+                        padding: 0 !important;
+
+                        background: transparent !important;
 
                         border: none !important;
 
@@ -386,18 +487,20 @@
 
                         box-shadow: none !important;
 
-                        background: transparent !important;
                     }
 
 
-                    /* =================================================
+                    /* ==================================================
                        RECEIVED BY ROW
-                       ================================================= */
+                       ================================================== */
 
                     .footer-received-row {
-                        margin: 0 0 3px 0;
 
-                        padding: 0;
+                        margin: 0 0 3px 0 !important;
+
+                        padding: 0 !important;
+
+                        background: transparent !important;
 
                         border: none !important;
 
@@ -405,52 +508,53 @@
 
                         box-shadow: none !important;
 
-                        background: transparent !important;
                     }
 
 
-                    /* =================================================
+                    /* ==================================================
                        CLEAR FLOAT
-                       ================================================= */
+                       ================================================== */
 
                     .footer-clear {
-                        clear: both;
 
-                        height: 0;
+                        clear: both !important;
 
-                        line-height: 0;
+                        height: 0 !important;
 
-                        margin: 0;
+                        line-height: 0 !important;
 
-                        padding: 0;
+                        margin: 0 !important;
+
+                        padding: 0 !important;
 
                         border: none !important;
 
                         background: transparent !important;
+
                     }
 
 
-                    /* =================================================
+                    /* ==================================================
                        STAMP MESSAGE
-                       =================================================
-                       IMPORTANT:
-                       This is INSIDE footer.
-                       ================================================= */
+                       ================================================== */
 
                     .footer-stamp {
-                        width: 100%;
 
-                        margin: 5px 0 0 0;
+                        width: 100% !important;
 
-                        padding: 0;
+                        margin: 5px 0 0 0 !important;
 
-                        font-size: 9px;
+                        padding: 0 !important;
 
-                        line-height: 12px;
+                        font-size: 9px !important;
 
-                        color: #555;
+                        line-height: 12px !important;
 
-                        box-sizing: border-box;
+                        color: #555 !important;
+
+                        box-sizing: border-box !important;
+
+                        background: transparent !important;
 
                         border: none !important;
 
@@ -458,41 +562,86 @@
 
                         box-shadow: none !important;
 
-                        background: transparent !important;
                     }
 
 
-                    /* =================================================
-                       FORCE FOOTER CHILDREN NO BORDER
-                       ================================================= */
+                    /* ==================================================
+                       FORCE NO FOOTER BORDERS
+                       ================================================== */
 
                     .footer-at-bottom,
                     .footer-at-bottom *,
                     .footer-content,
                     .footer-content * {
+
                         border: none !important;
 
                         outline: none !important;
 
                         box-shadow: none !important;
+
                     }
 
 
-                    /* =================================================
+                    /* ==================================================
+                       PRODUCT TABLE
+                       ================================================== */
+
+                    .delivery-products-table {
+
+                        width: 100% !important;
+
+                        border-collapse: collapse !important;
+
+                        page-break-inside: auto !important;
+
+                    }
+
+
+                    /* ==================================================
+                       REPEAT PRODUCT TABLE HEADER
+                       ================================================== */
+
+                    .delivery-products-table thead {
+
+                        display: table-header-group !important;
+
+                    }
+
+
+                    .delivery-products-table tbody {
+
+                        page-break-inside: auto !important;
+
+                    }
+
+
+                    .delivery-products-table tr {
+
+                        page-break-inside: avoid !important;
+
+                        break-inside: avoid !important;
+
+                    }
+
+
+                    /* ==================================================
                        HIDE PHONE / FAX / EMAIL
-                       ================================================= */
+                       ================================================== */
 
                     .o_address_format span[itemprop="telephone"],
                     .o_address_format span[itemprop="fax"],
                     .o_address_format span[itemprop="email"] {
+
                         display: none !important;
+
                     }
 
                 </style>
 
 
                 <!-- ====================================================
-                     DELIVERY LINES
+                     GET DELIVERY LINES
                      ==================================================== -->
 
                 <t t-set="lines"
@@ -500,7 +649,7 @@
 
 
                 <!-- ====================================================
-                     PRODUCT LINES PER PAGE
+                     PRODUCT LINES PER MANUAL GROUP
                      ==================================================== -->
 
                 <t t-set="chunk_size"
@@ -512,7 +661,7 @@
 
 
                 <!-- ====================================================
-                     CREATE PAGES
+                     CREATE PAGE GROUPS
                      ==================================================== -->
 
                 <t t-if="total_lines == 0">
@@ -534,38 +683,40 @@
 
 
                 <!-- ====================================================
-                     LOOP THROUGH EVERY PAGE
+                     LOOP THROUGH PAGE GROUPS
                      ==================================================== -->
 
                 <t t-foreach="pages"
                    t-as="page_lines">
 
 
-                    <!-- =================================================
-                         INDIVIDUAL PAGE
-                         ================================================= -->
+                    <!-- ==================================================
+                         PAGE BOX
+
+                         IMPORTANT:
+                         This does NOT have a fixed height.
+                         ================================================== -->
 
                     <div class="page-box">
 
 
-                        <!-- =============================================
+                        <!-- ==============================================
                              MAIN CONTENT
-                             ============================================= -->
+                             ============================================== -->
 
                         <div class="content-container">
 
 
-                            <!-- =========================================
-                                 DELIVERY NOTE HEADER
-                                 FIRST PAGE ONLY
-                                 ========================================= -->
+                            <!-- ==========================================
+                                 FIRST PAGE HEADER
+                                 ========================================== -->
 
                             <t t-if="page_lines == pages[0]">
 
 
-                                <!-- =====================================
+                                <!-- ======================================
                                      DELIVERY NOTE TITLE
-                                     ===================================== -->
+                                     ====================================== -->
 
                                 <div style="
                                     text-align: center;
@@ -582,9 +733,9 @@
                                 </div>
 
 
-                                <!-- =====================================
+                                <!-- ======================================
                                      CUSTOMER INFORMATION TABLE
-                                     ===================================== -->
+                                     ====================================== -->
 
                                 <table style="
                                     width: 100%;
@@ -594,7 +745,9 @@
                                 ">
 
 
-                                    <!-- HEADER ROW -->
+                                    <!-- ==================================
+                                         TABLE HEADER
+                                         ================================== -->
 
                                     <tr style="
                                         background-color: #f2f2f2;
@@ -618,7 +771,7 @@
                                         </td>
 
 
-                                        <!-- PO NUMBER -->
+                                        <!-- PURCHASE ORDER -->
 
                                         <td style="
                                             width: 16.67%;
@@ -662,14 +815,14 @@
                                     </tr>
 
 
-                                    <!-- =================================
-                                         CUSTOMER DETAILS ROW
-                                         ================================= -->
+                                    <!-- ==================================
+                                         CUSTOMER INFORMATION
+                                         ================================== -->
 
                                     <tr>
 
 
-                                        <!-- CUSTOMER DETAILS -->
+                                        <!-- CUSTOMER -->
 
                                         <td rowspan="3"
                                             style="
@@ -696,7 +849,7 @@
                                         </td>
 
 
-                                        <!-- PURCHASE ORDER NUMBER -->
+                                        <!-- PURCHASE ORDER -->
 
                                         <td style="
                                             width: 16.67%;
@@ -708,7 +861,9 @@
                                             height: 30px;
                                         ">
 
-                                            <span t-esc="o.sale_id.client_order_ref or ''"/>
+                                            <span t-esc="
+                                                o.sale_id.client_order_ref or ''
+                                            "/>
 
                                         </td>
 
@@ -726,12 +881,14 @@
                                         ">
 
                                             <span t-field="o.scheduled_date"
-                                                  t-options="{'widget': 'date'}"/>
+                                                  t-options="{
+                                                      'widget': 'date'
+                                                  }"/>
 
                                         </td>
 
 
-                                        <!-- DELIVERY NOTE NUMBER -->
+                                        <!-- DELIVERY NOTE -->
 
                                         <td style="
                                             width: 16.66%;
@@ -751,9 +908,9 @@
                                     </tr>
 
 
-                                    <!-- =================================
+                                    <!-- ==================================
                                          SECOND HEADER
-                                         ================================= -->
+                                         ================================== -->
 
                                     <tr style="
                                         background-color: #f2f2f2;
@@ -797,9 +954,9 @@
                                     </tr>
 
 
-                                    <!-- =================================
+                                    <!-- ==================================
                                          SECOND INFORMATION ROW
-                                         ================================= -->
+                                         ================================== -->
 
                                     <tr>
 
@@ -813,10 +970,11 @@
                                             font-size: 10px;
                                             vertical-align: middle;
                                             height: 30px;
-                                            min-height: 30px;
                                         ">
 
-                                            <span t-esc="o.delivery_details or ''"/>
+                                            <span t-esc="
+                                                o.delivery_details or ''
+                                            "/>
 
                                         </td>
 
@@ -830,15 +988,16 @@
                                             font-size: 10px;
                                             vertical-align: middle;
                                             height: 30px;
-                                            min-height: 30px;
                                         ">
 
-                                            <span t-esc="o.delivery_terms or ''"/>
+                                            <span t-esc="
+                                                o.delivery_terms or ''
+                                            "/>
 
                                         </td>
 
 
-                                        <!-- GRN NUMBER -->
+                                        <!-- GRN -->
 
                                         <td style="
                                             border: 1px solid #000;
@@ -847,10 +1006,11 @@
                                             font-size: 10px;
                                             vertical-align: middle;
                                             height: 30px;
-                                            min-height: 30px;
                                         ">
 
-                                            <span t-esc="o.grn_no or ''"/>
+                                            <span t-esc="
+                                                o.grn_no or ''
+                                            "/>
 
                                         </td>
 
@@ -865,16 +1025,15 @@
                                  PRODUCTS TABLE
                                  ================================================= -->
 
-                            <table style="
-                                width: 100%;
-                                border-collapse: collapse;
-                                margin-top: 25px;
-                                table-layout: fixed;
-                            ">
+                            <table class="delivery-products-table"
+                                   style="
+                                       margin-top: 25px;
+                                       table-layout: fixed;
+                                   ">
 
 
                                 <!-- =========================================
-                                     TABLE HEADER
+                                     PRODUCT HEADER
                                      ========================================= -->
 
                                 <thead>
@@ -926,7 +1085,7 @@
                                         </td>
 
 
-                                        <!-- QTY -->
+                                        <!-- QUANTITY -->
 
                                         <td style="
                                             border: 1px solid #000;
@@ -982,7 +1141,9 @@
                                         <tr>
 
 
-                                            <!-- ITEM CODE -->
+                                            <!-- =================================
+                                                 ITEM CODE
+                                                 ================================= -->
 
                                             <td style="
                                                 border: 1px solid #000;
@@ -994,31 +1155,48 @@
                                             </td>
 
 
-                                            <!-- DESCRIPTION -->
+                                            <!-- =================================
+                                                 DESCRIPTION
+                                                 ================================= -->
 
                                             <td style="
                                                 border: 1px solid #000;
                                                 padding: 4px;
                                             ">
 
+
                                                 <!-- PRODUCT NAME -->
 
                                                 <div>
 
-                                                    <span t-field="move.product_id.name"/>
+                                                    <span t-field="
+                                                        move.product_id.name
+                                                    "/>
 
                                                 </div>
 
 
-                                                <!-- ADDITIONAL SALES DESCRIPTION -->
+                                                <!-- =================================
+                                                     SALES DESCRIPTION
+                                                     ================================= -->
 
-                                                <t t-if="move.sale_line_id and move.sale_line_id.name">
+                                                <t t-if="
+                                                    move.sale_line_id
+                                                    and
+                                                    move.sale_line_id.name
+                                                ">
 
                                                     <t t-set="full_desc"
-                                                       t-value="move.sale_line_id.name"/>
+                                                       t-value="
+                                                           move.sale_line_id.name
+                                                       "/>
 
 
-                                                    <t t-if="full_desc != move.product_id.name">
+                                                    <t t-if="
+                                                        full_desc
+                                                        !=
+                                                        move.product_id.name
+                                                    ">
 
                                                         <div style="
                                                             color: #333;
@@ -1047,7 +1225,9 @@
                                             </td>
 
 
-                                            <!-- PART NUMBER -->
+                                            <!-- =================================
+                                                 PART NUMBER
+                                                 ================================= -->
 
                                             <td style="
                                                 border: 1px solid #000;
@@ -1055,12 +1235,16 @@
                                                 text-align: center;
                                             ">
 
-                                                <span t-field="move.product_id.default_code"/>
+                                                <span t-field="
+                                                    move.product_id.default_code
+                                                "/>
 
                                             </td>
 
 
-                                            <!-- QUANTITY -->
+                                            <!-- =================================
+                                                 QUANTITY
+                                                 ================================= -->
 
                                             <td style="
                                                 border: 1px solid #000;
@@ -1068,12 +1252,16 @@
                                                 text-align: center;
                                             ">
 
-                                                <span t-field="move.product_uom_qty"/>
+                                                <span t-field="
+                                                    move.product_uom_qty
+                                                "/>
 
                                             </td>
 
 
-                                            <!-- UNITS -->
+                                            <!-- =================================
+                                                 UNITS
+                                                 ================================= -->
 
                                             <td style="
                                                 border: 1px solid #000;
@@ -1081,19 +1269,25 @@
                                                 text-align: center;
                                             ">
 
-                                                <span t-field="move.product_uom.name"/>
+                                                <span t-field="
+                                                    move.product_uom.name
+                                                "/>
 
                                             </td>
 
 
-                                            <!-- REMARKS -->
+                                            <!-- =================================
+                                                 REMARKS
+                                                 ================================= -->
 
                                             <td style="
                                                 border: 1px solid #000;
                                                 padding: 4px;
                                             ">
 
-                                                <span t-field="move.x_remark"/>
+                                                <span t-field="
+                                                    move.x_remark
+                                                "/>
 
                                             </td>
 
@@ -1108,22 +1302,9 @@
                         </div>
 
 
-                        <!-- =================================================
-                             FOOTER
-                             =================================================
-                             THIS FOOTER IS INSIDE page-box.
-
-                             Therefore EVERY PAGE gets:
-
-                             1. Terms
-                             2. Received By
-                             3. Name
-                             4. Date
-                             5. Signature
-                             6. Stamp message
-
-                             The footer is positioned at bottom: 0.
-                             ================================================= -->
+                        <!-- ==================================================
+                             FIXED FOOTER
+                             ================================================== -->
 
                         <div class="footer-at-bottom">
 
@@ -1131,14 +1312,12 @@
                             <div class="footer-content">
 
 
-                                <!-- =====================================
-                                     LEFT SIDE TERMS
-                                     ===================================== -->
+                                <!-- =========================================
+                                     TERMS
+                                     ========================================= -->
 
                                 <div class="footer-terms">
 
-
-                                    <!-- TERM A -->
 
                                     <div class="footer-term">
 
@@ -1147,34 +1326,30 @@
                                     </div>
 
 
-                                    <!-- TERM B -->
-
                                     <div class="footer-term">
 
-                                        b) no responsibility can be accepted for shortage or damage in transit
+                                        b) no responsibility can be accepted
+                                        for shortage or damage in transit
 
                                     </div>
 
 
-                                    <!-- TERM C -->
-
                                     <div class="footer-term">
 
-                                        c) all the above goods received in good order and condition
+                                        c) all the above goods received in
+                                        good order and condition
 
                                     </div>
 
                                 </div>
 
 
-                                <!-- =====================================
-                                     RIGHT SIDE RECEIVED BY
-                                     ===================================== -->
+                                <!-- =========================================
+                                     RECEIVED BY
+                                     ========================================= -->
 
                                 <div class="footer-received">
 
-
-                                    <!-- RECEIVED BY -->
 
                                     <div class="footer-received-title">
 
@@ -1183,8 +1358,6 @@
                                     </div>
 
 
-                                    <!-- NAME -->
-
                                     <div class="footer-received-row">
 
                                         Name: ______________________
@@ -1192,16 +1365,12 @@
                                     </div>
 
 
-                                    <!-- DATE -->
-
                                     <div class="footer-received-row">
 
                                         Date: ______________________
 
                                     </div>
 
-
-                                    <!-- SIGNATURE -->
 
                                     <div class="footer-received-row">
 
@@ -1212,20 +1381,21 @@
                                 </div>
 
 
-                                <!-- =====================================
+                                <!-- =========================================
                                      CLEAR FLOAT
-                                     ===================================== -->
+                                     ========================================= -->
 
                                 <div class="footer-clear"></div>
 
 
-                                <!-- =====================================
+                                <!-- =========================================
                                      STAMP MESSAGE
-                                     ===================================== -->
+                                     ========================================= -->
 
                                 <div class="footer-stamp">
 
-                                    Please stamp upon acknowledgement of Goods &amp; Services
+                                    Please stamp upon acknowledgement
+                                    of Goods &amp; Services
 
                                 </div>
 
