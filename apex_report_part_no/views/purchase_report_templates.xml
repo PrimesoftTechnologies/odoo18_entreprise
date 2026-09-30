@@ -66,7 +66,10 @@
     <template id="report_saleorder_document_remove_line_currency"
               inherit_id="sale.report_saleorder_document">
 
-        <!-- Dynamic Amount Header -->
+        <!-- ========================================================
+             DYNAMIC AMOUNT HEADER
+             ======================================================== -->
+
         <xpath expr="//th[@name='th_subtotal']" position="replace">
 
             <th name="th_subtotal"
@@ -81,7 +84,10 @@
         </xpath>
 
 
-        <!-- Unit Price Without Currency -->
+        <!-- ========================================================
+             UNIT PRICE WITHOUT CURRENCY
+             ======================================================== -->
+
         <xpath expr="//td[@name='td_priceunit']" position="replace">
 
             <td name="td_priceunit"
@@ -95,7 +101,10 @@
         </xpath>
 
 
-        <!-- Amount Without Currency -->
+        <!-- ========================================================
+             AMOUNT WITHOUT CURRENCY
+             ======================================================== -->
+
         <xpath expr="//td[@name='td_subtotal']" position="replace">
 
             <td name="td_subtotal"
@@ -125,7 +134,10 @@
 
         <field name="arch" type="xml">
 
-            <!-- Delivery Information -->
+            <!-- ====================================================
+                 DELIVERY INFORMATION
+                 ==================================================== -->
+
             <xpath expr="//field[@name='location_dest_id']"
                    position="after">
 
@@ -136,7 +148,10 @@
             </xpath>
 
 
-            <!-- Product Remark -->
+            <!-- ====================================================
+                 PRODUCT REMARK
+                 ==================================================== -->
+
             <xpath expr="//field[@name='move_ids_without_package']//field[@name='product_uom_qty']"
                    position="after">
 
@@ -151,7 +166,6 @@
 
     <!-- ============================================================
          6. CUSTOM DELIVERY NOTE REPORT
-         Footer At Bottom Of EVERY Physical Printed Page
          ============================================================ -->
 
     <template id="report_delivery_document_apex_custom"
@@ -160,7 +174,12 @@
         <xpath expr="//div[hasclass('page')]" position="replace">
 
             <div class="page"
-                 style="font-family: Arial, sans-serif; font-size: 11px; color: #000;">
+                 style="font-family: Arial, sans-serif;
+                        font-size: 11px;
+                        color: #000;
+                        padding: 0;
+                        margin: 0;">
+
 
                 <!-- ====================================================
                      CUSTOM CSS
@@ -182,17 +201,38 @@
 
 
                     /* ==================================================
-                       PAGE CONTAINER
+                       MANUAL PDF PAGE
+
+                       IMPORTANT:
+                       Each page-box represents ONE physical PDF page.
+
+                       Footer is positioned relative to this page-box.
                        ================================================== */
 
                     .page-box {
-                        width: 100% !important;
-                        box-sizing: border-box !important;
-                        margin: 0 !important;
-                        padding: 0 !important;
                         position: relative !important;
+
+                        width: 100% !important;
+
+                        height: 257mm !important;
+
+                        min-height: 257mm !important;
+
+                        max-height: 257mm !important;
+
+                        box-sizing: border-box !important;
+
+                        margin: 0 !important;
+
+                        padding: 0 0 35mm 0 !important;
+
+                        overflow: hidden !important;
+
                         page-break-after: always !important;
-                        overflow: visible !important;
+
+                        page-break-inside: avoid !important;
+
+                        break-inside: avoid !important;
                     }
 
 
@@ -201,45 +241,93 @@
                        ================================================== */
 
                     .page-box:last-child {
-                        page-break-after: avoid !important;
+                        page-break-after: auto !important;
                     }
 
 
                     /* ==================================================
-                       MAIN CONTENT
-                       Reserve space for fixed footer
+                       CONTENT AREA
+
+                       Footer occupies approximately 31mm.
+
+                       Therefore content must stop before footer.
                        ================================================== */
 
                     .content-container {
+                        position: relative !important;
+
                         width: 100% !important;
+
+                        height: 222mm !important;
+
+                        max-height: 222mm !important;
+
                         box-sizing: border-box !important;
+
                         margin: 0 !important;
-                        padding-bottom: 35mm !important;
+
+                        padding: 0 !important;
+
+                        overflow: hidden !important;
                     }
 
 
                     /* ==================================================
-                       FIXED FOOTER
-                       Physical PDF page footer
+                       FOOTER
+
+                       IMPORTANT:
+                       NOT position: fixed.
+
+                       This footer belongs to each individual
+                       page-box.
+
+                       Because pages are manually generated,
+                       every page gets its own footer.
                        ================================================== */
 
                     .footer-at-bottom {
-                        position: fixed !important;
+                        position: absolute !important;
+
                         left: 0 !important;
+
                         right: 0 !important;
+
                         bottom: 0 !important;
+
                         width: 100% !important;
+
                         height: 31mm !important;
+
+                        min-height: 31mm !important;
+
+                        max-height: 31mm !important;
+
                         box-sizing: border-box !important;
+
                         margin: 0 !important;
+
                         padding: 0 !important;
+
+                        display: block !important;
+
+                        visibility: visible !important;
+
+                        opacity: 1 !important;
+
                         background: #ffffff !important;
-                        z-index: 99999 !important;
+
+                        z-index: 1000 !important;
+
                         overflow: hidden !important;
+
                         page-break-inside: avoid !important;
+
                         break-inside: avoid !important;
+
                         border: none !important;
+
                         outline: none !important;
+
                         box-shadow: none !important;
                     }
 
@@ -249,16 +337,36 @@
                        ================================================== */
 
                     .footer-content {
+                        position: relative !important;
+
+                        display: block !important;
+
+                        visibility: visible !important;
+
                         width: 100% !important;
+
                         height: 100% !important;
+
                         box-sizing: border-box !important;
+
                         margin: 0 !important;
+
                         padding: 0 !important;
+
+                        font-family: Arial, sans-serif !important;
+
                         font-size: 9px !important;
+
                         line-height: 1.35 !important;
+
+                        color: #000 !important;
+
                         background: #ffffff !important;
+
                         border: none !important;
+
                         outline: none !important;
+
                         box-shadow: none !important;
                     }
 
@@ -269,13 +377,25 @@
 
                     .footer-terms {
                         width: 58% !important;
+
                         float: left !important;
+
                         box-sizing: border-box !important;
-                        padding-right: 10px !important;
+
+                        padding: 0 10px 0 0 !important;
+
                         margin: 0 !important;
+
+                        display: block !important;
+
+                        visibility: visible !important;
+
                         background: transparent !important;
+
                         border: none !important;
+
                         outline: none !important;
+
                         box-shadow: none !important;
                     }
 
@@ -286,13 +406,25 @@
 
                     .footer-received {
                         width: 42% !important;
+
                         float: right !important;
+
                         box-sizing: border-box !important;
-                        padding-left: 10px !important;
+
+                        padding: 0 0 0 10px !important;
+
                         margin: 0 !important;
+
+                        display: block !important;
+
+                        visibility: visible !important;
+
                         background: transparent !important;
+
                         border: none !important;
+
                         outline: none !important;
+
                         box-shadow: none !important;
                     }
 
@@ -302,11 +434,24 @@
                        ================================================== */
 
                     .footer-term {
-                        margin: 0 0 2px 0 !important;
+                        display: block !important;
+
+                        visibility: visible !important;
+
+                        margin: 0 0 3px 0 !important;
+
                         padding: 0 !important;
+
+                        font-size: 9px !important;
+
+                        line-height: 12px !important;
+
                         background: transparent !important;
+
                         border: none !important;
+
                         outline: none !important;
+
                         box-shadow: none !important;
                     }
 
@@ -316,12 +461,26 @@
                        ================================================== */
 
                     .footer-received-title {
+                        display: block !important;
+
+                        visibility: visible !important;
+
                         font-weight: bold !important;
-                        margin: 0 0 3px 0 !important;
+
+                        font-size: 9px !important;
+
+                        margin: 0 0 4px 0 !important;
+
                         padding: 0 !important;
+
+                        line-height: 12px !important;
+
                         background: transparent !important;
+
                         border: none !important;
+
                         outline: none !important;
+
                         box-shadow: none !important;
                     }
 
@@ -331,11 +490,24 @@
                        ================================================== */
 
                     .footer-received-row {
-                        margin: 0 0 3px 0 !important;
+                        display: block !important;
+
+                        visibility: visible !important;
+
+                        font-size: 9px !important;
+
+                        line-height: 12px !important;
+
+                        margin: 0 0 4px 0 !important;
+
                         padding: 0 !important;
+
                         background: transparent !important;
+
                         border: none !important;
+
                         outline: none !important;
+
                         box-shadow: none !important;
                     }
 
@@ -346,11 +518,17 @@
 
                     .footer-clear {
                         clear: both !important;
+
                         height: 0 !important;
+
                         line-height: 0 !important;
+
                         margin: 0 !important;
+
                         padding: 0 !important;
+
                         border: none !important;
+
                         background: transparent !important;
                     }
 
@@ -360,22 +538,47 @@
                        ================================================== */
 
                     .footer-stamp {
+                        display: block !important;
+
+                        visibility: visible !important;
+
                         width: 100% !important;
-                        margin: 5px 0 0 0 !important;
+
+                        margin: 6px 0 0 0 !important;
+
                         padding: 0 !important;
+
                         font-size: 9px !important;
+
                         line-height: 12px !important;
+
                         color: #555 !important;
+
                         box-sizing: border-box !important;
+
                         background: transparent !important;
+
                         border: none !important;
+
                         outline: none !important;
+
                         box-shadow: none !important;
                     }
 
 
                     /* ==================================================
-                       FORCE FOOTER CHILDREN NO BORDER
+                       FORCE FOOTER VISIBILITY
+                       ================================================== */
+
+                    .footer-at-bottom,
+                    .footer-at-bottom div,
+                    .footer-at-bottom span {
+                        visibility: visible !important;
+                    }
+
+
+                    /* ==================================================
+                       FORCE NO FOOTER BORDERS
                        ================================================== */
 
                     .footer-at-bottom,
@@ -383,7 +586,9 @@
                     .footer-content,
                     .footer-content * {
                         border: none !important;
+
                         outline: none !important;
+
                         box-shadow: none !important;
                     }
 
@@ -394,13 +599,19 @@
 
                     .delivery-products-table {
                         width: 100% !important;
+
                         border-collapse: collapse !important;
+
+                        table-layout: fixed !important;
+
                         page-break-inside: auto !important;
+
+                        break-inside: auto !important;
                     }
 
 
                     /* ==================================================
-                       REPEAT PRODUCT TABLE HEADER
+                       PRODUCT TABLE HEADER
                        ================================================== */
 
                     .delivery-products-table thead {
@@ -408,13 +619,26 @@
                     }
 
 
+                    /* ==================================================
+                       PRODUCT TABLE BODY
+                       ================================================== */
+
                     .delivery-products-table tbody {
+                        display: table-row-group !important;
+
                         page-break-inside: auto !important;
+
+                        break-inside: auto !important;
                     }
 
 
+                    /* ==================================================
+                       PRODUCT ROW
+                       ================================================== */
+
                     .delivery-products-table tr {
                         page-break-inside: avoid !important;
+
                         break-inside: avoid !important;
                     }
 
@@ -433,14 +657,14 @@
 
 
                 <!-- ====================================================
-                     GET DELIVERY LINES
+                     DELIVERY LINES
                      ==================================================== -->
 
                 <t t-set="lines" t-value="o.move_ids_without_package"/>
 
 
                 <!-- ====================================================
-                     PRODUCT LINES PER MANUAL GROUP
+                     NUMBER OF PRODUCTS PER PAGE
                      ==================================================== -->
 
                 <t t-set="chunk_size" t-value="14"/>
@@ -449,7 +673,7 @@
 
 
                 <!-- ====================================================
-                     CREATE PAGE GROUPS
+                     CREATE MANUAL PAGES
                      ==================================================== -->
 
                 <t t-if="total_lines == 0">
@@ -467,32 +691,34 @@
 
 
                 <!-- ====================================================
-                     LOOP THROUGH PAGE GROUPS
+                     LOOP THROUGH PAGES
                      ==================================================== -->
 
                 <t t-foreach="pages" t-as="page_lines">
 
                     <!-- ==================================================
-                         PAGE BOX
+                         ONE PHYSICAL PAGE
                          ================================================== -->
 
                     <div class="page-box">
 
-                        <!-- ==============================================
+
+                        <!-- =================================================
                              MAIN CONTENT
-                             ============================================== -->
+                             ================================================= -->
 
                         <div class="content-container">
 
-                            <!-- ==========================================
+
+                            <!-- =================================================
                                  FIRST PAGE HEADER
-                                 ========================================== -->
+                                 ================================================= -->
 
                             <t t-if="page_lines == pages[0]">
 
-                                <!-- ======================================
+                                <!-- =========================================
                                      DELIVERY NOTE TITLE
-                                     ====================================== -->
+                                     ========================================= -->
 
                                 <div style="
                                     text-align: center;
@@ -507,9 +733,9 @@
                                 </div>
 
 
-                                <!-- ======================================
+                                <!-- =========================================
                                      CUSTOMER INFORMATION TABLE
-                                     ====================================== -->
+                                     ========================================= -->
 
                                 <table style="
                                     width: 100%;
@@ -518,9 +744,9 @@
                                     margin-top: 5px;
                                 ">
 
-                                    <!-- ==================================
-                                         TABLE HEADER
-                                         ================================== -->
+                                    <!-- =====================================
+                                         HEADER
+                                         ===================================== -->
 
                                     <tr style="
                                         background-color: #f2f2f2;
@@ -568,9 +794,9 @@
                                     </tr>
 
 
-                                    <!-- ==================================
-                                         CUSTOMER INFORMATION
-                                         ================================== -->
+                                    <!-- =====================================
+                                         CUSTOMER DATA
+                                         ===================================== -->
 
                                     <tr>
 
@@ -634,7 +860,7 @@
                                         </td>
 
 
-                                        <!-- DELIVERY NOTE -->
+                                        <!-- DELIVERY NOTE NUMBER -->
 
                                         <td style="
                                             width: 16.66%;
@@ -654,9 +880,9 @@
                                     </tr>
 
 
-                                    <!-- ==================================
+                                    <!-- =====================================
                                          SECOND HEADER
-                                         ================================== -->
+                                         ===================================== -->
 
                                     <tr style="
                                         background-color: #f2f2f2;
@@ -691,9 +917,9 @@
                                     </tr>
 
 
-                                    <!-- ==================================
-                                         SECOND INFORMATION ROW
-                                         ================================== -->
+                                    <!-- =====================================
+                                         DELIVERY INFORMATION
+                                         ===================================== -->
 
                                     <tr>
 
@@ -752,7 +978,7 @@
 
 
                             <!-- =================================================
-                                 PRODUCTS TABLE
+                                 PRODUCT TABLE
                                  ================================================= -->
 
                             <table class="delivery-products-table"
@@ -763,7 +989,7 @@
                                    ">
 
                                 <!-- =========================================
-                                     PRODUCT HEADER
+                                     TABLE HEADER
                                      ========================================= -->
 
                                 <thead>
@@ -980,15 +1206,16 @@
 
 
                         <!-- ==================================================
-                             FIXED FOOTER
+                             FOOTER
                              ================================================== -->
 
                         <div class="footer-at-bottom">
 
                             <div class="footer-content">
 
+
                                 <!-- =========================================
-                                     TERMS
+                                     LEFT SIDE TERMS
                                      ========================================= -->
 
                                 <div class="footer-terms">
@@ -1009,7 +1236,7 @@
 
 
                                 <!-- =========================================
-                                     RECEIVED BY
+                                     RIGHT SIDE RECEIVED BY
                                      ========================================= -->
 
                                 <div class="footer-received">
@@ -1051,6 +1278,7 @@
                             </div>
 
                         </div>
+
 
                     </div>
 
