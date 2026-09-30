@@ -190,7 +190,7 @@
                     .page-box {
                         position: relative;
                         width: 100%;
-                        min-height: 100vh;
+                        min-height: 120vh;
                         box-sizing: border-box;
                         page-break-after: always;
                     }
