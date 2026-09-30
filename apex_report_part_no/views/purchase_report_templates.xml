@@ -103,19 +103,41 @@
                         <div class="content-container">
                             
                             <t t-if="page_index == 0">
-                                <div style="text-align: center; font-weight: bold; font-size: 23px; margin-top: 10px; margin-bottom: 15px; text-transform: uppercase; color: #003366;">
+                                <div style="text-align: center; font-weight: bold; font-size: 24px; margin-top: 10px; margin-bottom: 15px; text-transform: uppercase; color: #003366;">
                                     Delivery Note
                                 </div>
 
                                 <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
                                     <tr>
-                                        <!-- Customer Details Box -->
-                                        <td style="width: 50%; border: 1px solid #000; padding: 6px; vertical-align: top;">
-                                            <div style="font-weight: bold; margin-bottom: 3px;">Customer Details</div>
-                                            <div t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name", "vat", "company_registry"], "no_marker": True}'/>
+                                        <!-- Customer Details & Delivery Extra Details (Upande wa Kushoto) -->
+                                        <td style="width: 50%; vertical-align: top; padding: 0;">
+                                            <!-- Customer Details Box -->
+                                            <div style="border: 1px solid #000; padding: 6px; margin-bottom: 5px;">
+                                                <div style="font-weight: bold; margin-bottom: 3px;">Customer Details</div>
+                                                <div t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name", "vat", "company_registry"], "no_marker": True}'/>
+                                            </div>
+                                            <!-- Delivery Details, Terms & GRN chini ya Customer Details -->
+                                            <table style="width: 100%; border-collapse: collapse;">
+                                                <tr style="background-color: #f2f2f2; font-weight: bold;">
+                                                    <td style="border: 1px solid #000; padding: 3px; font-size: 9px; width: 33%;">Delivery Details</td>
+                                                    <td style="border: 1px solid #000; padding: 3px; font-size: 9px; width: 33%;">Delivery Terms</td>
+                                                    <td style="border: 1px solid #000; padding: 3px; font-size: 9px; width: 34%;">GRN No.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="border: 1px solid #000; padding: 5px; font-size: 10px; height: 18px;">
+                                                        <span t-field="o.delivery_details"/>
+                                                    </td>
+                                                    <td style="border: 1px solid #000; padding: 5px; font-size: 10px;">
+                                                        <span t-field="o.delivery_terms"/>
+                                                    </td>
+                                                    <td style="border: 1px solid #000; padding: 5px; font-size: 10px;">
+                                                        <span t-field="o.grn_no"/>
+                                                    </td>
+                                                </tr>
+                                            </table>
                                         </td>
                                         <td style="width: 2%; border: none;"></td>
-                                        <!-- Reference Boxes -->
+                                        <!-- Purchase Order & Date References (Upande wa Kulia) -->
                                         <td style="width: 48%; vertical-align: top; padding: 0; border: none;">
                                             <table style="width: 100%; border-collapse: collapse; text-align: center;">
                                                 <tr style="background-color: #f2f2f2; font-weight: bold;">
@@ -124,30 +146,14 @@
                                                     <td style="border: 1px solid #000; padding: 3px; font-size: 9px; width: 34%;">Delivery Note No.</td>
                                                 </tr>
                                                 <tr>
-                                                    <td style="border: 1px solid #000; padding: 5px; font-size: 10px;">
+                                                    <td style="border: 1px solid #000; padding: 5px; font-size: 10px; height: 43px; vertical-align: middle;">
                                                         <span t-esc="o.sale_id.client_order_ref"/>
                                                     </td>
-                                                    <td style="border: 1px solid #000; padding: 5px; font-size: 10px;">
+                                                    <td style="border: 1px solid #000; padding: 5px; font-size: 10px; vertical-align: middle;">
                                                         <span t-field="o.scheduled_date" t-options="{'widget': 'date'}"/>
                                                     </td>
-                                                    <td style="border: 1px solid #000; padding: 5px; font-size: 10px; font-weight: bold;">
+                                                    <td style="border: 1px solid #000; padding: 5px; font-size: 10px; font-weight: bold; vertical-align: middle;">
                                                         <span t-field="o.name"/>
-                                                    </td>
-                                                </tr>
-                                                <tr style="background-color: #f2f2f2; font-weight: bold;">
-                                                    <td style="border: 1px solid #000; padding: 3px; font-size: 9px;">Delivery Details</td>
-                                                    <td style="border: 1px solid #000; padding: 3px; font-size: 9px;">Delivery Terms</td>
-                                                    <td style="border: 1px solid #000; padding: 3px; font-size: 9px;">GRN No.</td>
-                                                </tr>
-                                                <tr>
-                                                    <td style="border: 1px solid #000; padding: 5px; height: 18px;">
-                                                        <span t-field="o.delivery_details"/>
-                                                    </td>
-                                                    <td style="border: 1px solid #000; padding: 5px;">
-                                                        <span t-field="o.delivery_terms"/>
-                                                    </td>
-                                                    <td style="border: 1px solid #000; padding: 5px;">
-                                                        <span t-field="o.grn_no"/>
                                                     </td>
                                                 </tr>
                                             </table>
