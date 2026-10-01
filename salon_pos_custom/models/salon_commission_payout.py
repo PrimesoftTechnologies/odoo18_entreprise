@@ -231,21 +231,8 @@ class SalonPosReportSummary(models.Model):
                 record.net_cash_in_hand = 0.0
                 continue
 
-            domain = [
-                ("date", "<", record.date),
-            ]
-            if record.shop_mode == 'specific' and record.config_id:
-                domain.append(("config_id", "=", record.config_id.id))
-                domain.append(("shop_mode", "=", "specific"))
-            else:
-                domain.append(("shop_mode", "=", "all"))
-
-            if record.id and not isinstance(record.id, models.NewId):
-                domain.append(("id", "!=", record.id))
-
-            last_summary = self.env["salon.pos.report.summary"].search(domain, order="date desc, id desc", limit=1)
-            
-            opening = last_summary.net_cash_in_hand if last_summary else 0.0
+            # Tunazuia kuvuta pesa ya siku iliyopita, Opening Cash inaanza na 0 moja kwa moja
+            opening = 0.0
 
             pos_domain = [
                 ("date_order", ">=", str(record.date) + " 00:00:00"),
@@ -263,7 +250,6 @@ class SalonPosReportSummary(models.Model):
             record.opening_cash = opening
             record.gross_sales = gross
             record.total_expenses = exp_total
-            # Hapa Net Cash in Hand itahesabu mauzo ya siku husika kutoa matumizi ya siku husika pekee
             record.net_cash_in_hand = gross - exp_total
 
     def action_close_expense(self):
