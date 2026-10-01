@@ -245,7 +245,6 @@ class SalonPosReportSummary(models.Model):
 
             last_summary = self.env["salon.pos.report.summary"].search(domain, order="date desc, id desc", limit=1)
             
-            # Hakikisha opening cash inachukua Net Cash in Hand halisi ya siku iliyopita
             opening = last_summary.net_cash_in_hand if last_summary else 0.0
 
             pos_domain = [
@@ -264,7 +263,8 @@ class SalonPosReportSummary(models.Model):
             record.opening_cash = opening
             record.gross_sales = gross
             record.total_expenses = exp_total
-            record.net_cash_in_hand = (opening + gross) - exp_total
+            # Hapa Net Cash in Hand itahesabu mauzo ya siku husika kutoa matumizi ya siku husika pekee
+            record.net_cash_in_hand = gross - exp_total
 
     def action_close_expense(self):
         self.ensure_one()

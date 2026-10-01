@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- sale order -->
+        <template id="report_saleorder_document_inherit_apex" inherit_id="sale.report_saleorder_document">
+
+            <xpath expr="//th[@name='th_taxes']" position="replace">
+            </xpath>
+
+            <xpath expr="//td[@name='td_taxes']" position="replace">
+            </xpath>
+
+
+            <!-- Replace the existing Your Reference column -->
+            <xpath expr="//div[@name='informations_reference']" position="replace">
+
+                <div class="col" name="informations_reference">
+
+                    <!-- RFQ Reference -->
+                    <t t-if="doc.state in ['draft', 'sent'] and doc.subject">
+                        <strong>RFQ Reference</strong>
+                        <div t-field="doc.subject"/>
+                    </t>
+
+                    <!-- Customer Reference -->
+                    <t t-elif="doc.state == 'sale' and doc.client_order_ref">
+                        <strong>Purchase Order</strong>
+                        <div t-field="doc.client_order_ref"/>
+                    </t>
+
+                </div>
+
+            </xpath>
+
+            <!-- Add Buyer Reference after the reference column -->
+            <xpath expr="//div[@id='informations']/div[@name='informations_date']"
+                position="before">
+
+                <div t-if="doc.buyer_reference" class="col" name="informations_buyer_reference">
+                    <strong>Buyer</strong>
+                    <div t-field="doc.buyer_reference"/>
+                </div>
+
+            </xpath>
+
+        </template>
+
+	</data>
+</odoo>

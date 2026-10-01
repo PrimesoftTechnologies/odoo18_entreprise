@@ -1,0 +1,637 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================
+         1. DELIVERY ORDER FORM
+         Add Delivery Details / Delivery Terms / GRN No. / Remarks
+         ============================================================ -->
+
+    <record id="view_picking_form_inherit_apex_details"
+            model="ir.ui.view">
+
+        <field name="name">stock.picking.form.inherit.apex.details</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+
+        <field name="arch" type="xml">
+
+            <!-- Delivery Information -->
+            <xpath expr="//field[@name='location_dest_id']"
+                   position="after">
+
+                <field name="delivery_details"/>
+                <field name="delivery_terms"/>
+                <field name="grn_no"/>
+
+            </xpath>
+
+            <!-- Remarks on Product Lines -->
+            <xpath expr="//field[@name='move_ids_without_package']//field[@name='product_uom_qty']"
+                   position="after">
+
+                <field name="x_remark"/>
+
+            </xpath>
+
+        </field>
+    </record>
+
+
+    <!-- ============================================================
+         2. REUSABLE SIGNATURE FOOTER
+         Increased Size for Better Clarity and Professional Look
+         ============================================================ -->
+
+    <template id="report_signature_footer">
+
+        <div class="footer" style="font-family: Arial, sans-serif; font-size: 9.5px;">
+
+            <div class="oe_structure"/>
+
+            <!-- ====================================================
+                 MAIN TERMS & SIGNATURE BOX
+                 ==================================================== -->
+
+            <div style="
+                width: 100%;
+                border: 1px solid #333;
+                border-radius: 3px;
+                padding: 4px 8px;
+                margin-top: 0px;
+                background: #fafafa;
+                box-sizing: border-box;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            ">
+
+                <div class="row"
+                     style="
+                        margin-left: 0;
+                        margin-right: 0;
+                    ">
+
+                    <!-- =================================================
+                         TERMS & CONDITIONS
+                         ================================================= -->
+
+                    <div class="col-6"
+                         style="
+                            padding-right: 8px;
+                            vertical-align: top;
+                        ">
+
+                        <div style="
+                            font-weight: 700;
+                            font-size: 10.5px;
+                            margin-bottom: 2px;
+                            color: #222;
+                        ">
+                            Terms &amp; Conditions
+                        </div>
+
+
+                        <div style="
+                            color: #333;
+                            line-height: 1.25;
+                        ">
+
+                            <div style="margin-bottom: 1.5px;">
+                                <strong>a)</strong>
+                                Goods once sold cannot be returned
+                            </div>
+
+
+                            <div style="margin-bottom: 1.5px;">
+                                <strong>b)</strong>
+                                No responsibility can be accepted for shortage or damage in transit
+                            </div>
+
+
+                            <div style="margin-bottom: 0;">
+                                <strong>c)</strong>
+                                All the above goods received in good order and condition
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         RECEIVED / SIGNATURE (Without 'For and On Behalf of')
+                         ================================================= -->
+
+                    <div class="col-6"
+                         style="
+                            padding-left: 8px;
+                            border-left: 1px solid #ccc;
+                            vertical-align: top;
+                        ">
+
+                        <div style="
+                            font-weight: 700;
+                            font-size: 10.5px;
+                            margin-bottom: 6px;
+                            color: #222;
+                        ">
+                            Customer Acknowledgement:
+                            <span t-field="o.partner_id"
+                                  style="
+                                    color: #7CAF41;
+                                    font-weight: 700;
+                                    margin-left: 4px;
+                                "/>
+                        </div>
+
+
+                        <div style="
+                            margin-top: 3px;
+                            white-space: nowrap;
+                        ">
+                            Signature: ............................................
+                        </div>
+
+
+                        <div style="
+                            margin-top: 3px;
+                            white-space: nowrap;
+                        ">
+                            Name: ..................................................
+                        </div>
+
+
+                        <div style="
+                            margin-top: 3px;
+                            white-space: nowrap;
+                        ">
+                            Date: ...................................................
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     STAMP MESSAGE
+                     ================================================= -->
+
+                <div style="
+                    text-align: center;
+                    font-weight: 700;
+                    font-size: 9.5px;
+                    margin-top: 3px;
+                    padding-top: 3px;
+                    border-top: 1px solid #ccc;
+                    color: #222;
+                    letter-spacing: 0.2px;
+                ">
+
+                    Please stamp upon acknowledgement of Goods and Services
+
+                </div>
+
+            </div>
+
+
+            <!-- ====================================================
+                 PAGE NUMBER
+                 ==================================================== -->
+
+            <div class="text-center"
+                 style="
+                    border-top: 1px solid #7CAF41;
+                    padding-top: 2px;
+                    margin-top: 2px;
+                    font-size: 8.5px;
+                    color: #555;
+                ">
+
+                Page <span class="page"/>
+                /
+                <span class="topage"/>
+
+            </div>
+
+        </div>
+
+    </template>
+
+
+    <!-- ============================================================
+         3. CUSTOM DELIVERY NOTE
+         NEW DELIVERY NOTE DESIGN
+         ============================================================ -->
+
+    <template id="report_delivery_document_apex_custom"
+              inherit_id="stock.report_delivery_document">
+
+
+        <!-- ========================================================
+             HIDE DEFAULT ADDRESS BLOCK
+             ======================================================== -->
+
+        <xpath expr="//t[@t-set='address']"
+               position="replace">
+
+            <t t-set="address"
+               t-value="None"/>
+
+        </xpath>
+
+
+        <!-- ========================================================
+             HIDE DEFAULT INFORMATION BLOCK
+             ======================================================== -->
+
+        <xpath expr="//t[@t-set='information_block']"
+               position="replace">
+
+            <t t-set="information_block"
+               t-value="None"/>
+
+        </xpath>
+
+
+        <!-- ========================================================
+             REPLACE DEFAULT REPORT PAGE
+             ======================================================== -->
+
+        <xpath expr="//div[hasclass('page')]"
+               position="replace">
+
+            <div class="page">
+
+                <!-- =================================================
+                     TABLE STYLING
+                     ================================================= -->
+
+                <style>
+
+                    .apex-table {
+                        width: 100%;
+                        border-collapse: collapse !important;
+                        border-spacing: 0 !important;
+                        table-layout: fixed;
+                        border: 1px solid #444 !important;
+                    }
+
+                    .apex-table thead {
+                        display: table-header-group;
+                    }
+
+                    .apex-table tr {
+                        page-break-inside: avoid !important;
+                    }
+
+                    .apex-table th,
+                    .apex-table td {
+                        border: 1px solid #666 !important;
+                        padding: 7px 8px;
+                        vertical-align: middle;
+                    }
+
+                    .apex-table thead th {
+                        background-color: #e8e8e8 !important;
+                        font-weight: 700 !important;
+                        font-size: 12px !important;
+                        text-align: center !important;
+                        color: #000 !important;
+                    }
+
+                    .apex-table tbody td {
+                        font-size: 11px;
+                        font-weight: 500;
+                    }
+
+                    .apex-table .text-center {
+                        text-align: center !important;
+                    }
+
+                </style>
+
+
+                <!-- =================================================
+                     DELIVERY NOTE TITLE
+                     ================================================= -->
+
+                <div class="text-center mb-3">
+
+                    <h2 style="
+                        margin: 0;
+                        font-weight: 700;
+                        letter-spacing: 1px;
+                    ">
+                        DELIVERY NOTE
+                    </h2>
+
+                </div>
+
+
+                <!-- =================================================
+                     CUSTOMER INFORMATION TABLE
+                     ================================================= -->
+
+                <table class="apex-table mb-4">
+
+                    <thead>
+
+                        <tr>
+
+                            <th style="
+                                width: 52%;
+                                text-align: left !important;
+                                font-size: 13px !important;
+                            ">
+                                Customer Details
+                            </th>
+
+                            <th style="width: 16%;">
+                                Purchase Order No.
+                            </th>
+
+                            <th style="width: 16%;">
+                                Document Dated
+                            </th>
+
+                            <th style="width: 16%;">
+                                Delivery Note No.
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        <!-- CUSTOMER / DOCUMENT INFORMATION -->
+
+                        <tr>
+
+                            <td rowspan="3"
+                                style="
+                                    vertical-align: top;
+                                    font-size: 12px;
+                                    font-weight: 500;
+                                    padding: 10px 12px;
+                                ">
+
+                                <div t-field="o.partner_id"
+                                     t-options='{
+                                         "widget": "contact",
+                                         "fields": [
+                                             "name",
+                                             "address",
+                                             "vat"
+                                         ],
+                                         "no_marker": true
+                                     }'/>
+
+                            </td>
+
+
+                            <!-- PURCHASE ORDER NUMBER -->
+
+                            <td class="text-center">
+
+                                <span t-esc="o.sale_id.client_order_ref or '—'"/>
+
+                            </td>
+
+
+                            <!-- DOCUMENT DATE -->
+
+                            <td class="text-center">
+
+                                <span t-field="o.scheduled_date"
+                                      t-options="{'widget': 'date'}"/>
+
+                            </td>
+
+
+                            <!-- DELIVERY NOTE NUMBER -->
+
+                            <td class="text-center"
+                                style="font-weight: 700;">
+
+                                <span t-field="o.name"/>
+
+                            </td>
+
+                        </tr>
+
+
+                        <!-- =================================================
+                             SECOND HEADER ROW
+                             ================================================= -->
+
+                        <tr>
+
+                            <th style="
+                                background-color: #e8e8e8 !important;
+                                font-weight: 700 !important;
+                                font-size: 12px !important;
+                                text-align: center !important;
+                            ">
+                                Delivery Details
+                            </th>
+
+                            <th style="
+                                background-color: #e8e8e8 !important;
+                                font-weight: 700 !important;
+                                font-size: 12px !important;
+                                text-align: center !important;
+                            ">
+                                Delivery Terms
+                            </th>
+
+                            <th style="
+                                background-color: #e8e8e8 !important;
+                                font-weight: 700 !important;
+                                font-size: 12px !important;
+                                text-align: center !important;
+                            ">
+                                GRN No.
+                            </th>
+
+                        </tr>
+
+
+                        <!-- =================================================
+                             DELIVERY INFORMATION VALUES
+                             ================================================= -->
+
+                        <tr>
+
+                            <td class="text-center"
+                                style="min-height: 28px;">
+
+                                <span t-esc="o.delivery_details or ''"/>
+
+                            </td>
+
+
+                            <td class="text-center">
+
+                                <span t-esc="o.delivery_terms or ''"/>
+
+                            </td>
+
+
+                            <td class="text-center">
+
+                                <span t-esc="o.grn_no or ''"/>
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+
+                <!-- =================================================
+                     PRODUCTS TABLE
+                     ================================================= -->
+
+                <table class="apex-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th style="width: 12%;">
+                                Item Code
+                            </th>
+
+                            <th style="width: 40%;">
+                                Description of Goods &amp; Services
+                            </th>
+
+                            <th style="width: 14%;">
+                                Part Number
+                            </th>
+
+                            <th style="width: 8%;">
+                                Qty
+                            </th>
+
+                            <th style="width: 8%;">
+                                Units
+                            </th>
+
+                            <th style="width: 18%;">
+                                Remarks
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        <t t-foreach="o.move_ids_without_package"
+                           t-as="move">
+
+                            <tr style="
+                                page-break-inside: avoid !important;
+                            ">
+
+                                <!-- ITEM CODE -->
+                                <td class="text-center">
+                                </td>
+
+
+                                <!-- DESCRIPTION -->
+
+                                <td style="
+                                    vertical-align: top;
+                                ">
+
+                                    <div t-field="move.product_id.name"/>
+
+
+                                    <!-- SALES DESCRIPTION -->
+
+                                    <t t-if="move.sale_line_id and move.sale_line_id.name and move.sale_line_id.name != move.product_id.name">
+
+                                        <div class="text-muted"
+                                             style="
+                                                font-size: 10px;
+                                                margin-top: 2px;
+                                             ">
+
+                                            <t t-set="full_desc"
+                                               t-value="move.sale_line_id.name"/>
+
+                                            <span t-esc="full_desc.replace('[' + str(move.product_id.default_code or '') + ']', '').replace(move.product_id.name, '').strip()"/>
+
+                                        </div>
+
+                                    </t>
+
+                                </td>
+
+
+                                <!-- PART NUMBER -->
+
+                                <td class="text-center">
+
+                                    <span t-field="move.product_id.default_code"/>
+
+                                </td>
+
+
+                                <!-- QUANTITY -->
+
+                                <td class="text-center">
+
+                                    <span t-field="move.product_uom_qty"/>
+
+                                </td>
+
+
+                                <!-- UNIT -->
+
+                                <td class="text-center">
+
+                                    <span t-field="move.product_uom.name"/>
+
+                                </td>
+
+
+                                <!-- REMARKS -->
+
+                                <td style="
+                                    vertical-align: top;
+                                ">
+
+                                    <span t-field="move.x_remark"/>
+
+                                </td>
+
+                            </tr>
+
+                        </t>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- ========================================================
+                 SIGNATURE FOOTER
+                 ======================================================== -->
+
+            <t t-call="apexholding.report_signature_footer"/>
+
+        </xpath>
+
+    </template>
+
+</odoo>
