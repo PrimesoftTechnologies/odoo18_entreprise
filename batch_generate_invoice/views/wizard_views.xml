@@ -161,4 +161,28 @@
         </field>
     </record>
 
+    <!-- ==========================================================
+         8. ACCOUNT MOVE SEARCH VIEW INHERIT (FILTERS & SEARCH)
+         ========================================================== -->
+    <record id="view_account_invoice_filter_inherited_batch" model="ir.ui.view">
+        <field name="name">account.move.select.inherited.batch</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+            <!-- Kuongeza fields kwenye Search Bar -->
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="po_no" string="PO No"/>
+                <field name="sas_reference" string="SAS Reference"/>
+                <field name="antrak_job_no" string="Antrak Job No"/>
+            </xpath>
+
+            <!-- Kuongeza Group By ya PO No na SAS Reference kwenye Filters -->
+            <xpath expr="//filter[@name='duedate']" position="after">
+                <separator/>
+                <filter string="PO No" name="group_by_po_no" context="{'group_by':'po_no'}"/>
+                <filter string="SAS Reference" name="group_by_sas_ref" context="{'group_by':'sas_reference'}"/>
+            </xpath>
+        </field>
+    </record>
+
 </odoo>
