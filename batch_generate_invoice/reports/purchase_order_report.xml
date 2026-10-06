@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <!-- ========================================================= -->
+    <!-- PURCHASE ORDER / RFQ - STANDARD PURCHASE ORDER REPORT -->
+    <!-- ========================================================= -->
+
     <template id="report_purchaseorder_document_inherit_batch_generate_invoice"
               inherit_id="purchase.report_purchaseorder_document">
 
@@ -8,54 +12,205 @@
         <xpath expr="//div[@id='informations']" position="before">
             <div class="mt-4 mb-2">
                 <h2 style="font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px;">
-                    <span t-if="o.state in ['draft', 'sent']">Request for Quotation</span>
-                    <span t-else="">Purchase Order</span>
+                    <span t-if="o.state in ['draft', 'sent']">
+                        Request for Quotation
+                    </span>
+                    <span t-else="">
+                        Purchase Order
+                    </span>
                 </h2>
+
                 <div style="font-size: 14px; font-weight: bold;">
-                    <span t-if="o.state in ['draft', 'sent']">RFQ Number:</span>
-                    <span t-else="">PO Number:</span>
+                    <span t-if="o.state in ['draft', 'sent']">
+                        RFQ Number:
+                    </span>
+                    <span t-else="">
+                        PO Number:
+                    </span>
                     <span t-field="o.name"/>
                 </div>
             </div>
         </xpath>
 
-        <!-- Sehemu ya Vendor: Badala ya kutumia div[1] inayopotea kwenye RFQ, tunaweka kabla ya 'informations' au tunabadilisha xpath -->
+
+        <!-- ===================================================== -->
+        <!-- VENDOR DETAILS - PURCHASE ORDER -->
+        <!-- ===================================================== -->
+
         <xpath expr="//div[@id='informations']" position="before">
             <div style="margin-bottom: 25px; width: 100%; margin-top: 15px;">
-                <table style="width: 100%; border-collapse: collapse; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px;">
+
+                <table style="width: 100%;
+                              border-collapse: collapse;
+                              background-color: #f8f9fa;
+                              border: 1px solid #e9ecef;
+                              border-radius: 4px;">
+
                     <tr>
-                        <td style="width: 50%; vertical-align: top; padding: 12px; border-right: 1px solid #e9ecef;">
-                            <div style="font-size: 10px; text-transform: uppercase; color: #7f8c8d; font-weight: bold; margin-bottom: 4px; letter-spacing: 0.5px;">
+
+                        <td style="width: 50%;
+                                   vertical-align: top;
+                                   padding: 12px;
+                                   border-right: 1px solid #e9ecef;">
+
+                            <div style="font-size: 10px;
+                                        text-transform: uppercase;
+                                        color: #7f8c8d;
+                                        font-weight: bold;
+                                        margin-bottom: 4px;
+                                        letter-spacing: 0.5px;">
                                 Vendor:
                             </div>
-                            <div style="font-size: 14px; font-weight: bold; color: #c0392b; margin-bottom: 4px;">
+
+                            <div style="font-size: 14px;
+                                        font-weight: bold;
+                                        color: #c0392b;
+                                        margin-bottom: 4px;">
                                 <span t-esc="o.partner_id.name or 'N/A'"/>
                             </div>
-                            <div style="font-size: 11px; color: #555555; line-height: 1.4;">
+
+                            <div style="font-size: 11px;
+                                        color: #555555;
+                                        line-height: 1.4;">
+
                                 <t t-if="o.partner_id.street">
-                                    <span t-esc="o.partner_id.street"/><br/>
+                                    <span t-esc="o.partner_id.street"/>
+                                    <br/>
                                 </t>
+
                                 <t t-if="o.partner_id.city or o.partner_id.zip">
-                                    <span t-esc="o.partner_id.city"/> <span t-esc="o.partner_id.zip"/><br/>
+                                    <span t-esc="o.partner_id.city"/>
+                                    <span t-esc="o.partner_id.zip"/>
+                                    <br/>
                                 </t>
+
                                 <t t-if="o.partner_id.country_id">
-                                    <span t-esc="o.partner_id.country_id.name"/><br/>
+                                    <span t-esc="o.partner_id.country_id.name"/>
+                                    <br/>
                                 </t>
+
                                 <t t-if="o.partner_id.vat">
-                                    <span style="font-weight: 600; color: #333333;">TIN: <span t-esc="o.partner_id.vat"/></span>
+                                    <span style="font-weight: 600; color: #333333;">
+                                        TIN:
+                                        <span t-esc="o.partner_id.vat"/>
+                                    </span>
                                 </t>
+
                             </div>
+
                         </td>
-                        
-                        <td style="width: 50%; vertical-align: top; padding: 12px;">
+
+                        <td style="width: 50%;
+                                   vertical-align: top;
+                                   padding: 12px;">
                         </td>
+
                     </tr>
+
                 </table>
+
             </div>
         </xpath>
 
-        <xpath expr="//div[@id='informations']//div[@t-if='o.user_id']/strong" position="replace">
+
+        <!-- Created By -->
+        <xpath expr="//div[@id='informations']//div[@t-if='o.user_id']/strong"
+               position="replace">
             <strong>Created By</strong>
+        </xpath>
+
+    </template>
+
+
+    <!-- ========================================================= -->
+    <!-- REQUEST FOR QUOTATION (RFQ) -->
+    <!-- ========================================================= -->
+
+    <template id="report_purchasequotation_document_inherit_batch_generate_invoice"
+              inherit_id="purchase.report_purchasequotation_document">
+
+        <!-- ===================================================== -->
+        <!-- VENDOR DETAILS - RFQ -->
+        <!-- ===================================================== -->
+
+        <xpath expr="//div[@class='page']/div[@class='oe_structure'][1]"
+               position="after">
+
+            <div style="margin-bottom: 25px;
+                        width: 100%;
+                        margin-top: 15px;">
+
+                <table style="width: 100%;
+                              border-collapse: collapse;
+                              background-color: #f8f9fa;
+                              border: 1px solid #e9ecef;
+                              border-radius: 4px;">
+
+                    <tr>
+
+                        <td style="width: 50%;
+                                   vertical-align: top;
+                                   padding: 12px;
+                                   border-right: 1px solid #e9ecef;">
+
+                            <div style="font-size: 10px;
+                                        text-transform: uppercase;
+                                        color: #7f8c8d;
+                                        font-weight: bold;
+                                        margin-bottom: 4px;
+                                        letter-spacing: 0.5px;">
+                                Vendor:
+                            </div>
+
+                            <div style="font-size: 14px;
+                                        font-weight: bold;
+                                        color: #c0392b;
+                                        margin-bottom: 4px;">
+                                <span t-esc="o.partner_id.name or 'N/A'"/>
+                            </div>
+
+                            <div style="font-size: 11px;
+                                        color: #555555;
+                                        line-height: 1.4;">
+
+                                <t t-if="o.partner_id.street">
+                                    <span t-esc="o.partner_id.street"/>
+                                    <br/>
+                                </t>
+
+                                <t t-if="o.partner_id.city or o.partner_id.zip">
+                                    <span t-esc="o.partner_id.city"/>
+                                    <span t-esc="o.partner_id.zip"/>
+                                    <br/>
+                                </t>
+
+                                <t t-if="o.partner_id.country_id">
+                                    <span t-esc="o.partner_id.country_id.name"/>
+                                    <br/>
+                                </t>
+
+                                <t t-if="o.partner_id.vat">
+                                    <span style="font-weight: 600; color: #333333;">
+                                        TIN:
+                                        <span t-esc="o.partner_id.vat"/>
+                                    </span>
+                                </t>
+
+                            </div>
+
+                        </td>
+
+                        <td style="width: 50%;
+                                   vertical-align: top;
+                                   padding: 12px;">
+                        </td>
+
+                    </tr>
+
+                </table>
+
+            </div>
+
         </xpath>
 
     </template>
