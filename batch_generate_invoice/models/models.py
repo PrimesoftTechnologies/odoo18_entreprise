@@ -8,7 +8,7 @@ class AccountMove(models.Model):
     antrak_job_no = fields.Char(string="Antrak Job No")
     po_no = fields.Char(string="PO No")
     supplier_invoice_no = fields.Char(string="Supplier Invoice No.")
-    bl_awb_number = fields.Char(string="B/L / AWB / RCN No.")
+    bl_awb_number = fields.Char(string="B/L / AWB / RCN No.", required=True,)
     terms_template_id = fields.Many2one('sale.terms.template', string="Bank Details For Payment", ondelete='set null')
 
 
