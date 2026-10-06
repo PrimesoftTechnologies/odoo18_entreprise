@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+from odoo.exceptions import ValidationError
 
 
 class AccountMove(models.Model):
@@ -10,6 +11,21 @@ class AccountMove(models.Model):
     supplier_invoice_no = fields.Char(string="Supplier Invoice No.", required=True)
     bl_awb_number = fields.Char(string="B/L / AWB / RCN No.", required=True)
     terms_template_id = fields.Many2one('sale.terms.template', string="Bank Details For Payment", ondelete='set null')
+
+    # Unique Check kwenye PO No kuzuia namba zinazofanana kujirudia
+    @api.constrains('po_no')
+    def _check_po_no_unique(self):
+        for record in self:
+            if record.po_no:
+                domain = [
+                    ('po_no', '=', record.po_no),
+                    ('id', '!=', record.id),
+                    ('move_type', '=', record.move_type)
+                ]
+                if self.search_count(domain) > 0:
+                    raise ValidationError(
+                        f"Samahani! Namba ya PO No '{record.po_no}' imeshawahi kutumika kwenye ankara nyingine. Namba hii lazima iwe ya kipekee (Unique)!"
+                    )
 
 
 class BatchInvoice(models.Model):
