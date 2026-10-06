@@ -12,7 +12,7 @@ class AccountMove(models.Model):
     bl_awb_number = fields.Char(string="B/L / AWB / RCN No.", required=True)
     terms_template_id = fields.Many2one('sale.terms.template', string="Bank Details For Payment", ondelete='set null')
 
-    # Unique Check kwenye PO No kuzuia namba zinazofanana kujirudia
+    # Unique Check kwenye Account Move
     @api.constrains('po_no')
     def _check_po_no_unique(self):
         for record in self:
@@ -161,6 +161,26 @@ class BatchInvoiceWizard(models.TransientModel):
         string="Invoice Lines"
     )
 
+    # Ulinzi wa kuzuia kurudia kwa PO No ndani ya Wizard na kwenye Database
+    @api.constrains('line_ids')
+    def _check_wizard_po_no_unique(self):
+        for wizard in self:
+            po_list = []
+            for line in wizard.line_ids:
+                if line.po_no:
+                    # Angalia kama imejirudia yenyewe ndani ya hizi lines za wizard
+                    if line.po_no in po_list:
+                        raise ValidationError(f"Samahani! Namba ya PO No '{line.po_no}' imejirudia kwenye mistari ya Wizard hii.")
+                    po_list.append(line.po_no)
+
+                    # Angalia kama tayari ipo kwenye database (account.move nyingine)
+                    existing = self.env['account.move'].search([
+                        ('po_no', '=', line.po_no),
+                        ('id', '!=', line.invoice_id.id if line.invoice_id else False)
+                    ], limit=1)
+                    if existing:
+                        raise ValidationError(f"Samahani! Namba ya PO No '{line.po_no}' imeshawahi kutumika kwenye ankara nyingine kwenye mfumo!")
+
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
@@ -182,6 +202,9 @@ class BatchInvoiceWizard(models.TransientModel):
         return res
 
     def action_generate_batch(self):
+        # Kwanza fanya validation ya kipekee kabla ya kuendelea
+        self._check_wizard_po_no_unique()
+
         batch_name = self.env['ir.sequence'].next_by_code('batch.invoice.sequence') or 'BATCH/2026/001'
 
         batch_vals = {
