@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+from odoo.exceptions import ValidationError
 
 
 class AccountMove(models.Model):
@@ -7,7 +8,24 @@ class AccountMove(models.Model):
     sas_reference = fields.Char(string="SAS Reference")
     antrak_job_no = fields.Char(string="Antrak Job No")
     po_no = fields.Char(string="PO No")
+    supplier_invoice_no = fields.Char(string="Supplier Invoice No.", required=True)
+    bl_awb_number = fields.Char(string="B/L / AWB / RCN No.", required=True)
     terms_template_id = fields.Many2one('sale.terms.template', string="Bank Details For Payment", ondelete='set null')
+
+    # Unique Check kwenye Account Move
+    @api.constrains('po_no')
+    def _check_po_no_unique(self):
+        for record in self:
+            if record.po_no:
+                domain = [
+                    ('po_no', '=', record.po_no),
+                    ('id', '!=', record.id),
+                    ('move_type', '=', record.move_type)
+                ]
+                if self.search_count(domain) > 0:
+                    raise ValidationError(
+                        f"Samahani! Namba ya PO No '{record.po_no}' imeshawahi kutumika kwenye ankara nyingine. Namba hii lazima iwe ya kipekee (Unique)!"
+                    )
 
 
 class BatchInvoice(models.Model):
@@ -86,6 +104,8 @@ class BatchInvoiceLine(models.Model):
     sas_reference = fields.Char(string="SAS Reference")
     antrak_job_no = fields.Char(string="Antrak Job No")
     po_no = fields.Char(string="PO No")
+    supplier_invoice_no = fields.Char(string="Supplier Invoice No.", required=True)
+    bl_awb_number = fields.Char(string="B/L / AWB / RCN No.", required=True)
     currency_id = fields.Many2one(
         related='invoice_id.currency_id',
         string="Currency",
@@ -113,7 +133,6 @@ class BatchInvoiceWizard(models.TransientModel):
     
     add_vat = fields.Boolean(string="Add 18% VAT")
     
-    # Mashamba ya hesabu ya Wizard ili kubadilika papo hapo
     subtotal_amount = fields.Monetary(string="Subtotal", compute='_compute_wizard_amounts', currency_field='currency_id')
     vat_amount = fields.Monetary(string="18% VAT", compute='_compute_wizard_amounts', currency_field='currency_id')
     total_amount = fields.Monetary(string="Final Total", compute='_compute_wizard_amounts', currency_field='currency_id')
@@ -142,6 +161,26 @@ class BatchInvoiceWizard(models.TransientModel):
         string="Invoice Lines"
     )
 
+    # Ulinzi wa kuzuia kurudia kwa PO No ndani ya Wizard na kwenye Database
+    @api.constrains('line_ids')
+    def _check_wizard_po_no_unique(self):
+        for wizard in self:
+            po_list = []
+            for line in wizard.line_ids:
+                if line.po_no:
+                    # Angalia kama imejirudia yenyewe ndani ya hizi lines za wizard
+                    if line.po_no in po_list:
+                        raise ValidationError(f"Samahani! Namba ya PO No '{line.po_no}' imejirudia kwenye mistari ya Wizard hii.")
+                    po_list.append(line.po_no)
+
+                    # Angalia kama tayari ipo kwenye database (account.move nyingine)
+                    existing = self.env['account.move'].search([
+                        ('po_no', '=', line.po_no),
+                        ('id', '!=', line.invoice_id.id if line.invoice_id else False)
+                    ], limit=1)
+                    if existing:
+                        raise ValidationError(f"Samahani! Namba ya PO No '{line.po_no}' imeshawahi kutumika kwenye ankara nyingine kwenye mfumo!")
+
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
@@ -155,12 +194,18 @@ class BatchInvoiceWizard(models.TransientModel):
                 'sas_reference': inv.sas_reference or '',
                 'antrak_job_no': inv.antrak_job_no or '',
                 'po_no': inv.po_no or '',
+                # Zimewekewa 'N/A' ili kuzuia error kama kwenye invoice ya zamani zilikuwa tupu
+                'supplier_invoice_no': inv.supplier_invoice_no or 'N/A',
+                'bl_awb_number': inv.bl_awb_number or 'N/A',
             }))
 
         res['line_ids'] = lines
         return res
 
     def action_generate_batch(self):
+        # Kwanza fanya validation ya kipekee kabla ya kuendelea
+        self._check_wizard_po_no_unique()
+
         batch_name = self.env['ir.sequence'].next_by_code('batch.invoice.sequence') or 'BATCH/2026/001'
 
         batch_vals = {
@@ -178,6 +223,8 @@ class BatchInvoiceWizard(models.TransientModel):
                     'sas_reference': line.sas_reference,
                     'antrak_job_no': line.antrak_job_no,
                     'po_no': line.po_no,
+                    'supplier_invoice_no': line.supplier_invoice_no,
+                    'bl_awb_number': line.bl_awb_number,
                 }
                 if self.bank_details_id:
                     write_vals['terms_template_id'] = self.bank_details_id.id
@@ -188,6 +235,8 @@ class BatchInvoiceWizard(models.TransientModel):
                 'sas_reference': line.sas_reference,
                 'antrak_job_no': line.antrak_job_no,
                 'po_no': line.po_no,
+                'supplier_invoice_no': line.supplier_invoice_no,
+                'bl_awb_number': line.bl_awb_number,
             }))
 
         new_batch = self.env['batch.invoice'].create(batch_vals)
@@ -225,6 +274,8 @@ class BatchInvoiceWizardLine(models.TransientModel):
     sas_reference = fields.Char(string="SAS Reference")
     antrak_job_no = fields.Char(string="Antrak Job No")
     po_no = fields.Char(string="PO No")
+    supplier_invoice_no = fields.Char(string="Supplier Invoice No.", required=True)
+    bl_awb_number = fields.Char(string="B/L / AWB / RCN No.", required=True)
     currency_id = fields.Many2one(
         related='invoice_id.currency_id',
         string="Currency",
