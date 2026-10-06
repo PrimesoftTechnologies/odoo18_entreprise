@@ -3,12 +3,12 @@
     <record id="view_clearance_report_wizard_form_inherit_sas_shipper" model="ir.ui.view">
         <field name="name">sas.clearance.report.wizard.form.inherit.sas.shipper</field>
         <field name="model">sas.clearance.report.wizard</field>
-        <!-- Tunatumia External ID sahihi uliyotoa -->
         <field name="inherit_id" ref="sas.view_clearance_report_wizard_form"/>
         <field name="arch" type="xml">
-            <!-- Tunaweka sas_shipper baada ya consignee_id kama ilivyo kwenye muundo wako -->
-            <xpath expr="//field[@name='consignee_id']" position="after">
-                <field name="sas_shipper"/>
+            <!-- Shipper kabla ya consignee; ikiachwa wazi = shippers wote -->
+            <xpath expr="//field[@name='consignee_id']" position="before">
+                <field name="sas_shipper" placeholder="All Shippers"
+                       options="{'no_create': True}"/>
             </xpath>
         </field>
     </record>

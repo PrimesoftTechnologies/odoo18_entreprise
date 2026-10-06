@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Ongeza column ya Shipper kwenye ripoti ya PDF -->
+    <template id="report_clearance_report_inherit_sas_shipper" inherit_id="sas.report_clearance_report">
+        <xpath expr="//thead/tr/th[3]" position="before">
+            <th>Shipper</th>
+        </xpath>
+        <xpath expr="//tbody//tr/td[3]" position="before">
+            <td><span t-esc="order.shipper_id.name"/></td>
+        </xpath>
+    </template>
+</odoo>
