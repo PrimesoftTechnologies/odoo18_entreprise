@@ -8,8 +8,8 @@ class AccountMove(models.Model):
     sas_reference = fields.Char(string="SAS Reference")
     antrak_job_no = fields.Char(string="Antrak Job No")
     po_no = fields.Char(string="PO No")
-    supplier_invoice_no = fields.Char(string="Supplier Invoice No.", required=True)
-    bl_awb_number = fields.Char(string="B/L / AWB / RCN No.", required=True)
+    supplier_invoice_no = fields.Char(string="Supplier Invoice No.", required=True, default='N/A')
+    bl_awb_number = fields.Char(string="B/L / AWB / RCN No.", required=True, default='N/A')
     terms_template_id = fields.Many2one('sale.terms.template', string="Bank Details For Payment", ondelete='set null')
 
     # Unique Check kwenye Account Move
@@ -104,8 +104,8 @@ class BatchInvoiceLine(models.Model):
     sas_reference = fields.Char(string="SAS Reference")
     antrak_job_no = fields.Char(string="Antrak Job No")
     po_no = fields.Char(string="PO No")
-    supplier_invoice_no = fields.Char(string="Supplier Invoice No.", required=True)
-    bl_awb_number = fields.Char(string="B/L / AWB / RCN No.", required=True)
+    supplier_invoice_no = fields.Char(string="Supplier Invoice No.", required=True, default='N/A')
+    bl_awb_number = fields.Char(string="B/L / AWB / RCN No.", required=True, default='N/A')
     currency_id = fields.Many2one(
         related='invoice_id.currency_id',
         string="Currency",
@@ -194,7 +194,6 @@ class BatchInvoiceWizard(models.TransientModel):
                 'sas_reference': inv.sas_reference or '',
                 'antrak_job_no': inv.antrak_job_no or '',
                 'po_no': inv.po_no or '',
-                # Zimewekewa 'N/A' ili kuzuia error kama kwenye invoice ya zamani zilikuwa tupu
                 'supplier_invoice_no': inv.supplier_invoice_no or 'N/A',
                 'bl_awb_number': inv.bl_awb_number or 'N/A',
             }))
@@ -274,8 +273,8 @@ class BatchInvoiceWizardLine(models.TransientModel):
     sas_reference = fields.Char(string="SAS Reference")
     antrak_job_no = fields.Char(string="Antrak Job No")
     po_no = fields.Char(string="PO No")
-    supplier_invoice_no = fields.Char(string="Supplier Invoice No.", required=True)
-    bl_awb_number = fields.Char(string="B/L / AWB / RCN No.", required=True)
+    supplier_invoice_no = fields.Char(string="Supplier Invoice No.", required=True, default='N/A')
+    bl_awb_number = fields.Char(string="B/L / AWB / RCN No.", required=True, default='N/A')
     currency_id = fields.Many2one(
         related='invoice_id.currency_id',
         string="Currency",
