@@ -7,6 +7,8 @@ class AccountMove(models.Model):
     sas_reference = fields.Char(string="SAS Reference")
     antrak_job_no = fields.Char(string="Antrak Job No")
     po_no = fields.Char(string="PO No")
+    supplier_invoice_no = fields.Char(string="Supplier Invoice No.")
+    bl_awb_number = fields.Char(string="B/L / AWB / RCN No.")
     terms_template_id = fields.Many2one('sale.terms.template', string="Bank Details For Payment", ondelete='set null')
 
 
@@ -86,6 +88,8 @@ class BatchInvoiceLine(models.Model):
     sas_reference = fields.Char(string="SAS Reference")
     antrak_job_no = fields.Char(string="Antrak Job No")
     po_no = fields.Char(string="PO No")
+    supplier_invoice_no = fields.Char(string="Supplier Invoice No.")
+    bl_awb_number = fields.Char(string="B/L / AWB / RCN No.")
     currency_id = fields.Many2one(
         related='invoice_id.currency_id',
         string="Currency",
@@ -113,7 +117,6 @@ class BatchInvoiceWizard(models.TransientModel):
     
     add_vat = fields.Boolean(string="Add 18% VAT")
     
-    # Mashamba ya hesabu ya Wizard ili kubadilika papo hapo
     subtotal_amount = fields.Monetary(string="Subtotal", compute='_compute_wizard_amounts', currency_field='currency_id')
     vat_amount = fields.Monetary(string="18% VAT", compute='_compute_wizard_amounts', currency_field='currency_id')
     total_amount = fields.Monetary(string="Final Total", compute='_compute_wizard_amounts', currency_field='currency_id')
@@ -155,6 +158,8 @@ class BatchInvoiceWizard(models.TransientModel):
                 'sas_reference': inv.sas_reference or '',
                 'antrak_job_no': inv.antrak_job_no or '',
                 'po_no': inv.po_no or '',
+                'supplier_invoice_no': inv.supplier_invoice_no or '',
+                'bl_awb_number': inv.bl_awb_number or '',
             }))
 
         res['line_ids'] = lines
@@ -178,6 +183,8 @@ class BatchInvoiceWizard(models.TransientModel):
                     'sas_reference': line.sas_reference,
                     'antrak_job_no': line.antrak_job_no,
                     'po_no': line.po_no,
+                    'supplier_invoice_no': line.supplier_invoice_no,
+                    'bl_awb_number': line.bl_awb_number,
                 }
                 if self.bank_details_id:
                     write_vals['terms_template_id'] = self.bank_details_id.id
@@ -188,6 +195,8 @@ class BatchInvoiceWizard(models.TransientModel):
                 'sas_reference': line.sas_reference,
                 'antrak_job_no': line.antrak_job_no,
                 'po_no': line.po_no,
+                'supplier_invoice_no': line.supplier_invoice_no,
+                'bl_awb_number': line.bl_awb_number,
             }))
 
         new_batch = self.env['batch.invoice'].create(batch_vals)
@@ -225,6 +234,8 @@ class BatchInvoiceWizardLine(models.TransientModel):
     sas_reference = fields.Char(string="SAS Reference")
     antrak_job_no = fields.Char(string="Antrak Job No")
     po_no = fields.Char(string="PO No")
+    supplier_invoice_no = fields.Char(string="Supplier Invoice No.")
+    bl_awb_number = fields.Char(string="B/L / AWB / RCN No.")
     currency_id = fields.Many2one(
         related='invoice_id.currency_id',
         string="Currency",
