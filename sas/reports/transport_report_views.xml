@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_transport_report_pivot" model="ir.ui.view">
+        <field name="name">transport.assignment.report.pivot</field>
+        <field name="model">transport.assignment</field>
+        <field name="arch" type="xml">
+            <pivot string="Transport Analysis">
+                <field name="route_id" type="row"/>
+                <field name="state" type="col"/>
+                <field name="total_amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_transport_report_graph" model="ir.ui.view">
+        <field name="name">transport.assignment.report.graph</field>
+        <field name="model">transport.assignment</field>
+        <field name="arch" type="xml">
+            <graph string="Trips by Month" type="bar">
+                <field name="trip_date" interval="month"/>
+                <field name="total_amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_transport_report_search" model="ir.ui.view">
+        <field name="name">transport.assignment.report.search</field>
+        <field name="model">transport.assignment</field>
+        <field name="arch" type="xml">
+            <search string="Transport Analysis">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="route_id"/>
+                <group expand="0" string="Group By">
+                    <filter string="Status" name="group_state" context="{'group_by':'state'}"/>
+                    <filter string="Route" name="group_route" context="{'group_by':'route_id'}"/>
+                    <filter string="Transfer Type" name="group_transfer" context="{'group_by':'transfer_type'}"/>
+                    <filter string="Trip Month" name="group_month" context="{'group_by':'trip_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_transport_report" model="ir.actions.act_window">
+        <field name="name">Transport Report</field>
+        <field name="res_model">transport.assignment</field>
+        <field name="view_mode">pivot,graph,list,form</field>
+        <field name="search_view_id" ref="view_transport_report_search"/>
+    </record>
+
+</odoo>

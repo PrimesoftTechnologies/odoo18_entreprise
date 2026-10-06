@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="sas.Dashboard" owl="1">
+        <div class="sas_dashboard p-3">
+            <t t-if="state.loading">
+                <div class="text-center p-5">
+                    <i class="fa fa-spin fa-spinner fa-2x"/>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="sas_kpi_card" t-on-click="() => this.openReport(false)">
+                            <div class="sas_kpi_value" t-esc="state.data.kpis.total_active"/>
+                            <div class="sas_kpi_label">Active Shipments</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="sas_kpi_card sas_kpi_danger" t-on-click="() => this.openReport(false)">
+                            <div class="sas_kpi_value" t-esc="state.data.kpis.overdue_count"/>
+                            <div class="sas_kpi_label">Overdue</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="sas_kpi_card sas_kpi_warning" t-on-click="() => this.openReport('clearing')">
+                            <div class="sas_kpi_value" t-esc="state.data.kpis.in_clearing"/>
+                            <div class="sas_kpi_label">In Clearing</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="sas_kpi_card">
+                            <div class="sas_kpi_value" t-esc="state.data.kpis.pending_trips"/>
+                            <div class="sas_kpi_label">Pending Trips</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="sas_kpi_card sas_kpi_success">
+                            <div class="sas_kpi_value">
+                                <span t-esc="state.data.kpis.currency_symbol"/>
+                                <span t-esc="state.data.kpis.duty_this_month.toLocaleString()"/>
+                            </div>
+                            <div class="sas_kpi_label">Duty Assessed (This Month)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="sas_kpi_card sas_kpi_success">
+                            <div class="sas_kpi_value">
+                                <span t-esc="state.data.kpis.currency_symbol"/>
+                                <span t-esc="state.data.kpis.clearance_cost_this_month.toLocaleString()"/>
+                            </div>
+                            <div class="sas_kpi_label">Clearance Cost (This Month)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="sas_kpi_card">
+                            <div class="sas_kpi_value" t-esc="state.data.kpis.cleared_this_month"/>
+                            <div class="sas_kpi_label">Cleared This Month</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="sas_chart_card">
+                            <h6>Shipments by Status</h6>
+                            <canvas t-ref="stateChart"/>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="sas_chart_card">
+                            <h6>Shipments by Transport Mode (6 mo.)</h6>
+                            <canvas t-ref="modeChart"/>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="sas_chart_card">
+                            <h6>Duty Amount Trend (6 mo.)</h6>
+                            <canvas t-ref="dutyChart"/>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="sas_chart_card">
+                            <h6>Top Consignees (Active Shipments)</h6>
+                            <canvas t-ref="consigneeChart"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+
+</templates>

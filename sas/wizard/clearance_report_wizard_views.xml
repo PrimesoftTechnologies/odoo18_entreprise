@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_clearance_report_wizard_form" model="ir.ui.view">
+        <field name="name">sas.clearance.report.wizard.form</field>
+        <field name="model">sas.clearance.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Clearance Report">
+                <group>
+                    <group string="Period">
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                    <group string="Filters">
+                        <field name="order_type"/>
+                        <field name="transport_mode"/>
+                        <field name="state"/>
+                        <field name="consignee_id"/>
+                        <field name="responsible_user_id"/>
+                        <field name="only_overdue"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_export_xlsx" type="object"
+                            string="Export Excel" class="btn-secondary" icon="fa-file-excel-o"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_clearance_report_wizard" model="ir.actions.act_window">
+        <field name="name">Clearance Report</field>
+        <field name="res_model">sas.clearance.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

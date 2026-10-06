@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form_inherit_terms" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.terms</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">  
+            <!-- Places the dropdown inside the Other Info tab -->
+            <xpath expr="//page[@name='other_information']//group[@name='sales_person']" position="inside">
+                <field name="terms_template_id" string="Bank Details For Payment"/>
+            </xpath>
+
+        </field>
+    </record>
+
+
+
+        <template id="sale_report_view_amount_in_words"
+              inherit_id="sale.report_saleorder_document">
+            <xpath expr="//div[@class='clearfix']" position="after">
+                <div style="font-size:15px; padding-top:15px; padding-bottom:15px;">
+                    <span>
+                        <strong>Amount in Words: </strong>
+                    </span>
+                    <span t-field="doc.number_to_words"/>
+                </div>
+            </xpath>
+    </template>
+</odoo>

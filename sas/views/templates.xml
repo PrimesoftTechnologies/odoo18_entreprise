@@ -1,0 +1,28 @@
+<odoo>
+    <data>
+          <record id="view_hr_expense_form_inherit_custom" model="ir.ui.view">
+            <field name="name">hr.expense.form.inherit.custom</field>
+            <field name="model">hr.expense</field>
+            <field name="inherit_id" ref="hr_expense.hr_expense_view_form"/>
+            <field name="arch" type="xml">
+
+                <!-- Replace employee_id label with Prepared By -->
+                <field name="employee_id" position="attributes">
+                    <attribute name="string">Prepared By</attribute>
+                </field>
+
+                <!-- Add Control No. field after Employee -->
+                <field name="employee_id" position="before">
+                    <field name="control_number" placeholder="Control No."/>
+                </field>
+
+
+                <field name="analytic_distribution" position="before">
+                    <field name="clearance_record_id"/>
+                </field>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>

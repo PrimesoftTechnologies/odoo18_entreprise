@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!--
+        ═══════════════════════════════════════════════════════════════
+        SAS LOGISTICS – SECURITY / USER ROLES / RECORD RULES
+        ═══════════════════════════════════════════════════════════════
+
+        ROLE HIERARCHY
+        ───────────────────────────────────────────────────────────────
+
+        1. C/M (Operations Staff)
+           - Create and edit own Shipping Orders
+           - View own/relevant Clearance Records
+           - Cannot approve
+           - Cannot invoice
+           - Cannot see financial information
+
+        2. Declaration (Officer / Supervisor)
+           - Everything C/M can do
+           - Level 1 approval of Shipping Orders
+           - Manage Clearance Records
+           - Create Transport Assignments
+           - Cannot perform final financial approval
+
+        3. Manager
+           - Everything Declaration can do
+           - Level 2/final approval
+           - Approve/reject clearance completion
+           - Create and approve invoices
+           - View all financial information
+           - View all Shipping Orders and Clearance Records
+
+        4. Administrator
+           - Full access
+           - Configuration
+           - Sequences, ports, carriers, settings
+           - Cancel/reset completed transactions
+        ═══════════════════════════════════════════════════════════════
+        -->
+
+
+        <!-- =========================================================
+             MODULE CATEGORY
+        ========================================================== -->
+
+        <record id="module_category_sas_logistics" model="ir.module.category">
+            <field name="name">SAS Logistics</field>
+            <field name="description">
+                Clearing, Forwarding and Transport Management
+            </field>
+            <field name="sequence">10</field>
+        </record>
+
+
+        <!-- =========================================================
+             ROLE 1: C/M - OPERATIONS STAFF
+        ========================================================== -->
+
+        <record id="group_sas_user" model="res.groups">
+            <field name="name">C/M</field>
+            <field name="category_id" ref="module_category_sas_logistics"/>
+            <field name="comment">
+                Operations staff. Can create and edit shipping orders assigned
+                to them, view relevant clearance records and transport
+                assignments. Cannot approve or invoice.
+            </field>
+        </record>
+
+
+        <!-- =========================================================
+             ROLE 2: DECLARATION - OFFICER / SUPERVISOR
+        ========================================================== -->
+
+        <record id="group_sas_officer" model="res.groups">
+            <field name="name">Declaration</field>
+            <field name="category_id" ref="module_category_sas_logistics"/>
+
+            <!-- Officer inherits C/M permissions -->
+            <field name="implied_ids" eval="[
+                (4, ref('group_sas_user'))
+            ]"/>
+
+            <field name="comment">
+                Supervisors and team leads. Can perform Level-1 approval
+                (Confirm) on Shipping Orders, manage Clearance Records,
+                and create Transport Assignments.
+            </field>
+        </record>
+
+
+        <!-- =========================================================
+             ROLE 3: MANAGER
+        ========================================================== -->
+
+        <record id="group_sas_manager" model="res.groups">
+            <field name="name">Manager</field>
+            <field name="category_id" ref="module_category_sas_logistics"/>
+
+            <!-- Manager inherits Officer and C/M permissions -->
+            <field name="implied_ids" eval="[
+                (4, ref('group_sas_officer'))
+            ]"/>
+
+            <field name="comment">
+                Department managers. Can perform Level-2 final approval,
+                complete clearances, create and approve invoices, and
+                view all financial information.
+            </field>
+        </record>
+
+
+        <!-- =========================================================
+             ROLE 4: ADMINISTRATOR
+        ========================================================== -->
+
+        <record id="group_sas_administrator" model="res.groups">
+            <field name="name">Administrator</field>
+            <field name="category_id" ref="module_category_sas_logistics"/>
+
+            <!-- Administrator inherits Manager, Officer and C/M -->
+            <field name="implied_ids" eval="[
+                (4, ref('group_sas_manager'))
+            ]"/>
+
+            <!-- Assign standard Odoo administrator -->
+            <field name="users" eval="[
+                (4, ref('base.user_admin'))
+            ]"/>
+
+            <field name="comment">
+                Full system access. Can configure sequences, ports, carriers,
+                cancel/reset completed orders, and manage all settings.
+            </field>
+        </record>
+
+
+        <!-- =========================================================
+             RECORD RULES
+        ========================================================== -->
+
+
+        <!-- =========================================================
+             C/M - SHIPPING ORDERS
+             Users see Shipping Orders where they are the assigned
+             Customer Relation user / CRO.
+        ========================================================== -->
+
+        <record id="rule_shipping_order_user_own" model="ir.rule">
+            <field name="name">Shipping Order: C/M sees own records</field>
+            <field name="model_id" ref="sas.model_shipping_order"/>
+
+            <field name="domain_force">
+                [('customer_relation_user_id', '=', user.id)]
+            </field>
+
+            <field name="groups" eval="[
+                (4, ref('sas.group_sas_user'))
+            ]"/>
+        </record>
+
+
+        <!-- =========================================================
+             C/M - CLEARANCE RECORDS
+             Users see clearance records related to their assigned
+             Shipping Orders / responsibilities.
+        ========================================================== -->
+
+        <record id="rule_clearance_record_user_own" model="ir.rule">
+            <field name="name">Clearance Record: C/M sees own records</field>
+            <field name="model_id" ref="sas.model_clearance_record"/>
+
+            <field name="domain_force">
+                [('responsible_user_id', '=', user.id)]
+            </field>
+
+            <field name="groups" eval="[
+                (4, ref('sas.group_sas_user'))
+            ]"/>
+        </record>
+
+
+        <!-- =========================================================
+             OFFICER - SHIPPING ORDERS
+             Officer can see Shipping Orders where:
+             1. They are the customer relation user / CRO
+             OR
+             2. They are responsible for one of the clearances
+        ========================================================== -->
+
+        <record id="rule_shipping_order_officer_own" model="ir.rule">
+            <field name="name">
+                Shipping Order: Declaration sees assigned records
+            </field>
+
+            <field name="model_id" ref="sas.model_shipping_order"/>
+
+            <field name="domain_force">
+                [
+                    '|',
+                    ('customer_relation_user_id', '=', user.id),
+                    ('clearance_ids.responsible_user_id', '=', user.id)
+                ]
+            </field>
+
+            <field name="groups" eval="[
+                (4, ref('sas.group_sas_officer'))
+            ]"/>
+        </record>
+
+
+        <!-- =========================================================
+             OFFICER - CLEARANCE RECORDS
+        ========================================================== -->
+
+        <record id="rule_clearance_record_officer_own" model="ir.rule">
+            <field name="name">
+                Clearance Record: Declaration sees assigned records
+            </field>
+
+            <field name="model_id" ref="sas.model_clearance_record"/>
+
+            <field name="domain_force">
+                [('responsible_user_id', '=', user.id)]
+            </field>
+
+            <field name="groups" eval="[
+                (4, ref('sas.group_sas_officer'))
+            ]"/>
+        </record>
+
+
+        <!-- =========================================================
+             MANAGER - SHIPPING ORDERS
+             Manager has unrestricted visibility.
+        ========================================================== -->
+
+        <record id="rule_shipping_order_manager_all" model="ir.rule">
+            <field name="name">
+                Shipping Order: Manager sees all
+            </field>
+
+            <field name="model_id" ref="sas.model_shipping_order"/>
+
+            <field name="domain_force">
+                [(1, '=', 1)]
+            </field>
+
+            <field name="groups" eval="[
+                (4, ref('sas.group_sas_manager'))
+            ]"/>
+        </record>
+
+
+        <!-- =========================================================
+             MANAGER - CLEARANCE RECORDS
+             Manager has unrestricted visibility.
+        ========================================================== -->
+
+        <record id="rule_clearance_record_manager_all" model="ir.rule">
+            <field name="name">
+                Clearance Record: Manager sees all
+            </field>
+
+            <field name="model_id" ref="sas.model_clearance_record"/>
+
+            <field name="domain_force">
+                [(1, '=', 1)]
+            </field>
+
+            <field name="groups" eval="[
+                (4, ref('sas.group_sas_manager'))
+            ]"/>
+        </record>
+
+
+    </data>
+</odoo>

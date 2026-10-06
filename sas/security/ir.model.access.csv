@@ -1,0 +1,50 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_freight_port,freight.port,model_freight_port,base.group_user,1,1,1,1
+access_clearance_reimbursement,clearance.reimbursement,model_clearance_reimbursement,base.group_user,1,1,1,1
+access_clearance_reimbursement_line,clearance.reimbursement.line,model_clearance_reimbursement_line,base.group_user,1,1,1,1
+access_clearance_container_line,clearance.container.line,model_clearance_container_line,base.group_user,1,1,1,1
+
+access_shipping_order_user,shipping.order user,model_shipping_order,group_sas_user,1,1,1,0
+access_shipping_order_officer,shipping.order officer,model_shipping_order,group_sas_officer,1,1,1,0
+access_shipping_order_manager,shipping.order manager,model_shipping_order,group_sas_manager,1,1,1,1
+access_shipping_order_admin,shipping.order admin,model_shipping_order,group_sas_administrator,1,1,1,1
+
+
+access_shipping_order_line_user,shipping.order.line user,model_shipping_order_line,group_sas_user,1,1,1,0
+access_shipping_order_line_officer,shipping.order.line officer,model_shipping_order_line,group_sas_officer,1,1,1,1
+access_shipping_order_line_manager,shipping.order.line manager,model_shipping_order_line,group_sas_manager,1,1,1,1
+access_shipping_order_line_admin,shipping.order.line admin,model_shipping_order_line,group_sas_administrator,1,1,1,1
+
+
+access_clearance_record_user,clearance.record user,model_clearance_record,group_sas_user,1,0,0,0
+access_clearance_record_officer,clearance.record officer,model_clearance_record,group_sas_officer,1,1,1,0
+access_clearance_record_manager,clearance.record manager,model_clearance_record,group_sas_manager,1,1,1,1
+access_clearance_record_admin,clearance.record admin,model_clearance_record,group_sas_administrator,1,1,1,1
+
+
+access_clearance_container_user,clearance.container.line user,model_clearance_container_line,group_sas_user,1,0,0,0
+access_clearance_container_officer,clearance.container.line officer,model_clearance_container_line,group_sas_officer,1,1,1,1
+access_clearance_container_manager,clearance.container.line manager,model_clearance_container_line,group_sas_manager,1,1,1,1
+access_clearance_container_admin,clearance.container.line admin,model_clearance_container_line,group_sas_administrator,1,1,1,1
+
+
+access_transport_assignment_user,transport.assignment user,model_transport_assignment,group_sas_user,1,0,0,0
+access_transport_assignment_officer,transport.assignment officer,model_transport_assignment,group_sas_officer,1,1,1,0
+access_transport_assignment_manager,transport.assignment manager,model_transport_assignment,group_sas_manager,1,1,1,1
+access_transport_assignment_admin,transport.assignment admin,model_transport_assignment,group_sas_administrator,1,1,1,1
+
+
+access_clearing_wizard_officer,clearing.wizard officer,model_clearing_wizard,group_sas_officer,1,1,1,1
+access_clearing_wizard_manager,clearing.wizard manager,model_clearing_wizard,group_sas_manager,1,1,1,1
+access_transport_wizard_officer,transport.wizard officer,model_transport_wizard,group_sas_officer,1,1,1,1
+access_transport_wizard_manager,transport.wizard manager,model_transport_wizard,group_sas_manager,1,1,1,1
+access_transport_assignment_line,transport.assignment.line,model_transport_assignment_line,group_sas_manager,1,1,1,1
+access_transport_route,transport.route,model_transport_route,base.group_user,1,1,1,1
+
+acess_clearance_reimbursement_wizard,clearance.reimbursement.wizard,model_clearance_reimbursement_wizard,base.group_user,1,1,1,1
+
+
+access_sale_terms_template,sale.terms.template,model_sale_terms_template,base.group_user,1,1,1,1
+access_sas_clearance_report_wizard,sas.clearance.report.wizard,model_sas_clearance_report_wizard,base.group_user,1,1,1,1
+
+access_shipping_order_report_user,shipping.order.report.user,model_shipping_order_report,base.group_user,1,0,0,0

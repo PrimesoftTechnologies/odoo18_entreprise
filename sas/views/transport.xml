@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+<data>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- LIST VIEW -->
+<!-- ═══════════════════════════════════════════════ -->
+<record id="transport_assignment_list" model="ir.ui.view">
+    <field name="name">transport.assignment.list</field>
+    <field name="model">transport.assignment</field>
+    <field name="arch" type="xml">
+        <list string="Transport Assignments"
+              decoration-info="state == 'draft'"
+              decoration-primary="state == 'confirmed'"
+              decoration-warning="state == 'in_progress'"
+              decoration-success="state == 'done'"
+              decoration-muted="state == 'cancelled'">
+
+            <field name="name" decoration-bf="1"/>
+            <field name="shipping_order_id"/>
+            <field name="partner_id"/>
+            <field name="route_id"/>
+            <field name="transfer_type"/>
+            <field name="trip_date"/>
+            <field name="total_amount" widget="monetary"/>
+            <field name="currency_id" invisible="1"/>
+            <field name="invoice_id"/>
+            <field name="state" widget="badge"/>
+        </list>
+    </field>
+</record>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- FORM VIEW -->
+<!-- ═══════════════════════════════════════════════ -->
+<record id="transport_assignment_form" model="ir.ui.view">
+    <field name="name">transport.assignment.form</field>
+    <field name="model">transport.assignment</field>
+    <field name="arch" type="xml">
+        <form string="Transport Assignment">
+
+            <!-- HEADER -->
+            <header>
+                <button name="action_confirm" type="object"
+                        string="Confirm" class="btn-primary"
+                        invisible="state != 'draft'"/>
+
+                <button name="action_start" type="object"
+                        string="Start Trip" class="btn-primary"
+                        invisible="state != 'confirmed'"/>
+
+                <button name="action_done" type="object"
+                        string="Complete" class="btn-success"
+                        invisible="state != 'in_progress'"/>
+
+                <button name="action_cancel" type="object"
+                        string="Reset Draft" class="btn-secondary"
+                        confirm="Reset this assignment?"/>
+                
+                <field name="state" widget="statusbar"
+                       statusbar_visible="draft,confirmed,in_progress,done"/>
+            </header>
+
+            <sheet>
+
+                <!-- SMART BUTTON -->
+                <div class="oe_button_box" name="button_box">
+                    <button class="oe_stat_button" type="object"
+                            name="action_view_invoice"
+                            icon="fa-file-text-o"
+                            invisible="invoice_id == False">
+                        <div class="o_stat_info">
+                            <span class="o_stat_text">Invoice</span>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- TITLE -->
+                <div class="oe_title">
+                    <h1>
+                        <field name="name" readonly="1"/>
+                    </h1>
+                </div>
+
+                <!-- GENERAL -->
+                <group>
+                    <group string="General Info">
+
+                        <field name="shipping_order_id"
+                               readonly="state != 'draft'"/>
+
+                        <field name="partner_id"
+                               invisible="shipping_order_id != False"
+                               readonly="state != 'draft'"/>
+
+                        <field name="route_id"
+                               readonly="state != 'draft'"
+                               options="{'no_create': True}"/>
+
+                        <field name="transfer_type"
+                               readonly="state != 'draft'"
+                               options="{'no_create': True}"/>
+
+                        <field name="trip_date"
+                               readonly="state != 'draft'"/>
+
+                    </group>
+
+                    <group string="Timing">
+                        <field name="departure_datetime"/>
+                        <field name="arrival_datetime" readonly="1"/>
+                        <field name="customer_po_number"/>
+                    </group>
+                </group>
+
+                <!-- DESTINATION -->
+                <group>
+
+                    <!-- CUSTOMER -->
+                    <group string="Customer Delivery"
+                           invisible="transfer_type != 'customer'">
+
+                        <field name="delivery_address_id"
+                               readonly="state != 'draft'"/>
+
+                    </group>
+
+                    <!-- INTERNAL -->
+                    <group string="Internal Transfer"
+                           invisible="transfer_type != 'internal'">
+
+                        <field name="source_location_id"
+                               readonly="state != 'draft'"/>
+
+                        <field name="destination_location_id"
+                               readonly="state != 'draft'"/>
+
+                    </group>
+
+                    <!-- OTHER -->
+                    <group string="Warehouse"
+                           invisible="transfer_type == 'internal'">
+
+                        <field name="dest_warehouse_id"
+                               readonly="state != 'draft'"/>
+
+                    </group>
+
+                </group>
+
+                <!-- LINES -->
+                <notebook>
+
+                    <page string="Vehicles / Trips">
+
+                        <field name="line_ids"
+                               readonly="state == 'done'">
+
+                            <list editable="bottom">
+
+                                <field name="vehicle_id_truck"
+                                    domain="[('category_id.name', '=', 'Truck')]"
+                                    options="{'no_create': True}"/>
+
+                                <field name="vehicle_id_trailer"
+                                    domain="[('category_id.name', '=', 'Trailer')]"
+                                    options="{'no_create': True}"/>
+                                <field name="driver_id" options="{'no_create': True}"/>
+                                <field name="product_id" domain="[('is_transport_product', '=', True)]" options="{'no_create': True}"/>
+                                <!-- <field name="analytic_account_id" options="{'no_create': True}"/> -->
+                                <field name="dn_number"/>
+                                <field name="quantity"/>
+                                <field name="rate"/>
+                                <field name="amount" readonly="1"/>
+
+
+                            </list>
+                        </field>
+
+                    </page>
+
+                    <page string="Other Services">
+                        <field name="notes" nolabel="1"
+                               placeholder="Additional notes..."/>
+                    </page>
+
+                </notebook>
+
+            </sheet>
+
+            <chatter/>
+
+        </form>
+    </field>
+</record>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- WIZARD -->
+<!-- ═══════════════════════════════════════════════ -->
+<record id="transport_wizard_form" model="ir.ui.view">
+    <field name="name">transport.wizard.form</field>
+    <field name="model">transport.wizard</field>
+    <field name="arch" type="xml">
+        <form string="Create Transport Assignment" create="false" edit="false">
+            <sheet>
+                <group>
+                    <field name="shipping_order_id"/>
+                    <field name="route_id"/>
+                    <field name="trip_date"/>
+                </group>
+            </sheet>
+
+            <footer>
+                <button name="action_confirm"
+                        type="object"
+                        string="Confirm"
+                        class="btn-primary"/>
+
+                <button string="Cancel"
+                        special="cancel"
+                        class="btn-secondary"/>
+            </footer>
+
+        </form>
+    </field>
+</record>
+
+
+<!-- ACTION -->
+<record id="action_transport_assignment" model="ir.actions.act_window">
+    <field name="name">Transport Assignments</field>
+    <field name="res_model">transport.assignment</field>
+    <field name="view_mode">list,form</field>
+</record>
+
+
+<!-- PRODUCT EXTENSION -->
+<record id="view_product_form_inherit_transport" model="ir.ui.view">
+    <field name="name">product.template.form.transport</field>
+    <field name="model">product.template</field>
+    <field name="inherit_id" ref="product.product_template_form_view"/>
+    <field name="arch" type="xml">
+        <xpath expr="//field[@name='can_be_expensed']" position="after">
+            <field name="is_transport_product"/>
+        </xpath>
+    </field>
+</record>
+
+<record id="action_transport_products" model="ir.actions.act_window">
+    <field name="name">Transport Products</field>
+    <field name="res_model">product.template</field>
+    <field name="view_mode">list,form</field>
+    <field name="domain">[('is_transport_product', '=', True)]</field>
+    <field name="context">{'default_is_transport_product': True}</field>
+</record>
+
+</data>
+</odoo>

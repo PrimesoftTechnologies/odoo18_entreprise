@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="custom_invoice_proforma" inherit_id="account.report_invoice_document">
+
+        <!-- Insert custom layout -->
+        <xpath expr="//div[hasclass('page')]//div[hasclass('oe_structure')][1]" position="before">
+            <div style="margin-bottom: 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #000;">
+                <!-- 1. Title -->
+                <div style="text-align: center; margin-bottom: 16px;">
+                    <h1 style="margin: 0; font-size: 26px; font-weight: bold; letter-spacing: 1px; color: #1a1a1a; font-family: inherit;">
+                        <t t-if="o.move_type == 'out_invoice'">
+                            TAX INVOICE
+                        </t>
+                        <t t-elif="o.move_type == 'out_refund'">
+                            REIMBURSEMENT NOTE
+                        </t>
+                        <t t-elif="o.move_type == 'in_invoice'">
+                            VENDOR BILL
+                        </t>
+                        <t t-elif="o.move_type == 'in_refund'">
+                            REIMBURSEMENT NOTE
+                        </t>
+                    </h1>
+                </div>
+
+                <!-- 2. Customer LEFT | Ref/VRN/TIN RIGHT -->
+                <div style="position: relative; min-height: 100px;">
+
+                    <!-- LEFT: Customer Details -->
+                    <div style="width: 55%; line-height: 1.6; font-size: 14px;">
+                        <strong t-field="o.partner_id.name"/><br/>
+                        <t t-if="o.partner_id.street">
+                            <span t-field="o.partner_id.street"/><br/>
+                        </t>
+                         <t t-if="o.partner_id.street2">
+                            <span t-field="o.partner_id.street2"/><br/>
+                        </t>
+                        <span t-field="o.partner_id.city"/>
+                        <t t-if="o.partner_id.state_id">
+                            , <span t-field="o.partner_id.state_id.name"/>
+                        </t>
+                        <br/>
+                        <span t-field="o.partner_id.country_id.name"/><br/>
+                        <t t-if="o.partner_id.vat">
+                            <span t-field="o.partner_id.vat"/><br/>
+                        </t>
+                    </div>
+
+                    <!-- RIGHT: Ref, VRN, TIN -->
+                    <div style="position: absolute; top: 0; right: 0; text-align: right; line-height: 1.9;">
+                        <h3 style="margin: 0 0 4px 0; font-size: 20px; font-weight: bold; font-family: inherit;">
+                            Ref: <span t-field="o.name"/>
+                        </h3>
+                        <span style="font-size: 15px; font-weight: bold;">VRN: 40-003039-D</span><br/>
+                        <span style="font-size: 15px; font-weight: bold;">TIN: 104-868-924</span>
+                    </div>
+
+                </div>
+
+                <!-- 3. PO Number centered -->
+                <t t-if="o.po_no" >
+                 <div style="text-align: center; margin-top: 14px;">
+                     <h4 style="margin: 0; font-size: 16px; font-weight: bold; font-family: inherit;">
+                         <span t-field="o.po_no"/>
+                     </h4>
+                 </div>
+                 </t>
+     
+
+            </div>
+        </xpath>
+
+        <!-- 4. Watermark -->
+        <xpath expr="//div[hasclass('page')]" position="inside">
+            <div t-if="report_type == 'pdf'"
+                 style="
+                     position: absolute;
+                     top: 300px;
+                     left: 25%;
+                     transform: translate(-50%, -50%);
+                     width: 55%;
+                     opacity: 0.07;
+                     z-index: 0;
+                     pointer-events: none;
+                 ">
+                <img src="/sas/static/src/img/watermark.png" style="width: 100%;"/>
+            </div>
+        </xpath>
+
+
+        <xpath expr="//table[@name='invoice_line_table']" position="before">
+            <t t-set="has_dn_number"
+            t-value="any(l.dn_number for l in o.invoice_line_ids)"/>
+        </xpath>
+
+        <xpath expr="//th[@name='th_taxes']" position="attributes">
+            <attribute name="t-if">not has_dn_number</attribute>
+        </xpath>
+
+        <xpath expr="//td[@name='td_taxes']" position="attributes">
+            <attribute name="t-if">not has_dn_number</attribute>
+        </xpath>
+
+        <xpath expr="//th[@name='th_quantity']" position="before">
+            <th name="th_dn_number" t-if="has_dn_number">
+                DN No
+            </th>
+        </xpath>
+
+        <xpath expr="//td[@name='td_quantity']" position="before">
+            <td name="td_dn_number" t-if="has_dn_number">
+                <span t-field="line.dn_number"/>
+            </td>
+        </xpath>
+
+      <xpath expr="//div[p[@name='payment_communication']]" position="replace">
+          <div style="margin-top: 10px;">
+                <p><img src="/sas/static/src/img/signed.png" style="width: 80px; height: 80px;"/></p>
+                <strong style="font-size: 11px; font-weight: bold;">Authorized Signature</strong>
+            </div>
+        </xpath>
+
+
+        <xpath expr="//div[@name='reference']" position="replace">
+            <div class="col" t-if="o.route_name" name="reference">
+                <strong>Destination</strong>
+                <div t-field="o.route_name"/>
+            </div>
+        </xpath>
+
+        <xpath expr="//div[@name='reference']" position="after">
+            <div class="col" t-if="o.awb_no" name="awb_no">
+                <strong>AWB No.</strong>
+                <div t-field="o.awb_no"/>
+            </div>
+        </xpath>
+
+    </template>
+
+        <template id="hide_address_layout" inherit_id="web.address_layout">
+            <xpath expr="//div[@name='address']" position="replace">
+                <!-- Leave empty to hide it everywhere -->
+            </xpath>
+        </template>
+</odoo>

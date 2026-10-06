@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════
+         SEARCH VIEW — filters & group-bys the user can combine
+         ══════════════════════════════════════════════════════════ -->
+    <record id="view_shipping_order_report_search" model="ir.ui.view">
+        <field name="name">shipping.order.report.search</field>
+        <field name="model">shipping.order.report</field>
+        <field name="arch" type="xml">
+            <search string="Onshore / Shipment Report">
+                <field name="name" string="Ref" filter_domain="['|', '|',
+                    ('name', 'ilike', self), ('client_po_number', 'ilike', self),
+                    ('supplier_invoice_no', 'ilike', self)]"/>
+                <field name="shipper_id"/>
+                <field name="consignee_id"/>
+                <field name="bl_awb_number"/>
+                <field name="container_numbers"/>
+                <field name="vessel_flight_name"/>
+
+                <filter string="Sea" name="mode_sea" domain="[('transport_mode', '=', 'sea')]"/>
+                <filter string="Air" name="mode_air" domain="[('transport_mode', '=', 'air')]"/>
+                <filter string="Road" name="mode_land" domain="[('transport_mode', '=', 'land')]"/>
+                <separator/>
+                <filter string="Overdue" name="overdue" domain="[('is_overdue', '=', True)]"/>
+                <filter string="Not Yet Delivered" name="not_delivered"
+                        domain="[('state', 'not in', ['delivered', 'done', 'cancelled'])]"/>
+                <filter string="Delivered / Done" name="delivered"
+                        domain="[('state', 'in', ['delivered', 'done'])]"/>
+                <separator/>
+                <filter string="ETA" name="filter_eta" date="eta"/>
+                <filter string="ATA" name="filter_ata" date="ata"/>
+
+                <group expand="0" string="Group By">
+                    <filter string="Mode" name="group_mode" context="{'group_by': 'transport_mode'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Clearance Status" name="group_clearance_state" context="{'group_by': 'clearance_state'}"/>
+                    <filter string="Supplier" name="group_shipper" context="{'group_by': 'shipper_id'}"/>
+                    <filter string="Consignee" name="group_consignee" context="{'group_by': 'consignee_id'}"/>
+                    <filter string="Origin (POL)" name="group_pol" context="{'group_by': 'loading_port_id'}"/>
+                    <filter string="Destination (POD)" name="group_pod" context="{'group_by': 'discharging_port_id'}"/>
+                    <filter string="ETA : Month" name="group_eta_month" context="{'group_by': 'eta:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════
+         PIVOT VIEW — the main "let them pick their own fields" view.
+         Every field is listed so it is draggable in the Pivot
+         field-picker (the '+' next to Total / on rows & columns).
+         ══════════════════════════════════════════════════════════ -->
+    <record id="view_shipping_order_report_pivot" model="ir.ui.view">
+        <field name="name">shipping.order.report.pivot</field>
+        <field name="model">shipping.order.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Onshore / Shipment Report" sample="1">
+                <field name="transport_mode" type="col"/>
+                <field name="state" type="row"/>
+                <field name="name" type="measure" invisible="1"/>
+                <field name="total_weight" type="measure"/>
+                <field name="total_volume" type="measure"/>
+                <field name="total_packages" type="measure"/>
+                <field name="duty_amount" type="measure"/>
+                <field name="clearance_duty_tax" type="measure"/>
+                <field name="clearance_total_cost" type="measure"/>
+                <field name="freight_charges" type="measure"/>
+                <field name="insurance_amount" type="measure"/>
+                <field name="other_charges" type="measure"/>
+                <field name="total_amount" type="measure"/>
+                <field name="container_deposit_amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════
+         GRAPH VIEW — quick visual companion to the pivot
+         ══════════════════════════════════════════════════════════ -->
+    <record id="view_shipping_order_report_graph" model="ir.ui.view">
+        <field name="name">shipping.order.report.graph</field>
+        <field name="model">shipping.order.report</field>
+        <field name="arch" type="xml">
+            <graph string="Onshore / Shipment Report" type="bar" sample="1">
+                <field name="state"/>
+                <field name="total_weight" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════
+         LIST VIEW — spreadsheet-style, mirrors the Excel columns.
+         optional="hide" fields are toggle-able via the column
+         picker (the little slider icon top-right of the list),
+         so users can show/hide exactly like ticking columns on
+         in an Excel pivot table.
+         ══════════════════════════════════════════════════════════ -->
+    <record id="view_shipping_order_report_list" model="ir.ui.view">
+        <field name="name">shipping.order.report.list</field>
+        <field name="model">shipping.order.report</field>
+        <field name="arch" type="xml">
+            <list string="Onshore / Shipment Report" sample="1" default_order="eta desc">
+                <field name="name" string="SAS Logistics Ref"/>
+                <field name="client_po_number" string="PO No."/>
+                <field name="shipper_id" string="Supplier" optional="show"/>
+                <field name="cargo_descriptions" string="Description" optional="show"/>
+                <field name="supplier_invoice_no" string="Invoice Number" optional="hide"/>
+                <field name="transport_mode" string="Mode" optional="show"/>
+                <field name="bl_awb_number" string="Bill No. / AWB No." optional="show"/>
+                <field name="vessel_flight_name" string="Vessel / Flight" optional="hide"/>
+                <field name="voyage_flight_number" string="Voyage / Flight No." optional="hide"/>
+                <field name="loading_port_id" string="Origin" optional="show"/>
+                <field name="discharging_port_id" string="Destination" optional="show"/>
+                <field name="order_date" string="Pre-Alert / Order Date" optional="hide"/>
+                <field name="eta" string="ETA" optional="show"/>
+                <field name="ata" string="ATA" optional="show"/>
+                <field name="container_numbers" string="Container No.(s)" optional="show"/>
+                <field name="container_types" string="Equipment Type" optional="hide"/>
+                <field name="state" string="Status" optional="show" widget="badge"/>
+                <field name="is_overdue" string="Overdue" optional="hide"/>
+                <field name="assessed_date" string="Duties Due" optional="hide"/>
+                <field name="duty_paid_date" string="Duties Paid - Actual" optional="hide"/>
+                <field name="duty_amount" string="Duty Amount" optional="hide" sum="Total"/>
+                <field name="clearance_handler" string="Clearing Handler" optional="hide"/>
+                <field name="clearance_deadline" string="Import Clearance Due" optional="show"/>
+                <field name="clearance_completed_date" string="Import Clearance Actual" optional="show"/>
+                <field name="clearance_state" string="Clearance Status" optional="hide"/>
+                <field name="do_number" string="DO No." optional="hide"/>
+                <field name="do_expiry_date" string="DO Expiry" optional="hide"/>
+                <field name="gate_pass_number" string="Gate Pass No." optional="hide"/>
+                <field name="gate_pass_date" string="Gate Pass Date" optional="hide"/>
+                <field name="cargo_released" string="Cargo Released" optional="hide"/>
+                <field name="cargo_release_date" string="Cargo Release Date" optional="hide"/>
+                <field name="total_weight" string="Gross Weight (kg)" optional="hide" sum="Total"/>
+                <field name="total_volume" string="Volume (cbm)" optional="hide" sum="Total"/>
+                <field name="total_packages" string="Packages" optional="hide" sum="Total"/>
+                <field name="container_deposit_amount" string="Container Deposit" optional="hide" sum="Total"/>
+                <field name="container_deposit_refunded" string="Deposit Refunded" optional="hide"/>
+                <field name="clearance_duty_tax" string="Total Duty &amp; Tax" optional="hide" sum="Total"/>
+                <field name="clearance_total_cost" string="Total Clearance Cost" optional="hide" sum="Total"/>
+                <field name="freight_charges" string="Freight Charges" optional="hide" sum="Total"/>
+                <field name="insurance_amount" string="Insurance Amount" optional="hide" sum="Total"/>
+                <field name="other_charges" string="Other Charges" optional="hide" sum="Total"/>
+                <field name="total_amount" string="Total Amount" optional="hide" sum="Total"/>
+                <field name="customer_relation_user_id" string="CRO" optional="hide"/>
+                <field name="remarks" string="Comments" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════
+         ACTION — opens Pivot first (client's main ask), then List
+         and Graph as tabs.
+         ══════════════════════════════════════════════════════════ -->
+    <record id="action_shipping_order_report" model="ir.actions.act_window">
+        <field name="name">Onshore / Shipment Report</field>
+        <field name="res_model">shipping.order.report</field>
+        <field name="view_mode">pivot,list,graph</field>
+        <field name="search_view_id" ref="view_shipping_order_report_search"/>
+        <field name="context">{'search_default_not_delivered': 0}</field>
+        <field name="help" type="html">
+            <p class="o_view_nodata_smiling_face">No shipments to report on yet</p>
+            <p>Once Shipping Orders are created, this view lets you drag any field
+               onto rows/columns (Pivot) or show/hide columns (List) to build the
+               exact report layout you need — no fixed spreadsheet required.</p>
+        </field>
+    </record>
+
+    <!-- Adjust the parent menu id below to match your existing top menu
+         (e.g. the Shipping/CFA app's root menu). Left as a standalone
+         top-level entry so it drops in safely on its own. -->
+    <menuitem id="menu_shipping_order_report_root"
+              name="Onshore Reports"
+              sequence="60"/>
+    <menuitem id="menu_shipping_order_report"
+              name="Onshore / Shipment Report"
+              parent="menu_shipping_order_report_root"
+              action="action_shipping_order_report"
+              sequence="10"/>
+
+</odoo>

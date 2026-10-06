@@ -1,0 +1,47 @@
+.sas_dashboard {
+    .sas_kpi_card {
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-left: 4px solid #305496;
+        border-radius: 6px;
+        padding: 14px 16px;
+        cursor: pointer;
+        transition: box-shadow 0.15s ease-in-out;
+
+        &:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .sas_kpi_value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #305496;
+        }
+        .sas_kpi_label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        &.sas_kpi_danger { border-left-color: #c00000; .sas_kpi_value { color: #c00000; } }
+        &.sas_kpi_warning { border-left-color: #ffc000; .sas_kpi_value { color: #b38600; } }
+        &.sas_kpi_success { border-left-color: #70ad47; .sas_kpi_value { color: #4c7a2e; } }
+    }
+
+    .sas_chart_card {
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        padding: 14px 16px;
+        height: 320px;
+
+        h6 {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        canvas {
+            max-height: 260px;
+        }
+    }
+}

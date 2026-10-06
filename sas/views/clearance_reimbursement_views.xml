@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+
+    <!-- Reimbursement Wizard Form View -->
+    <record id="clearance_reimbursement_wizard_form" model="ir.ui.view">
+        <field name="name">clearance.reimbursement.wizard.form</field>
+        <field name="model">clearance.reimbursement.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Select Expenses for Reimbursement">
+                <group>
+                    <field name="clearance_id" invisible="1"/>
+                </group>
+                
+                <group string="Select Expenses">
+                    <field name="expense_line_ids" 
+                        widget="many2many_checkboxes"
+                        options="{'no_create': True}"
+                        colspan="2"/>
+                </group>
+
+                <footer>
+                    <button string="Create Reimbursement" 
+                            type="object" 
+                            name="action_create_reimbursement"
+                            class="btn-primary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="view_move_form_inherit_reimbursement_button" model="ir.ui.view">
+        <field name="name">account.move.form.reimbursement.button</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//header" position="inside">
+
+                <button name="action_print_reimbursement"
+                        string="Print Reimbursement"
+                        type="object"
+                        class="btn-primary"
+                        invisible="move_type != 'in_refund'"/>
+            </xpath>
+
+            
+
+        </field>
+    </record>
+
+    <!-- REIMBURSEMENT FORM VIEW -->
+    <record id="clearance_reimbursement_form" model="ir.ui.view">
+        <field name="name">clearance.reimbursement.form</field>
+        <field name="model">clearance.reimbursement</field>
+        <field name="arch" type="xml">
+            <form string="Clearance Reimbursement">
+                <header>
+                    <button string="Confirm" type="object" name="action_confirm"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button string="Mark as Paid" type="object" name="action_mark_paid"
+                            class="btn-primary" invisible="state != 'confirmed'"/>
+                    <button string="Reset to Draft" type="object" name="action_reset_draft"
+                            class="btn-secondary" invisible="state != 'cancelled'"/>
+                    <button string="Cancel" type="object" name="action_cancel"
+                            class="btn-secondary"
+                            invisible="state in ('paid','cancelled')"
+                            confirm="Cancel this reimbursement?"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,paid"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                        
+                    </div>
+                    <group>
+                        <group string="Details">
+                            <field name="clearance_id" readonly="1"/>
+                            <field name="partner_id"/>
+                            <field name="date"/>
+                        </group>
+                        <group string="Other Info">
+                            <field name="po_no"/>
+                            <field name="sas_ref_no"/>
+                            <field name="awb_no"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Expense Lines">
+                              <field name="line_ids">
+                                    <list editable="bottom">
+                                        <field name="expense_id" optional="show"/>
+                                        <field name="description"/>
+                                        <field name="employee_id" optional="show"/>
+                                        <field name="amount" widget="monetary"
+                                            options="{'currency_field': 'currency_id'}"/>
+                                    </list>
+                                </field>
+                        </page>
+                    </notebook>
+                    
+
+                    <group class="oe_subtotal_footer">
+                        <field name="total_amount" widget="monetary"
+                               options="{'currency_field': 'currency_id'}"
+                               class="oe_subtotal_footer_separator fw-bold"/>
+                    </group>
+
+                    <group string="Notes">
+                        <field name="notes" nolabel="1"
+                               placeholder="Internal notes about this reimbursement..."/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- REIMBURSEMENT LIST VIEW -->
+    <record id="clearance_reimbursement_list" model="ir.ui.view">
+        <field name="name">clearance.reimbursement.list</field>
+        <field name="model">clearance.reimbursement</field>
+        <field name="arch" type="xml">
+            <list string="Reimbursements"
+                  decoration-success="state == 'paid'"
+                  decoration-warning="state == 'confirmed'"
+                  decoration-muted="state == 'cancelled'">
+                <field name="name" decoration-bf="1"/>
+                <field name="clearance_id"/>
+                <field name="partner_id"/>
+                <field name="date"/>
+                <field name="total_amount" widget="monetary"
+                       options="{'currency_field': 'currency_id'}"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'paid'"
+                       decoration-warning="state == 'confirmed'"
+                       decoration-info="state == 'draft'"
+                       decoration-danger="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- REIMBURSEMENT ACTION -->
+
+    <record id="action_clearance_reimbursement" model="ir.actions.act_window">
+        <field name="name">Reimbursements</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('clearance_record_id', '!=', False)]</field>
+        <field name="context">{'default_move_type': 'in_refund'}</field>
+    </record>
+
+    </data>
+</odoo>

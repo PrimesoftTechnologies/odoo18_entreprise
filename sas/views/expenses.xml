@@ -1,0 +1,52 @@
+<odoo>
+    <data>
+
+    <!-- expenses list -->
+        <record id="clearance_expenses_list" model="ir.ui.view">
+            <field name="name">clearance.expenses.list</field>
+            <field name="model">hr.expense</field>
+            <field name="arch" type="xml">
+                <list string="Clearance Expenses" 
+                      decoration-success="state == 'approved'"
+                      decoration-warning="state == 'submitted'"
+                      decoration-danger="state == 'refused'" create="false" edit="false">
+
+                    <field name="date"/>
+                    <field name="name"/>
+                    <field name="clearance_record_id"/>
+                    <field name="employee_id"/>
+                    <field name="total_amount_currency" widget="monetary"
+                           options="{'currency_field': 'currency_id'}"/>
+                    <field name="control_number"/>
+                    <field name="state" widget="badge"
+                           decoration-success="state == 'approved'"
+                           decoration-warning="state == 'submitted'"
+                           decoration-danger="state == 'refused'"/>
+                </list>
+            </field>
+        </record> 
+
+        <record id="view_hr_expense_list_inherit_clearance" model="ir.ui.view">
+            <field name="name">hr.expense.list.inherit.clearance</field>
+            <field name="model">hr.expense</field>
+            <field name="inherit_id" ref="hr_expense.hr_expense_view_expenses_analysis_tree"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='name']" position="after">
+                    <field name="clearance_record_id"/>
+                    <field name="control_number"/>
+                </xpath>
+
+            </field>
+        </record>     
+
+
+        <record id="sas.clearance_expenses" model="ir.actions.act_window">
+            <field name="name">Clearance Expenses</field>
+            <field name="res_model">hr.expense</field>
+            <field name="view_mode">list</field>
+            <field name="domain">[('clearance_record_id', '!=', False)]</field>
+            <field name="view_id" ref="clearance_expenses_list"/>
+        </record>
+    </data>
+</odoo>

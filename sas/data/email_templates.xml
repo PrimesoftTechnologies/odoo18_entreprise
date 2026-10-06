@@ -1,0 +1,575 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+
+    <!--
+    ═══════════════════════════════════════════════════════════════
+    SAS LOGISTICS – EMAIL NOTIFICATION TEMPLATES
+    ═══════════════════════════════════════════════════════════════
+    Covers:
+      1. Order Submitted          → notify Officers to review
+      2. L1 Approval (Confirmed)  → notify Manager for L2 approval
+      3. L2 Approval (Approved)   → notify Customer Relations Officer + Consignee
+      4. Order Rejected           → notify submitter with reason
+      5. Clearing Started         → notify Clearance Officer
+      6. Clearance Completed      → notify Manager + Customer Relations
+      7. Transport Assigned       → notify Driver + Consignee
+      8. Goods Delivered          → notify Customer Relations + Finance
+      9. Overdue Alert            → notify Manager
+    ═══════════════════════════════════════════════════════════════
+    -->
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- 1. ORDER SUBMITTED – notify Officers for L1 review        -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <record id="email_template_order_submitted" model="mail.template">
+        <field name="name">Shipping Order – Submitted for Approval (L1)</field>
+        <field name="model_id" ref="model_shipping_order"/>
+        <field name="subject">📋 [Action Required] Shipping Order {{ object.name }} – Awaiting Your Confirmation</field>
+        <field name="email_from">{{ (object.company_id.email or user.email) | safe }}</field>
+        <field name="email_to">{{ object.approval_officer_id.email or '' }}</field>
+        <field name="partner_to">{{ object.approval_officer_id.partner_id.id }}</field>
+        <field name="body_html"><![CDATA[
+<div style="font-family: Arial, sans-serif; max-width: 650px; margin: auto; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden;">
+    <!-- Header -->
+    <div style="background-color: #1a3c5e; padding: 24px 32px;">
+        <h2 style="color: #ffffff; margin: 0; font-size: 18px;">SAS Logistics – Action Required</h2>
+        <p style="color: #a8c4e0; margin: 6px 0 0; font-size: 13px;">Level 1 Approval – Shipping Order Review</p>
+    </div>
+    <!-- Body -->
+    <div style="padding: 28px 32px; background: #ffffff;">
+        <p style="color: #333; font-size: 15px;">Dear <strong>{{ object.approval_officer_id.name }}</strong>,</p>
+        <p style="color: #555; line-height: 1.6;">
+            A new shipping order has been submitted and is awaiting your <strong>Level 1 confirmation</strong>.
+            Please review the details below and take action.
+        </p>
+
+        <!-- Order Summary Card -->
+        <table style="width:100%; border-collapse:collapse; margin: 20px 0; font-size: 14px;">
+            <tr style="background:#f4f8fc;">
+                <td style="padding:10px 14px; color:#666; width:40%; border-bottom:1px solid #e8e8e8;"><strong>Reference</strong></td>
+                <td style="padding:10px 14px; color:#1a3c5e; font-weight:bold; border-bottom:1px solid #e8e8e8;">{{ object.name }}</td>
+            </tr>
+            <tr>
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #e8e8e8;"><strong>Shipper</strong></td>
+                <td style="padding:10px 14px; color:#333; border-bottom:1px solid #e8e8e8;">{{ object.shipper_id.name }}</td>
+            </tr>
+            <tr style="background:#f4f8fc;">
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #e8e8e8;"><strong>Consignee</strong></td>
+                <td style="padding:10px 14px; color:#333; border-bottom:1px solid #e8e8e8;">{{ object.consignee_id.name }}</td>
+            </tr>
+            <tr>
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #e8e8e8;"><strong>Order Type</strong></td>
+                <td style="padding:10px 14px; color:#333; border-bottom:1px solid #e8e8e8;">{{ object.order_type | title }} – {{ object.transport_mode | title }}</td>
+            </tr>
+            <tr style="background:#f4f8fc;">
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #e8e8e8;"><strong>Route</strong></td>
+                <td style="padding:10px 14px; color:#333; border-bottom:1px solid #e8e8e8;">{{ object.loading_port_id.name }} → {{ object.discharging_port_id.name }}</td>
+            </tr>
+            <tr>
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #e8e8e8;"><strong>ETA</strong></td>
+                <td style="padding:10px 14px; color:#333; border-bottom:1px solid #e8e8e8;">{{ object.eta or 'Not set' }}</td>
+            </tr>
+            <tr style="background:#f4f8fc;">
+                <td style="padding:10px 14px; color:#666;"><strong>Submitted By</strong></td>
+                <td style="padding:10px 14px; color:#333;">{{ object.customer_relation_user_id.name }}</td>
+            </tr>
+        </table>
+
+        {% if object.approval_notes %}
+        <div style="background:#fff8e1; border-left: 4px solid #f0a500; padding: 12px 16px; margin: 16px 0; border-radius: 4px;">
+            <strong style="color:#7a5000;">Submission Notes:</strong>
+            <p style="margin: 6px 0 0; color: #555;">{{ object.approval_notes }}</p>
+        </div>
+        {% endif %}
+
+        <!-- CTA Button -->
+        <div style="text-align: center; margin: 28px 0;">
+            <a href="/web#id={{ object.id }}&model=shipping.order&view_type=form"
+               style="background-color:#1a3c5e; color:#ffffff; padding: 12px 32px;
+                      text-decoration:none; border-radius:5px; font-size:15px;
+                      font-weight:bold; display:inline-block;">
+                Review &amp; Confirm Order
+            </a>
+        </div>
+
+        <p style="color:#888; font-size:13px; text-align:center;">
+            You are receiving this because you are the assigned approving officer.
+        </p>
+    </div>
+    <!-- Footer -->
+    <div style="background:#f4f4f4; padding: 16px 32px; text-align:center; border-top:1px solid #e0e0e0;">
+        <p style="margin:0; color:#aaa; font-size:12px;">SAS Logistics Ltd · Dar es Salaam, Tanzania</p>
+    </div>
+</div>
+        ]]></field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- 2. L1 CONFIRMED – notify Manager for L2 final approval   -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <record id="email_template_order_confirmed" model="mail.template">
+        <field name="name">Shipping Order – Confirmed (L1), Awaiting Manager Approval (L2)</field>
+        <field name="model_id" ref="model_shipping_order"/>
+        <field name="subject">✅ [L2 Approval Needed] Shipping Order {{ object.name }} – Confirmed by Officer</field>
+        <field name="email_from">{{ (object.company_id.email or user.email) | safe }}</field>
+        <field name="partner_to">{{ object.approval_manager_id.partner_id.id }}</field>
+        <field name="body_html"><![CDATA[
+<div style="font-family: Arial, sans-serif; max-width: 650px; margin: auto; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden;">
+    <div style="background-color: #1a6e3c; padding: 24px 32px;">
+        <h2 style="color: #ffffff; margin: 0; font-size: 18px;">SAS Logistics – Manager Approval Required</h2>
+        <p style="color: #a8e4c0; margin: 6px 0 0; font-size: 13px;">Level 2 Final Approval – Shipping Order</p>
+    </div>
+    <div style="padding: 28px 32px; background: #ffffff;">
+        <p style="color: #333; font-size: 15px;">Dear <strong>{{ object.approval_manager_id.name }}</strong>,</p>
+        <p style="color: #555; line-height: 1.6;">
+            Shipping Order <strong>{{ object.name }}</strong> has been confirmed by
+            <strong>{{ object.approval_officer_id.name }}</strong> and requires your
+            <strong>final (Level 2) approval</strong> before operations can proceed.
+        </p>
+
+        <table style="width:100%; border-collapse:collapse; margin: 20px 0; font-size: 14px;">
+            <tr style="background:#f0faf4;">
+                <td style="padding:10px 14px; color:#666; width:40%; border-bottom:1px solid #e8e8e8;"><strong>Reference</strong></td>
+                <td style="padding:10px 14px; color:#1a6e3c; font-weight:bold; border-bottom:1px solid #e8e8e8;">{{ object.name }}</td>
+            </tr>
+            <tr>
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #e8e8e8;"><strong>Shipper</strong></td>
+                <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8;">{{ object.shipper_id.name }}</td>
+            </tr>
+            <tr style="background:#f0faf4;">
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #e8e8e8;"><strong>Consignee</strong></td>
+                <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8;">{{ object.consignee_id.name }}</td>
+            </tr>
+            <tr>
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #e8e8e8;"><strong>Route</strong></td>
+                <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8;">{{ object.loading_port_id.name }} → {{ object.discharging_port_id.name }}</td>
+            </tr>
+            <tr style="background:#f0faf4;">
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #e8e8e8;"><strong>Total Value</strong></td>
+                <td style="padding:10px 14px; font-weight:bold; border-bottom:1px solid #e8e8e8;">{{ object.currency_id.symbol }}{{ '%.2f' % object.total_amount }}</td>
+            </tr>
+            <tr>
+                <td style="padding:10px 14px; color:#666;"><strong>Confirmed By (L1)</strong></td>
+                <td style="padding:10px 14px;">{{ object.approval_officer_id.name }} on {{ object.approval_l1_date }}</td>
+            </tr>
+        </table>
+
+        <div style="text-align: center; margin: 28px 0;">
+            <a href="/web#id={{ object.id }}&model=shipping.order&view_type=form"
+               style="background-color:#1a6e3c; color:#ffffff; padding: 12px 32px;
+                      text-decoration:none; border-radius:5px; font-size:15px;
+                      font-weight:bold; display:inline-block;">
+                Review &amp; Give Final Approval
+            </a>
+        </div>
+    </div>
+    <div style="background:#f4f4f4; padding: 16px 32px; text-align:center; border-top:1px solid #e0e0e0;">
+        <p style="margin:0; color:#aaa; font-size:12px;">SAS Logistics Ltd · Dar es Salaam, Tanzania</p>
+    </div>
+</div>
+        ]]></field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- 3. L2 APPROVED – notify CRO and Consignee                -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <record id="email_template_order_approved" model="mail.template">
+        <field name="name">Shipping Order – Final Approval Granted</field>
+        <field name="model_id" ref="model_shipping_order"/>
+        <field name="subject">🎉 Shipping Order {{ object.name }} – Fully Approved &amp; Active</field>
+        <field name="email_from">{{ (object.company_id.email or user.email) | safe }}</field>
+        <field name="partner_to">{{ object.customer_relation_user_id.partner_id.id }},{{ object.consignee_id.id }}</field>
+        <field name="body_html"><![CDATA[
+<div style="font-family: Arial, sans-serif; max-width: 650px; margin: auto; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden;">
+    <div style="background-color: #0a5c8a; padding: 24px 32px;">
+        <h2 style="color: #ffffff; margin: 0; font-size: 18px;">SAS Logistics – Shipment Approved</h2>
+        <p style="color: #a0d4f0; margin: 6px 0 0; font-size: 13px;">Your shipping order has been fully approved</p>
+    </div>
+    <div style="padding: 28px 32px; background: #ffffff;">
+        <p style="color: #333; font-size: 15px;">Dear Team,</p>
+        <p style="color: #555; line-height: 1.6;">
+            Shipping Order <strong>{{ object.name }}</strong> has received final approval and
+            operations are now authorised to proceed.
+        </p>
+
+        <table style="width:100%; border-collapse:collapse; margin: 20px 0; font-size: 14px;">
+            <tr style="background:#f0f6fc;">
+                <td style="padding:10px 14px; color:#666; width:40%; border-bottom:1px solid #e8e8e8;"><strong>Reference</strong></td>
+                <td style="padding:10px 14px; color:#0a5c8a; font-weight:bold; border-bottom:1px solid #e8e8e8;">{{ object.name }}</td>
+            </tr>
+            <tr>
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #e8e8e8;"><strong>Shipper</strong></td>
+                <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8;">{{ object.shipper_id.name }}</td>
+            </tr>
+            <tr style="background:#f0f6fc;">
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #e8e8e8;"><strong>Consignee</strong></td>
+                <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8;">{{ object.consignee_id.name }}</td>
+            </tr>
+            <tr>
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #e8e8e8;"><strong>B/L or AWB No.</strong></td>
+                <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8;">{{ object.bl_awb_number or '–' }}</td>
+            </tr>
+            <tr style="background:#f0f6fc;">
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #e8e8e8;"><strong>ETA</strong></td>
+                <td style="padding:10px 14px; border-bottom:1px solid #e8e8e8;">{{ object.eta or '–' }}</td>
+            </tr>
+            <tr>
+                <td style="padding:10px 14px; color:#666;"><strong>Approved By</strong></td>
+                <td style="padding:10px 14px;">{{ object.approval_manager_id.name }} on {{ object.approval_l2_date }}</td>
+            </tr>
+        </table>
+
+        <p style="color:#555; font-size:13px;">
+            For questions, contact your Customer Relations Officer:
+            <strong>{{ object.customer_relation_user_id.name }}</strong>
+            ({{ object.customer_relation_user_id.email or '–' }})
+        </p>
+
+        <div style="text-align: center; margin: 28px 0;">
+            <a href="/web#id={{ object.id }}&model=shipping.order&view_type=form"
+               style="background-color:#0a5c8a; color:#ffffff; padding: 12px 32px;
+                      text-decoration:none; border-radius:5px; font-size:15px;
+                      font-weight:bold; display:inline-block;">
+                View Shipping Order
+            </a>
+        </div>
+    </div>
+    <div style="background:#f4f4f4; padding: 16px 32px; text-align:center; border-top:1px solid #e0e0e0;">
+        <p style="margin:0; color:#aaa; font-size:12px;">SAS Logistics Ltd · Dar es Salaam, Tanzania</p>
+    </div>
+</div>
+        ]]></field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- 4. ORDER REJECTED – notify submitter with reason          -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <record id="email_template_order_rejected" model="mail.template">
+        <field name="name">Shipping Order – Rejected</field>
+        <field name="model_id" ref="model_shipping_order"/>
+        <field name="subject">❌ Shipping Order {{ object.name }} – Returned for Revision</field>
+        <field name="email_from">{{ (object.company_id.email or user.email) | safe }}</field>
+        <field name="partner_to">{{ object.customer_relation_user_id.partner_id.id }}</field>
+        <field name="body_html"><![CDATA[
+<div style="font-family: Arial, sans-serif; max-width: 650px; margin: auto; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden;">
+    <div style="background-color: #8a1a1a; padding: 24px 32px;">
+        <h2 style="color: #ffffff; margin: 0; font-size: 18px;">SAS Logistics – Order Returned for Revision</h2>
+        <p style="color: #f0a0a0; margin: 6px 0 0; font-size: 13px;">Please review and resubmit</p>
+    </div>
+    <div style="padding: 28px 32px; background: #ffffff;">
+        <p style="color: #333; font-size: 15px;">Dear <strong>{{ object.customer_relation_user_id.name }}</strong>,</p>
+        <p style="color: #555; line-height: 1.6;">
+            Shipping Order <strong>{{ object.name }}</strong> has been returned for revision.
+            Please review the reason below, make the necessary corrections, and resubmit.
+        </p>
+
+        <div style="background:#fff0f0; border-left: 4px solid #cc0000; padding: 14px 18px; margin: 20px 0; border-radius: 4px;">
+            <strong style="color:#8a1a1a;">Reason for Rejection:</strong>
+            <p style="margin: 8px 0 0; color: #333; white-space: pre-line;">{{ object.rejection_reason or 'No reason provided.' }}</p>
+        </div>
+
+        <table style="width:100%; border-collapse:collapse; margin: 20px 0; font-size: 14px;">
+            <tr style="background:#fdf0f0;">
+                <td style="padding:10px 14px; color:#666; width:40%; border-bottom:1px solid #f0e0e0;"><strong>Reference</strong></td>
+                <td style="padding:10px 14px; color:#8a1a1a; font-weight:bold; border-bottom:1px solid #f0e0e0;">{{ object.name }}</td>
+            </tr>
+            <tr>
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #f0e0e0;"><strong>Rejected By</strong></td>
+                <td style="padding:10px 14px; border-bottom:1px solid #f0e0e0;">{{ user.name }}</td>
+            </tr>
+            <tr style="background:#fdf0f0;">
+                <td style="padding:10px 14px; color:#666;"><strong>Date</strong></td>
+                <td style="padding:10px 14px;">{{ object.rejection_date }}</td>
+            </tr>
+        </table>
+
+        <div style="text-align: center; margin: 28px 0;">
+            <a href="/web#id={{ object.id }}&model=shipping.order&view_type=form"
+               style="background-color:#8a1a1a; color:#ffffff; padding: 12px 32px;
+                      text-decoration:none; border-radius:5px; font-size:15px;
+                      font-weight:bold; display:inline-block;">
+                Open &amp; Revise Order
+            </a>
+        </div>
+    </div>
+    <div style="background:#f4f4f4; padding: 16px 32px; text-align:center; border-top:1px solid #e0e0e0;">
+        <p style="margin:0; color:#aaa; font-size:12px;">SAS Logistics Ltd · Dar es Salaam, Tanzania</p>
+    </div>
+</div>
+        ]]></field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- 5. CLEARING STARTED – notify Clearance Officer            -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <record id="email_template_clearing_started" model="mail.template">
+        <field name="name">Clearance Record – Clearing Process Started</field>
+        <field name="model_id" ref="model_clearance_record"/>
+        <field name="subject">🔔 Clearing Started – {{ object.name }} | Deadline: {{ object.deadline }}</field>
+        <field name="email_from">{{ (object.company_id.email or user.email) | safe }}</field>
+        <field name="partner_to">{{ object.responsible_user_id.partner_id.id }}</field>
+        <field name="body_html"><![CDATA[
+<div style="font-family: Arial, sans-serif; max-width: 650px; margin: auto; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden;">
+    <div style="background-color: #5a3e8a; padding: 24px 32px;">
+        <h2 style="color: #ffffff; margin: 0; font-size: 18px;">SAS Logistics – Clearing Process Started</h2>
+        <p style="color: #d0c0f0; margin: 6px 0 0; font-size: 13px;">You have been assigned as the Clearance Officer</p>
+    </div>
+    <div style="padding: 28px 32px; background: #ffffff;">
+        <p style="color: #333; font-size: 15px;">Dear <strong>{{ object.responsible_user_id.name }}</strong>,</p>
+        <p style="color: #555; line-height: 1.6;">
+            A clearance record has been created for Shipping Order
+            <strong>{{ object.shipping_order_id.name }}</strong>.
+            You are responsible for completing the clearing process by the deadline below.
+        </p>
+
+        <div style="background:#f3f0ff; border-left: 4px solid #5a3e8a; padding: 14px 18px; margin: 20px 0; border-radius: 4px;">
+            <strong style="color:#5a3e8a; font-size:15px;">Deadline: {{ object.deadline }}</strong>
+        </div>
+
+        <table style="width:100%; border-collapse:collapse; margin: 20px 0; font-size: 14px;">
+            <tr style="background:#f6f3ff;">
+                <td style="padding:10px 14px; color:#666; width:40%; border-bottom:1px solid #ece6ff;"><strong>Clearance Ref</strong></td>
+                <td style="padding:10px 14px; color:#5a3e8a; font-weight:bold; border-bottom:1px solid #ece6ff;">{{ object.name }}</td>
+            </tr>
+            <tr>
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #ece6ff;"><strong>Shipping Order</strong></td>
+                <td style="padding:10px 14px; border-bottom:1px solid #ece6ff;">{{ object.shipping_order_id.name }}</td>
+            </tr>
+            <tr style="background:#f6f3ff;">
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #ece6ff;"><strong>Handler</strong></td>
+                <td style="padding:10px 14px; border-bottom:1px solid #ece6ff;">{{ 'SAS Logistics (In-House)' if object.handler == 'our' else object.third_party_agent or 'Third Party' }}</td>
+            </tr>
+            <tr>
+                <td style="padding:10px 14px; color:#666;"><strong>Consignee</strong></td>
+                <td style="padding:10px 14px;">{{ object.shipping_order_id.consignee_id.name }}</td>
+            </tr>
+        </table>
+
+        <p style="color:#555; font-size:13px;">
+            <strong>Key steps to complete:</strong><br/>
+            ✓ Lodge declaration on TRA system<br/>
+            ✓ Apply for required permits (GCLA, TBS, TMDA)<br/>
+            ✓ Submit docs to shipping line &amp; follow up on DO<br/>
+            ✓ Arrange port/airport physical verification<br/>
+            ✓ Prepare gate pass and arrange cargo release
+        </p>
+
+        <div style="text-align: center; margin: 28px 0;">
+            <a href="/web#id={{ object.id }}&model=clearance.record&view_type=form"
+               style="background-color:#5a3e8a; color:#ffffff; padding: 12px 32px;
+                      text-decoration:none; border-radius:5px; font-size:15px;
+                      font-weight:bold; display:inline-block;">
+                Open Clearance Record
+            </a>
+        </div>
+    </div>
+    <div style="background:#f4f4f4; padding: 16px 32px; text-align:center; border-top:1px solid #e0e0e0;">
+        <p style="margin:0; color:#aaa; font-size:12px;">SAS Logistics Ltd · Dar es Salaam, Tanzania</p>
+    </div>
+</div>
+        ]]></field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- 6. CLEARANCE COMPLETED – notify Manager + CRO            -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <record id="email_template_clearance_completed" model="mail.template">
+        <field name="name">Clearance Record – Clearance Completed</field>
+        <field name="model_id" ref="model_clearance_record"/>
+        <field name="subject">✅ Clearance Done – {{ object.shipping_order_id.name }} | Ready for Receiving</field>
+        <field name="email_from">{{ (object.company_id.email or user.email) | safe }}</field>
+        <field name="partner_to">{{ object.shipping_order_id.customer_relation_user_id.partner_id.id }},{{ object.shipping_order_id.approval_manager_id.partner_id.id }}</field>
+        <field name="body_html"><![CDATA[
+<div style="font-family: Arial, sans-serif; max-width: 650px; margin: auto; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden;">
+    <div style="background-color: #1a6e3c; padding: 24px 32px;">
+        <h2 style="color: #ffffff; margin: 0; font-size: 18px;">SAS Logistics – Clearance Completed</h2>
+        <p style="color: #a8e4c0; margin: 6px 0 0; font-size: 13px;">Cargo is cleared and ready for stock receipt</p>
+    </div>
+    <div style="padding: 28px 32px; background: #ffffff;">
+        <p style="color: #555; line-height: 1.6;">
+            Clearance for Shipping Order <strong>{{ object.shipping_order_id.name }}</strong>
+            has been completed by <strong>{{ object.responsible_user_id.name }}</strong>.
+            The cargo is now ready to be received into stock.
+        </p>
+
+        <table style="width:100%; border-collapse:collapse; margin: 20px 0; font-size: 14px;">
+            <tr style="background:#f0faf4;">
+                <td style="padding:10px 14px; color:#666; width:40%; border-bottom:1px solid #ddf0e6;"><strong>Clearance Ref</strong></td>
+                <td style="padding:10px 14px; color:#1a6e3c; font-weight:bold; border-bottom:1px solid #ddf0e6;">{{ object.name }}</td>
+            </tr>
+            <tr>
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #ddf0e6;"><strong>Shipping Order</strong></td>
+                <td style="padding:10px 14px; border-bottom:1px solid #ddf0e6;">{{ object.shipping_order_id.name }}</td>
+            </tr>
+            <tr style="background:#f0faf4;">
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #ddf0e6;"><strong>Total Clearance Cost</strong></td>
+                <td style="padding:10px 14px; font-weight:bold; border-bottom:1px solid #ddf0e6;">{{ object.shipping_order_id.currency_id.symbol }}{{ '%.2f' % object.total_clearance_cost }}</td>
+            </tr>
+            <tr>
+                <td style="padding:10px 14px; color:#666;"><strong>Completed By</strong></td>
+                <td style="padding:10px 14px;">{{ object.responsible_user_id.name }}</td>
+            </tr>
+        </table>
+
+        <p style="color:#555; font-size:13px;">
+            <strong>Next step:</strong> Click "Receive Products (GRN)" on the Shipping Order to
+            create the Goods Receipt Note and move cargo into stock.
+        </p>
+
+        <div style="text-align: center; margin: 28px 0;">
+            <a href="/web#id={{ object.shipping_order_id.id }}&model=shipping.order&view_type=form"
+               style="background-color:#1a6e3c; color:#ffffff; padding: 12px 32px;
+                      text-decoration:none; border-radius:5px; font-size:15px;
+                      font-weight:bold; display:inline-block;">
+                Open Shipping Order
+            </a>
+        </div>
+    </div>
+    <div style="background:#f4f4f4; padding: 16px 32px; text-align:center; border-top:1px solid #e0e0e0;">
+        <p style="margin:0; color:#aaa; font-size:12px;">SAS Logistics Ltd · Dar es Salaam, Tanzania</p>
+    </div>
+</div>
+        ]]></field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- 7. TRANSPORT ASSIGNED – notify Driver + CRO              -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <record id="email_template_transport_assigned" model="mail.template">
+        <field name="name">Transport Assignment – Trip Assigned</field>
+        <field name="model_id" ref="model_transport_assignment"/>
+        <field name="subject">🚛 Trip Assignment – {{ object.name }} on {{ object.trip_date }}</field>
+        <field name="email_from">{{ (object.company_id.email or user.email) | safe }}</field>
+        <field name="partner_to">{{ object.driver_id.id }},{{ object.shipping_order_id.customer_relation_user_id.partner_id.id }}</field>
+        <field name="body_html"><![CDATA[
+<div style="font-family: Arial, sans-serif; max-width: 650px; margin: auto; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden;">
+    <div style="background-color: #7a4f1a; padding: 24px 32px;">
+        <h2 style="color: #ffffff; margin: 0; font-size: 18px;">SAS Logistics – Transport Assignment</h2>
+        <p style="color: #f0d4a0; margin: 6px 0 0; font-size: 13px;">A new trip has been assigned</p>
+    </div>
+    <div style="padding: 28px 32px; background: #ffffff;">
+        <p style="color: #555; line-height: 1.6;">
+            A new transport assignment has been created for Shipping Order
+            <strong>{{ object.shipping_order_id.name }}</strong>.
+        </p>
+
+        <table style="width:100%; border-collapse:collapse; margin: 20px 0; font-size: 14px;">
+            <tr style="background:#fdf6ee;">
+                <td style="padding:10px 14px; color:#666; width:40%; border-bottom:1px solid #f0e4d0;"><strong>Trip Ref</strong></td>
+                <td style="padding:10px 14px; color:#7a4f1a; font-weight:bold; border-bottom:1px solid #f0e4d0;">{{ object.name }}</td>
+            </tr>
+            <tr>
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #f0e4d0;"><strong>Trip Date</strong></td>
+                <td style="padding:10px 14px; border-bottom:1px solid #f0e4d0;">{{ object.trip_date }}</td>
+            </tr>
+            <tr style="background:#fdf6ee;">
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #f0e4d0;"><strong>Transfer Type</strong></td>
+                <td style="padding:10px 14px; border-bottom:1px solid #f0e4d0;">{{ object.transfer_type | title }}</td>
+            </tr>
+            <tr>
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #f0e4d0;"><strong>Vehicle</strong></td>
+                <td style="padding:10px 14px; border-bottom:1px solid #f0e4d0;">{{ object.vehicle_id.name or '–' }}</td>
+            </tr>
+            <tr style="background:#fdf6ee;">
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #f0e4d0;"><strong>Driver</strong></td>
+                <td style="padding:10px 14px; border-bottom:1px solid #f0e4d0;">{{ object.driver_id.name or '–' }}</td>
+            </tr>
+            <tr>
+                <td style="padding:10px 14px; color:#666;"><strong>Delivery To</strong></td>
+                <td style="padding:10px 14px;">{{ object.delivery_address_id.name or object.dest_warehouse_id.name or '–' }}</td>
+            </tr>
+        </table>
+
+        {% if object.route_details %}
+        <div style="background:#fff8ee; border-left:4px solid #7a4f1a; padding:12px 16px; margin:16px 0; border-radius:4px;">
+            <strong>Route / Instructions:</strong>
+            <p style="margin:6px 0 0; color:#555; white-space:pre-line;">{{ object.route_details }}</p>
+        </div>
+        {% endif %}
+
+        <div style="text-align: center; margin: 28px 0;">
+            <a href="/web#id={{ object.id }}&model=transport.assignment&view_type=form"
+               style="background-color:#7a4f1a; color:#ffffff; padding: 12px 32px;
+                      text-decoration:none; border-radius:5px; font-size:15px;
+                      font-weight:bold; display:inline-block;">
+                View Trip Details
+            </a>
+        </div>
+    </div>
+    <div style="background:#f4f4f4; padding: 16px 32px; text-align:center; border-top:1px solid #e0e0e0;">
+        <p style="margin:0; color:#aaa; font-size:12px;">SAS Logistics Ltd · Dar es Salaam, Tanzania</p>
+    </div>
+</div>
+        ]]></field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- 8. GOODS DELIVERED – notify CRO + Finance                -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <record id="email_template_goods_delivered" model="mail.template">
+        <field name="name">Shipping Order – Goods Delivered</field>
+        <field name="model_id" ref="model_shipping_order"/>
+        <field name="subject">📦 Goods Delivered – {{ object.name }} | Ready for Invoicing</field>
+        <field name="email_from">{{ (object.company_id.email or user.email) | safe }}</field>
+        <field name="partner_to">{{ object.customer_relation_user_id.partner_id.id }},{{ object.approval_manager_id.partner_id.id }}</field>
+        <field name="body_html"><![CDATA[
+<div style="font-family: Arial, sans-serif; max-width: 650px; margin: auto; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden;">
+    <div style="background-color: #1a3c5e; padding: 24px 32px;">
+        <h2 style="color: #ffffff; margin: 0; font-size: 18px;">SAS Logistics – Goods Delivered</h2>
+        <p style="color: #a8c4e0; margin: 6px 0 0; font-size: 13px;">Ready for customer invoicing</p>
+    </div>
+    <div style="padding: 28px 32px; background: #ffffff;">
+        <p style="color: #555; line-height: 1.6;">
+            Goods for Shipping Order <strong>{{ object.name }}</strong> have been delivered.
+            The order is now ready for invoicing.
+        </p>
+
+        <table style="width:100%; border-collapse:collapse; margin: 20px 0; font-size: 14px;">
+            <tr style="background:#f4f8fc;">
+                <td style="padding:10px 14px; color:#666; width:40%; border-bottom:1px solid #e0ecf8;"><strong>Reference</strong></td>
+                <td style="padding:10px 14px; color:#1a3c5e; font-weight:bold; border-bottom:1px solid #e0ecf8;">{{ object.name }}</td>
+            </tr>
+            <tr>
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #e0ecf8;"><strong>Consignee</strong></td>
+                <td style="padding:10px 14px; border-bottom:1px solid #e0ecf8;">{{ object.consignee_id.name }}</td>
+            </tr>
+            <tr style="background:#f4f8fc;">
+                <td style="padding:10px 14px; color:#666; border-bottom:1px solid #e0ecf8;"><strong>Total Amount</strong></td>
+                <td style="padding:10px 14px; font-weight:bold; border-bottom:1px solid #e0ecf8;">{{ object.currency_id.symbol }}{{ '%.2f' % object.total_amount }}</td>
+            </tr>
+        </table>
+
+        <div style="text-align: center; margin: 28px 0;">
+            <a href="/web#id={{ object.id }}&model=shipping.order&view_type=form"
+               style="background-color:#1a3c5e; color:#ffffff; padding: 12px 32px;
+                      text-decoration:none; border-radius:5px; font-size:15px;
+                      font-weight:bold; display:inline-block;">
+                Create Invoice
+            </a>
+        </div>
+    </div>
+    <div style="background:#f4f4f4; padding: 16px 32px; text-align:center; border-top:1px solid #e0e0e0;">
+        <p style="margin:0; color:#aaa; font-size:12px;">SAS Logistics Ltd · Dar es Salaam, Tanzania</p>
+    </div>
+</div>
+        ]]></field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+    </data>
+</odoo>

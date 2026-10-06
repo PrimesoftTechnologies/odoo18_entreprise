@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============ Clearance Financial Analysis (Pivot/Graph) ============ -->
+    <record id="view_clearance_financial_pivot" model="ir.ui.view">
+        <field name="name">clearance.record.financial.pivot</field>
+        <field name="model">clearance.record</field>
+        <field name="arch" type="xml">
+            <pivot string="Clearance Financial Analysis">
+                <field name="shipping_order_id" type="row"/>
+                <field name="state" type="col"/>
+                <field name="duty_amount" type="measure"/>
+                <field name="vat_amount" type="measure"/>
+                <field name="excise_duty" type="measure"/>
+                <field name="other_tax" type="measure"/>
+                <field name="total_duty_tax" type="measure"/>
+                <field name="port_charges_amount" type="measure"/>
+                <field name="shipping_line_invoice_amount" type="measure"/>
+                <field name="other_fees" type="measure"/>
+                <field name="total_clearance_cost" type="measure"/>
+                <field name="total_expense_amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_clearance_financial_graph" model="ir.ui.view">
+        <field name="name">clearance.record.financial.graph</field>
+        <field name="model">clearance.record</field>
+        <field name="arch" type="xml">
+            <graph string="Clearance Cost Breakdown" type="bar">
+                <field name="clearance_date" interval="month"/>
+                <field name="total_clearance_cost" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_clearance_financial_list" model="ir.ui.view">
+        <field name="name">clearance.record.financial.list</field>
+        <field name="model">clearance.record</field>
+        <field name="arch" type="xml">
+            <list string="Clearance Financials">
+                <field name="name"/>
+                <field name="shipping_order_id"/>
+                <field name="responsible_user_id"/>
+                <field name="state"/>
+                <field name="duty_amount" sum="Total Duty"/>
+                <field name="vat_amount" sum="Total VAT"/>
+                <field name="excise_duty" sum="Total Excise"/>
+                <field name="other_tax" sum="Total Other Tax"/>
+                <field name="port_charges_amount" sum="Total Port Charges"/>
+                <field name="total_clearance_cost" sum="Total Cost"/>
+                <field name="total_expense_amount" sum="Total Expenses"/>
+                <field name="invoice_count"/>
+                <field name="reimbursement_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_clearance_financial_search" model="ir.ui.view">
+        <field name="name">clearance.record.financial.search</field>
+        <field name="model">clearance.record</field>
+        <field name="arch" type="xml">
+            <search string="Clearance Financials">
+                <field name="name"/>
+                <field name="shipping_order_id"/>
+                <field name="responsible_user_id"/>
+                <filter string="Completed" name="done" domain="[('state','=','done')]"/>
+                <filter string="In Progress" name="in_progress" domain="[('state','=','in_progress')]"/>
+                <filter string="Clearance Date" name="clearance_date" date="clearance_date"/>
+                <group expand="0" string="Group By">
+                    <filter string="Handler" name="group_handler" context="{'group_by':'handler'}"/>
+                    <filter string="Responsible Officer" name="group_officer" context="{'group_by':'responsible_user_id'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by':'state'}"/>
+                    <filter string="Clearance Month" name="group_month" context="{'group_by':'clearance_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_clearance_financial_report" model="ir.actions.act_window">
+        <field name="name">Financial Report</field>
+        <field name="res_model">clearance.record</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="search_view_id" ref="view_clearance_financial_search"/>
+        <field name="context">{'search_default_group_month': 1}</field>
+    </record>
+
+    <!-- ============ Reimbursement Report ============ -->
+    <record id="view_reimbursement_report_pivot" model="ir.ui.view">
+        <field name="name">clearance.reimbursement.pivot</field>
+        <field name="model">clearance.reimbursement</field>
+        <field name="arch" type="xml">
+            <pivot string="Reimbursement Report">
+                <field name="clearance_id" type="row"/>
+                <field name="state" type="col"/>
+                <field name="total_amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_reimbursement_report" model="ir.actions.act_window">
+        <field name="name">Reimbursement Report</field>
+        <field name="res_model">clearance.reimbursement</field>
+        <field name="view_mode">pivot,graph,list,form</field>
+    </record>
+
+</odoo>

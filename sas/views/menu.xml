@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ========================================================= -->
+        <!-- TOP LEVEL MENU                                            -->
+        <!-- ========================================================= -->
+
+        <menuitem name="Logistics"
+                  id="sas.menu_root"
+                  web_icon="sas,static/description/icon.png"/>
+
+
+        <!-- ========================================================= -->
+        <!-- DASHBOARD                                                  -->
+        <!-- ========================================================= -->
+
+        <!-- <record id="action_sas_dashboard" model="ir.actions.client">
+            <field name="name">Dashboard</field>
+            <field name="tag">sas_dashboard</field>
+        </record>
+
+        <menuitem id="menu_sas_dashboard"
+                  name="Dashboard"
+                  parent="sas.menu_root"
+                  action="action_sas_dashboard"
+                  sequence="1"/> -->
+
+
+        <!-- ========================================================= -->
+        <!-- SHIPPING                                                   -->
+        <!-- ========================================================= -->
+
+        <menuitem name="Shipping"
+                  id="sas.manifests"
+                  parent="sas.menu_root"
+                  groups="sas.group_sas_officer"
+                  sequence="10"/>
+
+        <menuitem name="Shipping"
+                  id="sas.confirmed_orders"
+                  parent="sas.manifests"
+                  action="sas.action_window"
+                  groups="sas.group_sas_officer"/>
+
+        <menuitem name="Products"
+                  id="sas.products"
+                  parent="sas.manifests"
+                  action="sas.action_transport_products"
+                  groups="sas.group_sas_officer"/>
+
+
+        <!-- ========================================================= -->
+        <!-- CLEARANCE                                                  -->
+        <!-- ========================================================= -->
+
+        <menuitem name="Clearance"
+                  id="sas.clearance"
+                  parent="sas.menu_root"
+                  groups="sas.group_sas_officer"
+                  sequence="20"/>
+
+        <menuitem name="Clearing Orders"
+                  id="sas.menu_clearing"
+                  parent="sas.clearance"
+                  action="sas.clearance_window"/>
+
+        <menuitem name="Expenses"
+                  id="sas.expenses"
+                  parent="sas.clearance"
+                  action="sas.clearance_expenses"
+                  groups="sas.group_sas_administrator"/>
+
+        <menuitem name="Reimbursements"
+                  id="sas.reimbursements"
+                  parent="sas.clearance"
+                  action="sas.action_clearance_reimbursement"/>
+
+
+        <!-- ========================================================= -->
+        <!-- TRANSPORTATION                                             -->
+        <!-- ========================================================= -->
+
+        <menuitem name="Transportation"
+                  id="sas.transportation"
+                  parent="sas.menu_root"
+                  action="action_transport_assignment"
+                  groups="sas.group_sas_administrator"
+                  sequence="30"/>
+
+
+        <!-- ========================================================= -->
+        <!-- REPORTING                                                  -->
+        <!-- ========================================================= -->
+
+        <menuitem name="Reporting"
+                  id="sas.reporting"
+                  parent="sas.menu_root"
+                  sequence="90"
+                  groups="sas.group_sas_administrator"/>
+
+        <menuitem name="Clearance Report"
+                  id="menu_sas_clearance_report"
+                  parent="sas.reporting"
+                  action="action_clearance_report_wizard"
+                  sequence="10"/>
+
+        <menuitem name="Financial Report"
+                  id="menu_sas_financial_report"
+                  parent="sas.reporting"
+                  action="action_clearance_financial_report"
+                  sequence="20"/>
+
+
+        <menuitem id="menu_shipping_order_report"
+                    name="Onshore / Shipment Report"
+                    parent="sas.reporting"
+                    action="action_shipping_order_report"
+                    sequence="15"/>
+
+        <menuitem name="Reimbursement Report"
+                  id="menu_sas_reimbursement_report"
+                  parent="sas.reporting"
+                  action="action_reimbursement_report"
+                  sequence="30"/>
+
+        <menuitem name="Transport Report"
+                  id="menu_sas_transport_report"
+                  parent="sas.reporting"
+                  action="action_transport_report"
+                  sequence="40"/>
+
+
+        <!-- ========================================================= -->
+        <!-- CONFIGURATION                                              -->
+        <!-- ========================================================= -->
+
+        <menuitem name="Configuration"
+                  id="sas.configuration"
+                  parent="sas.menu_root"
+                  sequence="100"
+                  groups="sas.group_sas_administrator"/>
+
+        <menuitem name="Ports"
+                  id="sas.menu_ports"
+                  parent="sas.configuration"
+                  action="sas.ports"/>
+
+        <menuitem name="Routes"
+                  id="sas.menu_routes"
+                  parent="sas.configuration"
+                  action="sas.routes"/>
+
+    </data>
+</odoo>

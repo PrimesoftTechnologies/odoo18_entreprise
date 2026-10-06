@@ -1,0 +1,30 @@
+<odoo>
+  <data>
+
+    <record id="view_contract_form_inherit_reimbursement" model="ir.ui.view">
+        <field name="name">hr.contract.form.reimbursement</field>
+        <field name="model">hr.contract</field>
+        <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='salary_info']" position="inside">
+               <group>
+                    <field name="reimbursement_amount_add"/>
+                    <field name="is_nssf"/>
+                    <field name="is_paye"/>
+                    <field name="is_paye_secondary"/>
+                    <field name="is_wcf"/>
+                </group>
+                 <group>
+                    <field name="is_nhif"/>
+                    <field name="is_sdl"/>
+                    <field name="is_retired"/>
+                    <field name="is_withholding_tax"/>
+                    <field name="is_loan_board"/>
+                 </group>
+
+            </xpath>
+        </field>
+    </record>
+
+  </data>
+</odoo>

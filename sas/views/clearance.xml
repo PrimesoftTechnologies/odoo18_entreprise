@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!--  CLEARING WIZARD FORM                           -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <record id="clearing_wizard_form" model="ir.ui.view">
+        <field name="name">clearing.wizard.form</field>
+        <field name="model">clearing.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Start Clearing Process">
+                <sheet>
+                    <div class="oe_title">
+                        <h2>Start Customs Clearing</h2>
+                        <p class="text-muted">
+                            A clearance record will be created and a deadline reminder will be scheduled.
+                        </p>
+                    </div>
+                    <group>
+                        <group string="Clearing Details">
+                            <field name="handler"/>
+                            <field name="third_party_agent"
+                                   invisible="handler != 'other'"
+                                   required="handler == 'other'"/>
+                            <field name="deadline"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button string="Start Clearing" type="object"
+                                name="action_confirm_clearing" class="btn-primary"/>
+                        <button string="Cancel" special="cancel" class="btn-secondary"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!--  CLEARANCE RECORD – FORM VIEW                   -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <record id="clearance_record_form" model="ir.ui.view">
+        <field name="name">clearance.record.form</field>
+        <field name="model">clearance.record</field>
+        <field name="arch" type="xml">
+            <form string="Clearance Record">
+                <header>
+                    <button string="Start" type="object" name="action_start"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button string="Complete Clearance" type="object" name="action_complete"
+                            class="btn-primary" invisible="state != 'in_progress'"/>
+                    <button string="Cancel" type="object" name="action_cancel"
+                            class="btn-secondary"
+                            invisible="state in ('done','cancelled')"
+                            confirm="Cancel this clearance record?"/>
+                    <button string="Create Reimbursement" type="object"
+                            name="action_create_reimbursement"
+                            class="btn-warning"
+                            invisible="state != 'done'"/>
+                    <button string="Create Invoice" type="object"
+                            name="action_create_invoice"
+                            class="btn-secondary"
+                            invisible="state != 'done'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,in_progress,done"/>
+                </header>
+
+                <sheet>
+                    <!-- Smart Buttons -->
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object"
+                                name="action_view_expenses" icon="fa-money"
+                                invisible="expense_count == 0">
+                            <field string="Expenses" name="expense_count" widget="statinfo"/>
+                        </button>
+
+                        <button class="oe_stat_button" type="object"
+                                name="action_view_reimbursements" icon="fa-undo"
+                                invisible="reimbursement_count == 0">
+                            <field string="Reimbursements" name="reimbursement_count" widget="statinfo"/>
+                        </button>
+                        
+                        <button class="oe_stat_button" type="object"
+                                name="action_view_invoices" icon="fa-file-text-o"
+                                invisible="invoice_count == 0">
+                            <field string="Invoices" name="invoice_count" widget="statinfo"/>
+                        </button>
+                    </div>
+
+                    <!-- Deadline Warning -->
+                    <div class="alert alert-warning mb-3" role="alert"
+                         invisible="state == 'done' or state == 'cancelled'">
+                        <strong>Deadline:</strong>
+                        <field name="deadline" readonly="1" nolabel="1" class="d-inline"/>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <!-- Header Group -->
+                    <group>
+                        <group string="General">
+                            <field name="shipping_order_id" readonly="1"/>
+                            <field name="handler"/>
+                            <field name="third_party_agent"
+                                   invisible="handler != 'other'"/>
+                            <field name="responsible_user_id"/>
+                            <field name="clearance_date"/>
+                            <field name="deadline"/>
+                        </group>
+                        <group string="Financial Summary">
+                            <field name="total_duty_tax" widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"/>
+                            <field name="port_charges_amount" widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"/>
+                            <field name="shipping_line_invoice_amount" widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"/>
+                            <field name="other_fees" widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"/>
+                            <field name="total_clearance_cost" widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"
+                                   class="fw-bold"/>
+                            <field name="total_expense_amount" widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+
+                        <!-- ── TAB 1: DECLARATION ── -->
+                        <page string="Declaration (TRA)" name="declaration">
+                            <group string="Declaration Filing">
+                                <group>
+                                    <field name="declaration_number"/>
+                                    <field name="declaration_date"/>
+                                    <field name="customs_officer"/>
+                                    <field name="hs_code_clarified"/>
+                                </group>
+                                <group>
+                                    <field name="pre_assessment_reviewed"/>
+                                    <field name="pre_assessment_date"
+                                           invisible="not pre_assessment_reviewed"/>
+                                    <field name="final_assessment_date"/>
+                                </group>
+                            </group>
+
+                            <group string="Government Permits">
+                                <group>
+                                    <field name="gcla_permit"/>
+                                    <field name="gcla_permit_number"
+                                           invisible="not gcla_permit"/>
+                                    <field name="gcla_permit_date"
+                                           invisible="not gcla_permit"/>
+                                    <field name="tbs_permit"/>
+                                    <field name="tbs_permit_number"
+                                           invisible="not tbs_permit"/>
+                                    <field name="tbs_permit_date"
+                                           invisible="not tbs_permit"/>
+                                </group>
+                                <group>
+                                    <field name="tmda_permit"/>
+                                    <field name="tmda_permit_number"
+                                           invisible="not tmda_permit"/>
+                                    <field name="tmda_permit_date"
+                                           invisible="not tmda_permit"/>
+                                    <field name="other_permit"/>
+                                    <field name="other_permit_details"
+                                           invisible="not other_permit"/>
+                                    <field name="other_permit_number"
+                                           invisible="not other_permit"/>
+                                </group>
+                            </group>
+
+                            <group string="Bond">
+                                <group>
+                                    <field name="bond_cancellation_required"/>
+                                    <field name="bond_number"
+                                           invisible="not bond_cancellation_required"/>
+                                    <field name="bond_cancellation_date"
+                                           invisible="not bond_cancellation_required"/>
+                                </group>
+                            </group>
+
+                            <group string="Duty &amp; Tax">
+                                <group>
+                                    <field name="duty_amount" widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                    <field name="vat_amount" widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                </group>
+                                <group>
+                                    <field name="excise_duty" widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                    <field name="other_tax" widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                    <field name="total_duty_tax" widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"
+                                           class="fw-bold"/>
+                                </group>
+                            </group>
+
+                            <group string="TRA Query Notes">
+                                <field name="tra_query_notes" nolabel="1"
+                                       placeholder="Document any TRA or government queries here..."/>
+                            </group>
+                        </page>
+
+                        <!-- ── TAB 2: SHIPPING LINE ── -->
+                        <page string="Shipping Line &amp; Containers" name="shipping_line">
+                            <group string="Document Submission">
+                                <group>
+                                    <field name="bl_number"/>
+                                    <field name="docs_submitted_to_shipping_line"/>
+                                    <field name="docs_submission_date"
+                                           invisible="not docs_submitted_to_shipping_line"/>
+                                </group>
+                            </group>
+
+                            <group string="Invoice &amp; Payment">
+                                <group>
+                                    <field name="shipping_line_invoice_received"/>
+                                    <field name="shipping_line_invoice_no"
+                                           invisible="not shipping_line_invoice_received"/>
+                                    <field name="shipping_line_invoice_amount"
+                                           invisible="not shipping_line_invoice_received"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                </group>
+                                <group>
+                                    <field name="shipping_line_paid"/>
+                                    <field name="shipping_line_paid_date"
+                                           invisible="not shipping_line_paid"/>
+                                </group>
+                            </group>
+
+                            <group string="Delivery Order (DO)">
+                                <group>
+                                    <field name="do_received"/>
+                                    <field name="do_number" invisible="not do_received"/>
+                                    <field name="do_date" invisible="not do_received"/>
+                                    <field name="do_expiry_date" invisible="not do_received"/>
+                                </group>
+                            </group>
+
+                            <group string="Container Deposit">
+                                <group>
+                                    <field name="deposit_required"/>
+                                    <field name="deposit_amount"
+                                           invisible="not deposit_required"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                    <field name="deposit_paid_date"
+                                           invisible="not deposit_required"/>
+                                </group>
+                                <group>
+                                    <field name="deposit_refunded"
+                                           invisible="not deposit_required"/>
+                                    <field name="deposit_refund_date"
+                                           invisible="not deposit_refunded"/>
+                                </group>
+                            </group>
+
+                            <notebook>
+                               <page string="Container Tracking">
+                                    <field name="container_line_ids">
+                                        <list editable="bottom">
+                                            <field name="container_number"/>
+                                            <field name="container_size"/>
+                                            <field name="seal_number"/>
+                                            <field name="empty_returned"/>
+                                            <field name="empty_return_date"
+                                                   invisible="not empty_returned"/>
+                                            <field name="return_notes"/>
+                                        </list>
+                                    </field>
+                                </page>
+                            </notebook>
+
+
+
+                            <group string="Shipping Line Notes">
+                                <field name="shipping_line_notes" nolabel="1"
+                                       placeholder="Any issues or notes with the shipping line..."/>
+                            </group>
+                        </page>
+
+                        <!-- ── TAB 3: PORT / AIRPORT ── -->
+                        <page string="Port / Airport / Borders" name="port">
+                            <group string="Document Review">
+                                <group>
+                                    <field name="docs_received_for_verification"/>
+                                    <field name="docs_review_date"
+                                           invisible="not docs_received_for_verification"/>
+                                </group>
+                            </group>
+
+                            <group string="Cargo Booking &amp; Verification">
+                                <group>
+                                    <field name="cargo_booked"/>
+                                    <field name="cargo_booking_date"
+                                           invisible="not cargo_booked"/>
+                                    <field name="physical_verification_done"/>
+                                    <field name="physical_verification_date"
+                                           invisible="not physical_verification_done"/>
+                                    <field name="examination_type"/>
+                                </group>
+                            </group>
+
+                            <group string="Port Charges">
+                                <group>
+                                    <field name="port_charges_paid"/>
+                                    <field name="port_charges_amount"
+                                           invisible="not port_charges_paid"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                    <field name="port_charges_paid_date"
+                                           invisible="not port_charges_paid"/>
+                                </group>
+                            </group>
+
+                            <group string="Gate Pass &amp; Release">
+                                <group>
+                                    <field name="gate_pass_prepared"/>
+                                    <field name="gate_pass_number"
+                                           invisible="not gate_pass_prepared"/>
+                                    <field name="gate_pass_date"
+                                           invisible="not gate_pass_prepared"/>
+                                </group>
+                                <group>
+                                    <field name="cargo_released"/>
+                                    <field name="cargo_release_date"
+                                           invisible="not cargo_released"/>
+                                    <field name="cargo_loaded"/>
+                                    <field name="cargo_loaded_date"
+                                           invisible="not cargo_loaded"/>
+                                </group>
+                            </group>
+
+                            <group string="Port Notes">
+                                <field name="port_notes" nolabel="1"
+                                       placeholder="Any issues or notes with port / airport / borders..."/>
+                            </group>
+                        </page>
+
+                        <!-- ── TAB 4: EXPENSES ── -->
+                        <page string="Clearing Expenses" name="expenses">
+                            <field name="expense_ids">
+                                <list>
+                                    <field name="date"/>
+                                    <field name="name"/>
+                                    <field name="employee_id"/>
+                                    <field name="total_amount_currency"/>
+                                    <field name="control_number"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'done'"
+                                           decoration-warning="state == 'reported'"
+                                           decoration-info="state == 'draft'"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- ── TAB 5: DOCUMENTS ── -->
+                        <page string="Documents" name="documents_page">
+                            <field name="document_ids" widget="many2many_binary"
+                                   string="Clearance Attachments"/>
+                        </page>
+
+                        <!-- ── TAB 6: NOTES ── -->
+                        <page string="General Notes" name="notes">
+                            <field name="notes" widget="html"/>
+                        </page>
+
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!--  CLEARANCE RECORD – LIST VIEW                   -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <record id="clearance_record_list" model="ir.ui.view">
+        <field name="name">clearance.record.list</field>
+        <field name="model">clearance.record</field>
+        <field name="arch" type="xml">
+            <list string="Clearance Records"
+                  decoration-warning="state == 'in_progress'"
+                  decoration-success="state == 'done'"
+                  decoration-muted="state == 'cancelled'">
+                <field name="name" decoration-bf="1"/>
+                <field name="shipping_order_id"/>
+                <field name="handler"/>
+                <field name="responsible_user_id"/>
+                <field name="deadline" widget="remaining_days"/>
+                <field name="declaration_number"/>
+                <field name="do_received" widget="boolean"/>
+                <field name="cargo_released" widget="boolean"/>
+                <field name="total_clearance_cost" widget="monetary"
+                       options="{'currency_field': 'currency_id'}"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'done'"
+                       decoration-warning="state == 'in_progress'"
+                       decoration-info="state == 'draft'"
+                       decoration-danger="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!--  CLEARANCE RECORD – SEARCH VIEW                 -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <record id="clearance_record_search" model="ir.ui.view">
+        <field name="name">clearance.record.search</field>
+        <field name="model">clearance.record</field>
+        <field name="arch" type="xml">
+            <search string="Search Clearance Records">
+                <field name="name"/>
+                <field name="shipping_order_id"/>
+                <field name="declaration_number"/>
+                <field name="bl_number"/>
+                <field name="do_number"/>
+                <separator/>
+                <filter string="In-House (SAS)" name="our"
+                        domain="[('handler', '=', 'our')]"/>
+                <filter string="Third Party" name="other"
+                        domain="[('handler', '=', 'other')]"/>
+                <filter string="DO Received" name="do_received"
+                        domain="[('do_received', '=', True)]"/>
+                <filter string="Cargo Released" name="cargo_released"
+                        domain="[('cargo_released', '=', True)]"/>
+                <filter string="In Progress" name="in_progress"
+                        domain="[('state', '=', 'in_progress')]"/>
+                <filter string="Done" name="done"
+                        domain="[('state', '=', 'done')]"/>
+                <group expand="1" string="Group By">
+                    <filter string="State" name="groupby_state"
+                            context="{'group_by': 'state'}"/>
+                    <filter string="Handler" name="groupby_handler"
+                            context="{'group_by': 'handler'}"/>
+                    <filter string="Responsible Officer" name="groupby_user"
+                            context="{'group_by': 'responsible_user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!--  ACTION                                         -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <record id="sas.clearance_window" model="ir.actions.act_window">
+        <field name="name">Clearance Records</field>
+        <field name="res_model">clearance.record</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="clearance_record_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No clearance records yet
+            </p>
+            <p>Clearance records are created when you start the clearing process on a Shipping Order.</p>
+        </field>
+    </record>
+
+
+
+    </data>
+</odoo>

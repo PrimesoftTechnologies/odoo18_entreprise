@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="fleet_vehicle_form_inherit_tra" model="ir.ui.view">
+        <field name="name">fleet.vehicle.form.inherit.tra</field>
+        <field name="model">fleet.vehicle</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- 
+                Replace the old VEHICLE group with a new one that contains:
+                - All your existing VEHICLE fields
+                - + ALL the new TRA fields
+                - Owner / Title Holder section on top
+            -->
+            <xpath expr="//group[descendant::field[@name='category_id']]" position="replace">
+
+                <!-- 1. OWNER / TITLE HOLDER DETAILS (from TRA card) -->
+                <group string="OWNER / TITLE HOLDER DETAILS" colspan="2">
+                    <group>
+                        <field name="tra_tin"/>
+                        <field name="owner_category"/>
+                        <field name="title_holder_tin"/>
+                        <field name="title_holder_category"/>
+                        <field name="title_holder_name"/>
+                    </group>
+                    <group string="DRIVER">
+                        <field name="driver_id" string="Driver"/>
+                    </group>
+                </group>
+
+                <!-- 2. VEHICLE section – keeps ALL your original fields + adds every missing TRA field -->
+                <group string="VEHICLE" colspan="2">
+                    <group>
+                        <!-- === YOUR EXISTING FIELDS (exactly as they appear now) === -->
+                        <field name="category_id" string="Category"/>
+                        <field name="acquisition_date" string="Order Date"/>
+                        <field name="vin_sn" string="Chassis Number"/>
+                        <field name="odometer" string="Last Odometer"/>
+                        
+                        <field name="vehicle_color"/>
+                        <field name="vehicle_class"/>
+                        <field name="year_of_manufacture"/>
+                        <field name="engine_no"/>
+                        <field name="engine_capacity"/>
+                        <field name="number_of_axles"/>
+                        <field name="seating_capacity"/>
+                    </group>
+
+                    <group>
+                        <!-- Existing fields (right column) -->
+                        <field name="manager_id" string="Fleet Manager"/>
+
+                        <!-- === NEW TRA FIELDS (the ones missing before) === -->
+                       <field name="body_type"/>
+                        <field name="gross_weight" widget="monetary"/>
+                        <field name="tare_weight" widget="monetary"/>
+                        <field name="imported_from"/>
+                        <field name="date_first_registration"/>
+                        <field name="tra_vrc_sn"/>
+                        <field name="previous_registration"/>
+                        <field name="tax_roll_status"/>
+                        <field name="vehicle_usage"/>
+                        <field name="tra_registration_card" filename="tra_registration_card_filename"/>
+                    </group>
+                </group>
+
+            </xpath>
+
+        </field>
+    </record>
+
+
+    <record id="fleet_vehicle_log_contract_form_inherit_currency" model="ir.ui.view">
+        <field name="name">fleet.vehicle.log.contract.form.currency</field>
+        <field name="model">fleet.vehicle.log.contract</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_log_contract_view_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='amount']" position="before">
+                <field name="currency_id"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

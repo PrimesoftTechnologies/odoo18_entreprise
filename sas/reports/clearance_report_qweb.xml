@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="paperformat_clearance_report" model="report.paperformat">
+        <field name="name">Clearance Report Landscape</field>
+        <field name="default" eval="False"/>
+        <field name="format">A3</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">12</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">5</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_clearance_report" model="ir.actions.report">
+        <field name="name">Clearance Report</field>
+        <field name="model">shipping.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sas.report_clearance_report</field>
+        <field name="report_file">sas.report_clearance_report</field>
+        <field name="print_report_name">'Clearance Report'</field>
+        <field name="paperformat_id" ref="paperformat_clearance_report"/>
+        <field name="binding_model_id" eval="False"/>
+    </record>
+
+    <template id="report_clearance_report">
+        <t t-call="web.html_container">
+            <t t-call="web.basic_layout">
+                <div class="page" style="font-size:9px;">
+                    <h2 style="text-align:center;">Clearance Report</h2>
+                    <table class="table table-sm table-bordered" style="font-size:8px;">
+                        <thead style="background-color:#305496;color:white;">
+                            <tr>
+                                <th>File No</th>
+                                <th>IntRefNo</th>
+                                <th>Consignee</th>
+                                <th>B/L No</th>
+                                <th>B/L Date</th>
+                                <th>Cargo Desc</th>
+                                <th>Supplier Invoice</th>
+                                <th>Client PO</th>
+                                <th>Packages/Container Details</th>
+                                <th>Qty</th>
+                                <th>Size</th>
+                                <th>Weight</th>
+                                <th>Pad No</th>
+                                <th>Pad Reg-No</th>
+                                <th>Assessed Date</th>
+                                <th>Duty Amount</th>
+                                <th>Duty Paid Date</th>
+                                <th>Vessel/Flight</th>
+                                <th>Port of Loading</th>
+                                <th>ETA</th>
+                                <th>ATA</th>
+                                <th>RFD Date</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="docs" t-as="order">
+                                <tr>
+                                    <td><span t-esc="order.name"/></td>
+                                    <td><span t-esc="order.name"/></td>
+                                    <td><span t-esc="order.consignee_id.name"/></td>
+                                    <td><span t-esc="order.bl_awb_number"/></td>
+                                    <td><span t-esc="order.bl_awb_date"/></td>
+                                    <td>
+                                        <span t-esc="', '.join(filter(None, order.line_ids.mapped('cargo_description')))"/>
+                                    </td>
+                                    <td><span t-esc="order.supplier_invoice_no"/></td>
+                                    <td><span t-esc="order.client_po_number"/></td>
+                                    <td>
+                                        <span t-esc="', '.join(filter(None, order.line_ids.mapped('container_number'))) or order.pad_number"/>
+                                    </td>
+                                    <td><span t-esc="order.total_quantity"/></td>
+                                    <td>
+                                        <span t-esc="', '.join(sorted(set(filter(None, order.line_ids.mapped('container_type')))))"/>
+                                    </td>
+                                    <td><span t-esc="order.total_weight"/></td>
+                                    <td><span t-esc="order.pad_number"/></td>
+                                    <td><span t-esc="order.pad_reg_number"/></td>
+                                    <td><span t-esc="order.assessed_date"/></td>
+                                    <td><span t-esc="order.duty_amount"/></td>
+                                    <td><span t-esc="order.duty_paid_date"/></td>
+                                    <td><span t-esc="order.vessel_flight_name"/></td>
+                                    <td><span t-esc="order.loading_port_id.name"/></td>
+                                    <td><span t-esc="order.eta"/></td>
+                                    <td><span t-esc="order.ata"/></td>
+                                    <td><span t-esc="order.rfd_date"/></td>
+                                    <td><span t-esc="order.remarks"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

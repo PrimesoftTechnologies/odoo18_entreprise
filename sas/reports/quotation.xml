@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="custom_sale_proforma" inherit_id="sale.report_saleorder_document">
+
+        <!-- === OVERRIDE the address variable to suppress the default customer block === -->
+        <xpath expr="//t[@t-set='address']" position="replace">
+            <t t-set="address"><span/></t>
+        </xpath>
+
+        <!-- === SUPPRESS the shipping address block if it appears === -->
+        <xpath expr="//t[@t-set='information_block']" position="replace">
+            <t t-set="information_block"><span/></t>
+        </xpath>
+
+        <!-- === INSERT OUR CUSTOM LAYOUT before the first oe_structure div === -->
+        <xpath expr="//div[hasclass('page')]//div[hasclass('oe_structure')][1]" position="before">
+            <div style="margin-bottom: 30px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; color: #000;">
+
+                <!-- 1. PROFORMA INVOICE TITLE -->
+                <div style="text-align: center; margin-bottom: 16px;">
+                    <h1 style="margin: 0; font-size: 26px; font-weight: bold; letter-spacing: 1px; color: #1a1a1a; font-family: inherit;">
+                        PROFORMA INVOICE
+                    </h1>
+                </div>
+
+                <!-- 2. Two columns via position:relative wrapper -->
+                <div style="position: relative; min-height: 100px;">
+
+                    <!-- LEFT: Customer Details -->
+                    <div style="width: 55%; line-height: 1.6; font-size: 13px;">
+                        <strong t-field="doc.partner_id.name"/><br/>
+
+                        <t t-if="doc.partner_id.street">
+                            <span t-field="doc.partner_id.street"/><br/>
+                        </t>
+                        <t t-if="doc.partner_id.street2">
+                            <span t-field="doc.partner_id.street2"/><br/>
+                        </t>
+                        <span t-field="doc.partner_id.city"/>
+                        <t t-if="doc.partner_id.state_id">
+                            , <span t-field="doc.partner_id.state_id.name"/>
+                        </t>
+                        <br/>
+                        <span t-field="doc.partner_id.country_id.name"/><br/>
+                        <t t-if="doc.partner_id.vat">
+                            Tax ID: <span t-field="doc.partner_id.vat"/><br/>
+                        </t>
+                    </div>
+
+                    <!-- RIGHT: Ref, VRN, TIN — absolutely positioned top-right -->
+                    <div style="position: absolute; top: 0; right: 0; text-align: right; line-height: 1.9;">
+                        <h3 style="margin: 0 0 4px 0; font-size: 20px; font-weight: bold; font-family: inherit;">
+                            Ref: <span t-field="doc.name"/>
+                        </h3>
+                        <span style="font-size: 15px; font-weight: bold;">VRN: 40-003039-D</span><br/>
+                        <span style="font-size: 15px; font-weight: bold;">TIN: 104-868-924</span>
+                    </div>
+
+                </div>
+
+                <!-- 3. PO NUMBER centered, larger -->
+                <t t-if="doc.client_order_ref" >
+                <div style="text-align: center; margin-top: 14px;">
+                    <h4 style="margin: 0; font-size: 16px; font-weight: bold; font-family: inherit;">
+                        <span t-field="doc.client_order_ref"/>
+                    </h4>
+                </div>
+                </t>
+
+            </div>
+        </xpath>
+
+        <!-- 4. WATERMARK — pushed further down -->
+        <xpath expr="//div[hasclass('page')]" position="inside">
+            <div t-if="report_type == 'pdf'"
+                 style="
+                     position: absolute;
+                     top: 300px;
+                     left: 25%;
+                     transform: translate(-50%, -50%);
+                     width: 55%;
+                     opacity: 0.07;
+                     z-index: 0;
+                     pointer-events: none;
+                 ">
+                <img src="/sas/static/src/img/watermark.png" style="width: 100%;"/>
+            </div>
+        </xpath>
+
+        <!-- Authorized Signature below payment terms -->
+        <xpath expr="//div[hasclass('page')]" position="inside">
+            <div style="margin-top: 30px; text-align: left; page-break-inside: avoid; position: relative;">
+                <p><img src="/sas/static/src/img/signed.png" style="width: 100px; height: 100px;"/></p>
+                <strong style="font-size: 14px; font-weight: bold;">Authorized Signature</strong>
+            </div>
+        </xpath>
+
+
+        <xpath expr="//table//tr/th[1]" position="after">
+            <th>
+                <strong>Fleets</strong>
+            </th>
+        </xpath>
+
+        <xpath expr="//t[@t-foreach='lines_to_report']//td[@name='td_name']" position="after">
+            <td>
+               <t t-if="line.analytic_distribution">
+                <div>
+                    <t t-foreach="line.analytic_distribution" t-as="distribution">
+                        <span t-out="line.env['account.analytic.account'].browse(int(distribution)).name"/>
+                    </t>
+                </div>
+            </t>
+            </td>
+        </xpath>
+  
+
+    </template>
+</odoo>

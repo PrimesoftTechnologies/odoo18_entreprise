@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Wrapper: loops over docs, same pattern as before -->
+    <template id="report_reimbursement_note">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="sas.report_reimbursement_note_document_pdf"/>
+            </t>
+        </t>
+    </template>
+
+    <!-- Inherit Odoo's own invoice/credit-note body, only patch the header -->
+    <template id="report_reimbursement_note_document_pdf"
+              inherit_id="account.report_invoice_document"
+              primary="True">
+
+        <!-- 1) Watermark: insert right after the <div class="page"> opens -->
+        <!-- <xpath expr="//div[hasclass('page')]" position="inside">
+            <div class="water-mark-img" t-if="report_type == 'pdf'">
+                <img src="/sas/static/src/img/watermark.png"
+                     style="position:absolute; top:270px; left:15%; width:70%;
+                            opacity:0.1; pointer-events:none; z-index:0;"/>
+            </div>
+        </xpath> -->
+
+        <xpath expr="//th[@name='th_taxes']" position="replace">
+
+        </xpath>
+
+        <xpath expr="//td[@name='td_taxes']" position="replace">
+
+        </xpath>
+
+
+
+
+
+
+        <!-- 4) Add PO / SAS ref / AWB / route info inside the "informations" row -->
+        <xpath expr="//div[@id='informations']" position="replace">
+            <div style="margin-bottom:4px;">
+                <strong t-if="o.sas_ref_no">
+                    SAS REF No: <t t-esc="o.sas_ref_no"/>
+                </strong>
+                <br/>
+                <strong t-if="o.awb_no">
+                    AWB: <t t-esc="o.awb_no"/>
+                </strong>
+            </div>
+            <div style="width:100%;">
+                <div style="display:inline-block; width:49%; text-align:left;">
+                    <strong t-esc="o.route_name"/>
+                </div>
+                <div style="display:inline-block; width:49%; text-align:right;">
+                    <strong t-esc="o.invoice_date"
+                            t-options='{"widget": "date", "format": "dd MMMM yyyy"}'/>
+                </div>
+            </div>
+        </xpath>
+
+        <!-- 5) Append bank details + signature after the body, before it closes -->
+        <!-- <xpath expr="//div[hasclass('page')]" position="inside">
+            <div style="font-size:12px; line-height:1.4;">
+                <strong>ABSA BANK DETAILS</strong><br/>
+                NAME OF THE BANK: ABSA BANK TANZANIA<br/>
+                BRANCH NAME: OHIO BRANCH<br/>
+                ACCOUNT NAME: SAS LOGISTICS LIMITED<br/>
+                ACCOUNT NUMBER: 0016008877-USD<br/>
+                SWIFT CODE: BARCTZTZ<br/>
+                SORT CODE: 020001<br/>
+                BRANCH CODE: 001
+            </div>
+        </xpath> -->
+
+        <!-- Deliberately NOT touching: the o_main_table lines table, subtotal/section
+             logic, or the tax totals block — those stay 100% default Odoo. -->
+
+    </template>
+
+    <record id="action_report_reimbursement_note" model="ir.actions.report">
+        <field name="name">Reimbursement Note</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sas.report_reimbursement_note</field>
+        <field name="report_file">sas.report_reimbursement_note</field>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>
