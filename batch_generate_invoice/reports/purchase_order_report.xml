@@ -53,7 +53,7 @@
         </xpath>
 
         <xpath expr="//div[@id='informations']//div[@t-if='o.user_id']/strong" position="replace">
-            <strong>Created By</strong>
+            <strong>Created By:</strong>
         </xpath>
 
     </template>
