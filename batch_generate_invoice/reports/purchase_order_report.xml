@@ -7,10 +7,13 @@
         <xpath expr="//div[@id='informations']" position="before">
             <div class="mt-4 mb-2">
                 <h2 style="font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px;">
-                    Purchase Order
+                    <span t-if="o.state in ['draft', 'sent']">Request for Quotation</span>
+                    <span t-else="">Purchase Order</span>
                 </h2>
                 <div style="font-size: 14px; font-weight: bold;">
-                    PO Number: <span t-field="o.name"/>
+                    <span t-if="o.state in ['draft', 'sent']">RFQ Number:</span>
+                    <span t-else="">PO Number:</span>
+                    <span t-field="o.name"/>
                 </div>
             </div>
         </xpath>
