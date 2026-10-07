@@ -8,23 +8,23 @@
 
         <field name="arch" type="xml">
 
-            <!-- Quantity in List -->
+            <!-- Quantity: Editable only in Draft -->
             <xpath expr="//field[@name='order_line']/list/field[@name='product_qty']"
                    position="attributes">
                 <attribute name="readonly">
-                    parent.state != 'draft'
+                    state != 'draft'
                 </attribute>
             </xpath>
 
-            <!-- UoM in List -->
-            <xpath expr="//field[@name='order_line']/list/field[@name='product_uom'][@string='UoM']"
+            <!-- UoM: Editable only in Draft -->
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_uom'][1]"
                    position="attributes">
                 <attribute name="readonly">
-                    parent.state != 'draft' or is_downpayment
+                    state != 'draft' or is_downpayment
                 </attribute>
             </xpath>
 
-            <!-- UoM in Order Line Form -->
+            <!-- UoM in Order Line Form: Editable only in Draft -->
             <xpath expr="//field[@name='order_line']/form//field[@name='product_uom']"
                    position="attributes">
                 <attribute name="readonly">
