@@ -5,12 +5,8 @@
         <field name="model">purchase.order</field>
         <field name="inherit_id" ref="purchase.purchase_order_form"/>
         <field name="arch" type="xml">
-            <!-- Tunalenga order line kwenye 12m au tree view ya order lines -->
+            <!-- Tunalenga order line kwenye list view ya order lines kwa Odoo 18 -->
             <xpath expr="//field[@name='order_line']/list//field[@name='product_qty']" position="attributes">
-                <attribute name="readonly">state != 'draft'</attribute>
-            </xpath>
-            <!-- Kwa ajili ya matoleo ya Odoo yanayotumia tree badala ya list kwenye baadhi ya maeneo -->
-            <xpath expr="//field[@name='order_line']/tree//field[@name='product_qty']" position="attributes">
                 <attribute name="readonly">state != 'draft'</attribute>
             </xpath>
         </field>
