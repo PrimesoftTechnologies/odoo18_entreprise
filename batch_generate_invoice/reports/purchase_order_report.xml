@@ -34,22 +34,24 @@
 
 
         <!-- ===================================================== -->
-        <!-- VENDOR DETAILS - PURCHASE ORDER (RIGHT SIDE, UNBOXED) -->
+        <!-- VENDOR DETAILS - PURCHASE ORDER -->
         <!-- ===================================================== -->
 
         <xpath expr="//div[@id='informations']" position="before">
             <div style="margin-bottom: 25px; width: 100%; margin-top: 15px;">
 
-                <table style="width: 100%; border-collapse: collapse;">
-                    <tr>
-                        <!-- LEFT SIDE (EMPTY) -->
-                        <td style="width: 50%; vertical-align: top;">
-                        </td>
-                        
-                        <td style="width: 2%;"></td>
+                <table style="width: 100%;
+                              border-collapse: collapse;
+                              background-color: #f8f9fa;
+                              border: 1px solid #e9ecef;
+                              border-radius: 4px;">
 
-                        <!-- RIGHT SIDE (VENDOR DETAILS - NO BOX, NO BORDER) -->
-                        <td style="width: 48%; vertical-align: top; padding: 0;">
+                    <tr>
+
+                        <td style="width: 50%;
+                                   vertical-align: top;
+                                   padding: 12px;
+                                   border-right: 1px solid #e9ecef;">
 
                             <div style="font-size: 10px;
                                         text-transform: uppercase;
@@ -96,6 +98,11 @@
 
                             </div>
 
+                        </td>
+
+                        <td style="width: 50%;
+                                   vertical-align: top;
+                                   padding: 12px;">
                         </td>
 
                     </tr>
@@ -123,24 +130,28 @@
               inherit_id="purchase.report_purchasequotation_document">
 
         <!-- ===================================================== -->
-        <!-- VENDOR DETAILS - RFQ (RIGHT SIDE, UNBOXED) -->
+        <!-- VENDOR DETAILS - RFQ -->
         <!-- ===================================================== -->
 
         <xpath expr="//div[@class='page']/div[@class='oe_structure'][1]"
                position="after">
 
-            <div style="margin-bottom: 25px; width: 100%; margin-top: 15px;">
+            <div style="margin-bottom: 25px;
+                        width: 100%;
+                        margin-top: 15px;">
 
-                <table style="width: 100%; border-collapse: collapse;">
+                <table style="width: 100%;
+                              border-collapse: collapse;
+                              background-color: #f8f9fa;
+                              border: 1px solid #e9ecef;
+                              border-radius: 4px;">
+
                     <tr>
-                        <!-- LEFT SIDE (EMPTY) -->
-                        <td style="width: 50%; vertical-align: top;">
-                        </td>
 
-                        <td style="width: 2%;"></td>
-
-                        <!-- RIGHT SIDE (VENDOR DETAILS - NO BOX, NO BORDER) -->
-                        <td style="width: 48%; vertical-align: top; padding: 0;">
+                        <td style="width: 50%;
+                                   vertical-align: top;
+                                   padding: 12px;
+                                   border-right: 1px solid #e9ecef;">
 
                             <div style="font-size: 10px;
                                         text-transform: uppercase;
@@ -187,6 +198,11 @@
 
                             </div>
 
+                        </td>
+
+                        <td style="width: 50%;
+                                   vertical-align: top;
+                                   padding: 12px;">
                         </td>
 
                     </tr>
