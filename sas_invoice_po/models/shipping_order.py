@@ -12,8 +12,21 @@ class ShippingOrder(models.Model):
         ('client_po_number_uniq', 'unique(client_po_number)', 'The Client PO No. must be unique! A record with this PO number already exists.')
     ]
 
-    @api.constrains('client_po_number')
-    def _check_client_po_number_unique(self):
+    @api.onchange('client_po_number')
+    def _onchange_client_po_number(self):
+        if self.client_po_number:
+            existing = self.env['shipping.order'].search([
+                ('client_po_number', '=', self.client_po_number),
+            ], limit=1)
+            if existing:
+                return {
+                    'warning': {
+                        'title': "Warning: Client PO No. Already Exists!",
+                        'message': f"The Client PO No. '{self.client_po_number}' is already used in another shipping order. Please use a unique PO number."
+                    }
+                }
+
+    def action_submit(self):
         for record in self:
             if record.client_po_number:
                 existing = self.search([
@@ -22,7 +35,4 @@ class ShippingOrder(models.Model):
                 ], limit=1)
                 if existing:
                     raise ValidationError(f"Client PO No. '{record.client_po_number}' already exists in another Shipping Order! Please use a unique PO number.")
-
-    def action_submit(self):
-        self._check_client_po_number_unique()
         return super(ShippingOrder, self).action_submit()
