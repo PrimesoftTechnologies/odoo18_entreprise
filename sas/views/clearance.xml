@@ -53,14 +53,20 @@
                             class="btn-secondary"
                             invisible="state in ('done','cancelled')"
                             confirm="Cancel this clearance record?"/>
+                    
+                    <!-- Buttons visible ONLY to Bookkeeper and Administrator -->
                     <button string="Create Reimbursement" type="object"
                             name="action_create_reimbursement"
                             class="btn-warning"
-                            invisible="state != 'done'"/>
+                            invisible="state != 'done'"
+                            groups="account.group_account_user,base.group_system"/>
+                            
                     <button string="Create Invoice" type="object"
                             name="action_create_invoice"
                             class="btn-secondary"
-                            invisible="state != 'done'"/>
+                            invisible="state != 'done'"
+                            groups="account.group_account_user,base.group_system"/>
+                            
                     <field name="state" widget="statusbar"
                            statusbar_visible="draft,in_progress,done"/>
                 </header>
@@ -279,8 +285,6 @@
                                 </page>
                             </notebook>
 
-
-
                             <group string="Shipping Line Notes">
                                 <field name="shipping_line_notes" nolabel="1"
                                        placeholder="Any issues or notes with the shipping line..."/>
@@ -463,8 +467,6 @@
             <p>Clearance records are created when you start the clearing process on a Shipping Order.</p>
         </field>
     </record>
-
-
 
     </data>
 </odoo>
