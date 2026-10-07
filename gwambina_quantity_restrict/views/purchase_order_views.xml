@@ -9,9 +9,10 @@
             <xpath expr="//field[@name='order_line']/list//field[@name='product_qty']" position="attributes">
                 <attribute name="readonly">state != 'draft'</attribute>
             </xpath>
-            <!-- Kuzuia UoM kwenye list view -->
+            <!-- Kuzuia UoM kwenye list view kwa kuongeza force_save -->
             <xpath expr="//field[@name='order_line']/list//field[@name='product_uom']" position="attributes">
                 <attribute name="readonly">state != 'draft'</attribute>
+                <attribute name="force_save">1</attribute>
             </xpath>
         </field>
     </record>
