@@ -40,7 +40,6 @@
                 </attribute>
             </xpath>
 
-            <!-- SMART: Invoices -->
             <xpath expr="//button[@name='action_view_invoices']"
                    position="attributes">
                 <attribute name="groups">
