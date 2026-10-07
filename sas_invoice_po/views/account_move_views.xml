@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================ -->
+    <!-- 1. LIST VIEW: Add PO No column                               -->
+    <!-- ============================================================ -->
+    <record id="view_move_list_inherit_po_no" model="ir.ui.view">
+        <field name="name">account.move.list.inherit.po.no</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_invoice_tree"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='invoice_date_due']" position="after">
+                <field name="po_no"
+                       string="PO No"
+                       optional="show"/>
+            </xpath>
+
+        </field>
+    </record>
+
+
+    <!-- ============================================================ -->
+    <!-- 2. SEARCH VIEW: Add PO No to search, filter & group by       -->
+    <!-- ============================================================ -->
+    <record id="view_move_search_inherit_po_no" model="ir.ui.view">
+        <field name="name">account.move.search.inherit.po.no</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+
+            <!-- Searchable field -->
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="po_no"
+                       string="PO No"
+                       filter_domain="[('po_no', 'ilike', self)]"/>
+            </xpath>
+
+            <!-- Quick filter -->
+            <xpath expr="//filter[@name='my_invoices']" position="after">
+                <filter string="Has PO No"
+                        name="has_po_no"
+                        domain="[('po_no', '!=', False)]"/>
+            </xpath>
+
+            <!-- Group by -->
+            <xpath expr="//group[@name='group_by_menu']" position="inside">
+                <filter string="PO No"
+                        name="groupby_po_no"
+                        context="{'group_by': 'po_no'}"/>
+            </xpath>
+
+        </field>
+    </record>
+
+
+    <!-- ============================================================ -->
+    <!-- 3. FORM VIEW: Ensure PO No is visible (if not already)       -->
+    <!-- ============================================================ -->
+    <record id="view_move_form_inherit_po_no_searchable" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.po.no.searchable</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Add PO No after 'ref' field (Reference) -->
+            <xpath expr="//field[@name='ref']" position="after">
+                <field name="po_no"
+                       invisible="move_type not in ('out_invoice', 'out_refund', 'out_receipt')"/>
+            </xpath>
+
+        </field>
+    </record>
+
+
+    <!-- ============================================================ -->
+    <!-- 4. PDF REPORT: Print PO No on the invoice                    -->
+    <!-- ============================================================ -->
+    <template id="report_invoice_document_inherit_po_no"
+              inherit_id="account.report_invoice_document">
+
+        <xpath expr="//div[@name='reference']" position="after">
+            <div class="col" t-if="o.po_no" name="po_no">
+                <strong>PO No:</strong>
+                <span t-field="o.po_no"/>
+            </div>
+        </xpath>
+
+    </template>
+
+</odoo>
