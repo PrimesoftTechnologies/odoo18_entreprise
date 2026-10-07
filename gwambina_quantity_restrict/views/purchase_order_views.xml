@@ -12,15 +12,15 @@
             <xpath expr="//field[@name='order_line']/list/field[@name='product_qty']"
                    position="attributes">
                 <attribute name="readonly">
-                    state != 'draft'
+                    parent.state != 'draft'
                 </attribute>
             </xpath>
 
             <!-- UoM in List -->
-            <xpath expr="//field[@name='order_line']/list/field[@name='product_uom']"
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_uom'][@string='UoM']"
                    position="attributes">
                 <attribute name="readonly">
-                    state != 'draft'
+                    parent.state != 'draft' or is_downpayment
                 </attribute>
             </xpath>
 
@@ -28,7 +28,7 @@
             <xpath expr="//field[@name='order_line']/form//field[@name='product_uom']"
                    position="attributes">
                 <attribute name="readonly">
-                    parent.state != 'draft'
+                    parent.state != 'draft' or is_downpayment
                 </attribute>
             </xpath>
 
@@ -36,3 +36,4 @@
     </record>
 
 </odoo>
+
