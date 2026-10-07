@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_invoice_filter_inherit_po" model="ir.ui.view">
+        <field name="name">account.invoice.select.inherit.po</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <field name="po_no" string="PO No." filter_domain="[('po_no', 'ilike', self)]"/>
+            </xpath>
+            <xpath expr="//group" position="inside">
+                <filter string="PO No." name="group_by_po_no" domain="[]" context="{'group_by': 'po_no'}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
