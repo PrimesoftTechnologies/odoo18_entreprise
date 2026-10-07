@@ -7,6 +7,7 @@
     'depends': ['sas', 'account'],
     'data': [
         'views/invoice_search_views.xml',
+        'views/clearance_record_views.xml',
     ],
     'installable': True,
     'auto_install': False,

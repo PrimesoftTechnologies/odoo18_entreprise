@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_clearance_record_form_finance_access"
+            model="ir.ui.view">
+        <field name="name">clearance.record.form.finance.access</field>
+        <field name="model">clearance.record</field>
+        <field name="inherit_id" ref="sas.clearance_record_form"/>
+        <field name="arch" type="xml">
+
+            <!-- ===================================================== -->
+            <!-- HEADER BUTTONS – restrict visibility                  -->
+            <!-- ===================================================== -->
+
+            <!-- Create Reimbursement -->
+            <xpath expr="//button[@name='action_create_reimbursement']"
+                   position="attributes">
+                <attribute name="groups">
+                    sas.group_sas_administrator,account.group_account_user
+                </attribute>
+            </xpath>
+
+            <!-- Create Invoice -->
+            <xpath expr="//button[@name='action_create_invoice']"
+                   position="attributes">
+                <attribute name="groups">
+                    sas.group_sas_administrator,account.group_account_user
+                </attribute>
+            </xpath>
+
+            <!-- ===================================================== -->
+            <!-- SMART BUTTONS – restrict visibility                   -->
+            <!-- ===================================================== -->
+
+            <!-- Expenses smart button -->
+            <xpath expr="//button[@name='action_view_expenses']"
+                   position="attributes">
+                <attribute name="groups">
+                    sas.group_sas_administrator,account.group_account_user
+                </attribute>
+            </xpath>
+
+            <!-- Reimbursements smart button -->
+            <xpath expr="//button[@name='action_view_reimbursements']"
+                   position="attributes">
+                <attribute name="groups">
+                    sas.group_sas_administrator,account.group_account_user
+                </attribute>
+            </xpath>
+
+            <!-- Invoices smart button -->
+            <xpath expr="//button[@name='action_view_invoices']"
+                   position="attributes">
+                <attribute name="groups">
+                    sas.group_sas_administrator,account.group_account_user
+                </attribute>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>
