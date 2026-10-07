@@ -17,16 +17,46 @@ class ShippingOrder(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
-            # Angalia kama line_ids imejazwa wakati wa kuunda rekodi mpya
-            if not vals.get('line_ids'):
-                raise ValidationError("You cannot save or create a Shipping Order without adding at least one cargo line (Product). Please add cargo details in the Cargo Details tab.")
+            lines = vals.get('line_ids', [])
+            # Angalia kama hakuna kabisa mistari au kama kuna mstari ambao hauna product_id
+            if not lines:
+                raise ValidationError("You cannot save a Shipping Order without adding at least one cargo line.")
+            
+            # Kwenye Odoo create, line_ids hutumia amri za x2many (k.v., [(0, 0, values)])
+            has_product = False
+            for command in lines:
+                if len(command) >= 3 and command[2] and command[2].get('product_id'):
+                    has_product = True
+                    break
+            if not has_product:
+                raise ValidationError("Every cargo line must have a valid Product selected before you can save.")
+                
         return super(ShippingOrder, self).create(vals_list)
 
     def write(self, vals):
         for record in self:
-            # Kama mtumiaji anafuta line zote au anajaribu kusave bila line
-            if 'line_ids' in vals and not vals.get('line_ids'):
-                raise ValidationError("You cannot save a Shipping Order without at least one cargo line (Product).")
+            if 'line_ids' in vals:
+                lines = vals.get('line_ids', [])
+                if not lines and not record.line_ids:
+                    raise ValidationError("You cannot save a Shipping Order without at least one cargo line.")
+                
+                # Hakikisha mistari iliyopo ina product
+                has_product = False
+                # Angalia kwenye record iliyopo kama ina lines zenye product
+                active_lines = record.line_ids
+                if active_lines:
+                    has_product = True
+                
+                for command in lines:
+                    # command[0] 0=create, 1=update, 2=delete, 3=forget, 4=link, 5=set, 6=set all
+                    if command[0] in (0, 1) and command[2] and command[2].get('product_id'):
+                        has_product = True
+                    elif command[0] == 2: # Kama inafutwa
+                        pass
+                
+                if not has_product:
+                    raise ValidationError("You must select a Product for all cargo lines before saving.")
+
         return super(ShippingOrder, self).write(vals)
 
     @api.onchange('client_po_number', 'bl_awb_number', 'supplier_invoice_no')
@@ -69,8 +99,8 @@ class ShippingOrder(models.Model):
 
     def action_submit(self):
         for record in self:
-            if not record.line_ids:
-                raise ValidationError("You cannot submit a Shipping Order without adding at least one cargo line (Product). Please add cargo details in the Cargo Details tab.")
+            if not record.line_ids or any(not line.product_id for line in record.line_ids):
+                raise ValidationError("You cannot submit a Shipping Order without selecting a Product for all cargo lines.")
 
             if record.client_po_number:
                 existing_po = self.search([
