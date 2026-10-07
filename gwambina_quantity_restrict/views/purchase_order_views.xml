@@ -1,19 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
     <record id="view_purchase_order_form_inherit_quantity_restrict" model="ir.ui.view">
         <field name="name">purchase.order.form.inherit.quantity.restrict</field>
         <field name="model">purchase.order</field>
         <field name="inherit_id" ref="purchase.purchase_order_form"/>
+
         <field name="arch" type="xml">
-            <!-- Kuzuia Quantity kwenye list view -->
-            <xpath expr="//field[@name='order_line']/list//field[@name='product_qty']" position="attributes">
+
+            <!-- Quantity: editable only in Draft -->
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_qty']"
+                   position="attributes">
                 <attribute name="readonly">state != 'draft'</attribute>
             </xpath>
-            <!-- Kuzuia UoM kwa kulenga moja kwa moja ndani ya order_line -->
-            <xpath expr="//field[@name='order_line']//field[@name='product_uom']" position="attributes">
+
+            <!-- UoM: editable only in Draft -->
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_uom']"
+                   position="attributes">
                 <attribute name="readonly">state != 'draft'</attribute>
-                <attribute name="force_save">1</attribute>
             </xpath>
+
         </field>
     </record>
+
 </odoo>
