@@ -14,6 +14,21 @@ class ShippingOrder(models.Model):
         ('supplier_invoice_no_uniq', 'unique(supplier_invoice_no)', 'The Supplier Invoice No. must be unique! A record with this number already exists.')
     ]
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            # Angalia kama line_ids imejazwa wakati wa kuunda rekodi mpya
+            if not vals.get('line_ids'):
+                raise ValidationError("You cannot save or create a Shipping Order without adding at least one cargo line (Product). Please add cargo details in the Cargo Details tab.")
+        return super(ShippingOrder, self).create(vals_list)
+
+    def write(self, vals):
+        for record in self:
+            # Kama mtumiaji anafuta line zote au anajaribu kusave bila line
+            if 'line_ids' in vals and not vals.get('line_ids'):
+                raise ValidationError("You cannot save a Shipping Order without at least one cargo line (Product).")
+        return super(ShippingOrder, self).write(vals)
+
     @api.onchange('client_po_number', 'bl_awb_number', 'supplier_invoice_no')
     def _onchange_unique_references(self):
         if self.client_po_number:
@@ -54,7 +69,6 @@ class ShippingOrder(models.Model):
 
     def action_submit(self):
         for record in self:
-            # Check if Cargo Lines (Products) are empty
             if not record.line_ids:
                 raise ValidationError("You cannot submit a Shipping Order without adding at least one cargo line (Product). Please add cargo details in the Cargo Details tab.")
 
