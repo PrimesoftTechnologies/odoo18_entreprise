@@ -8,16 +8,16 @@
 
         <field name="arch" type="xml">
 
-            <!-- Quantity: editable only in Draft -->
+            <!-- Quantity -->
             <xpath expr="//field[@name='order_line']/list/field[@name='product_qty']"
                    position="attributes">
-                <attribute name="readonly">state != 'draft'</attribute>
+                <attribute name="readonly">parent.state != 'draft'</attribute>
             </xpath>
 
-            <!-- UoM: editable only in Draft -->
+            <!-- UoM -->
             <xpath expr="//field[@name='order_line']/list/field[@name='product_uom']"
                    position="attributes">
-                <attribute name="readonly">state != 'draft'</attribute>
+                <attribute name="readonly">parent.state != 'draft'</attribute>
             </xpath>
 
         </field>
