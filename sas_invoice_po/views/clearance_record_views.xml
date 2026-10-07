@@ -18,7 +18,7 @@
                     <attribute name="groups">account.group_account_user,base.group_system</attribute>
                 </xpath>
 
-                <!-- 2. Restriction for Smart Buttons (Expenses, Reimbursements, Invoices) -->
+                <!-- 2. Restriction for Smart Buttons (Expenses, Reimbursements, Invoice) -->
                 <xpath expr="//div[@name='button_box']/button[@name='action_view_expenses']" position="attributes">
                     <attribute name="groups">account.group_account_user,base.group_system</attribute>
                 </xpath>
