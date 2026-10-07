@@ -23,7 +23,7 @@ Enhances the existing 'po_no' field (from sas module) on Customer Invoices:
         'views/account_move_views.xml',
     ],
     'installable': True,
-    'application': False,
+    'application': True,
     'auto_install': False,
     'license': 'AGPL-3',
 }
