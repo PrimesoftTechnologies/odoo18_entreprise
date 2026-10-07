@@ -6,24 +6,18 @@ from odoo.exceptions import AccessError
 class ClearanceRecord(models.Model):
     _inherit = 'clearance.record'
 
-    # ==================================================================
-    # ACCESS HELPER
-    # ==================================================================
     def _check_finance_access(self):
         """Only Administrator or Bookkeeper can access finance actions."""
         user = self.env.user
         if not (
-            user.has_group('sas.group_sas_administrator') or
-            user.has_group('account.group_account_user')
+            user.has_group('base.group_system') or              # Administrator
+            user.has_group('account.group_account_user')        # Bookkeeper
         ):
             raise AccessError(_(
                 "Only Administrators and Bookkeepers can perform "
                 "financial actions on Clearance Records."
             ))
 
-    # ==================================================================
-    # OVERRIDE FINANCE ACTIONS – ADD ACCESS CHECK
-    # ==================================================================
     def action_create_reimbursement(self):
         self._check_finance_access()
         return super().action_create_reimbursement()
