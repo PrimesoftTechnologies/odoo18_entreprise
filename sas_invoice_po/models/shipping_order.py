@@ -16,7 +16,6 @@ class ShippingOrder(models.Model):
 
     @api.onchange('client_po_number', 'bl_awb_number', 'supplier_invoice_no')
     def _onchange_unique_references(self):
-        # Check Client PO Number
         if self.client_po_number:
             existing_po = self.env['shipping.order'].search([
                 ('client_po_number', '=', self.client_po_number),
@@ -29,7 +28,6 @@ class ShippingOrder(models.Model):
                     }
                 }
         
-        # Check B/L AWB Number
         if self.bl_awb_number:
             existing_bl = self.env['shipping.order'].search([
                 ('bl_awb_number', '=', self.bl_awb_number),
@@ -42,7 +40,6 @@ class ShippingOrder(models.Model):
                     }
                 }
 
-        # Check Supplier Invoice No.
         if self.supplier_invoice_no:
             existing_inv = self.env['shipping.order'].search([
                 ('supplier_invoice_no', '=', self.supplier_invoice_no),
@@ -57,6 +54,10 @@ class ShippingOrder(models.Model):
 
     def action_submit(self):
         for record in self:
+            # Check if Cargo Lines (Products) are empty
+            if not record.line_ids:
+                raise ValidationError("You cannot submit a Shipping Order without adding at least one cargo line (Product). Please add cargo details in the Cargo Details tab.")
+
             if record.client_po_number:
                 existing_po = self.search([
                     ('client_po_number', '=', record.client_po_number),
