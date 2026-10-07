@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_shipping_order_search_inherit_po" model="ir.ui.view">
+        <field name="name">shipping.order.search.inherit.po</field>
+        <field name="model">shipping.order</field>
+        <field name="inherit_id" ref="sas.view_shipping_order_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <field name="client_po_number" string="Client PO No." filter_domain="[('client_po_number', 'ilike', self)]"/>
+                <separator/>
+                <filter string="Client PO No." name="group_by_client_po" domain="[]" context="{'group_by': 'client_po_number'}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
