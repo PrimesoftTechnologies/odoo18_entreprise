@@ -9,30 +9,76 @@ class ShippingOrder(models.Model):
     client_po_number = fields.Char(required=True)
 
     _sql_constraints = [
-        ('client_po_number_uniq', 'unique(client_po_number)', 'The Client PO No. must be unique! A record with this PO number already exists.')
+        ('client_po_number_uniq', 'unique(client_po_number)', 'The Client PO No. must be unique! A record with this PO number already exists.'),
+        ('bl_awb_number_uniq', 'unique(bl_awb_number)', 'The B/L / AWB Number must be unique! A record with this number already exists.'),
+        ('supplier_invoice_no_uniq', 'unique(supplier_invoice_no)', 'The Supplier Invoice No. must be unique! A record with this number already exists.')
     ]
 
-    @api.onchange('client_po_number')
-    def _onchange_client_po_number(self):
+    @api.onchange('client_po_number', 'bl_awb_number', 'supplier_invoice_no')
+    def _onchange_unique_references(self):
+        # Check Client PO Number
         if self.client_po_number:
-            existing = self.env['shipping.order'].search([
+            existing_po = self.env['shipping.order'].search([
                 ('client_po_number', '=', self.client_po_number),
             ], limit=1)
-            if existing:
+            if existing_po:
                 return {
                     'warning': {
                         'title': "Warning: Client PO No. Already Exists!",
-                        'message': f"The Client PO No. '{self.client_po_number}' is already used in another shipping order. Please use a unique PO number."
+                        'message': f"The Client PO No. '{self.client_po_number}' is already used in another shipping order."
+                    }
+                }
+        
+        # Check B/L AWB Number
+        if self.bl_awb_number:
+            existing_bl = self.env['shipping.order'].search([
+                ('bl_awb_number', '=', self.bl_awb_number),
+            ], limit=1)
+            if existing_bl:
+                return {
+                    'warning': {
+                        'title': "Warning: B/L / AWB Number Already Exists!",
+                        'message': f"The B/L / AWB Number '{self.bl_awb_number}' is already used in another shipping order."
+                    }
+                }
+
+        # Check Supplier Invoice No.
+        if self.supplier_invoice_no:
+            existing_inv = self.env['shipping.order'].search([
+                ('supplier_invoice_no', '=', self.supplier_invoice_no),
+            ], limit=1)
+            if existing_inv:
+                return {
+                    'warning': {
+                        'title': "Warning: Supplier Invoice No. Already Exists!",
+                        'message': f"The Supplier Invoice No. '{self.supplier_invoice_no}' is already used in another shipping order."
                     }
                 }
 
     def action_submit(self):
         for record in self:
             if record.client_po_number:
-                existing = self.search([
+                existing_po = self.search([
                     ('client_po_number', '=', record.client_po_number),
                     ('id', '!=', record.id)
                 ], limit=1)
-                if existing:
-                    raise ValidationError(f"Client PO No. '{record.client_po_number}' already exists in another Shipping Order! Please use a unique PO number.")
+                if existing_po:
+                    raise ValidationError(f"Client PO No. '{record.client_po_number}' already exists in another Shipping Order!")
+
+            if record.bl_awb_number:
+                existing_bl = self.search([
+                    ('bl_awb_number', '=', record.bl_awb_number),
+                    ('id', '!=', record.id)
+                ], limit=1)
+                if existing_bl:
+                    raise ValidationError(f"B/L / AWB Number '{record.bl_awb_number}' already exists in another Shipping Order!")
+
+            if record.supplier_invoice_no:
+                existing_inv = self.search([
+                    ('supplier_invoice_no', '=', record.supplier_invoice_no),
+                    ('id', '!=', record.id)
+                ], limit=1)
+                if existing_inv:
+                    raise ValidationError(f"Supplier Invoice No. '{record.supplier_invoice_no}' already exists in another Shipping Order!")
+
         return super(ShippingOrder, self).action_submit()
