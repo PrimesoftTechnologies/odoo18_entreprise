@@ -9,13 +9,13 @@
         <field name="arch" type="xml">
 
             <!-- Quantity -->
-            <xpath expr="//field[@name='order_line']/list/field[@name='product_qty']"
+            <xpath expr="//field[@name='order_line']/list//field[@name='product_qty']"
                    position="attributes">
                 <attribute name="readonly">parent.state != 'draft'</attribute>
             </xpath>
 
             <!-- UoM -->
-            <xpath expr="//field[@name='order_line']/list/field[@name='product_uom']"
+            <xpath expr="//field[@name='order_line']/list//field[@name='product_uom']"
                    position="attributes">
                 <attribute name="readonly">parent.state != 'draft'</attribute>
             </xpath>
