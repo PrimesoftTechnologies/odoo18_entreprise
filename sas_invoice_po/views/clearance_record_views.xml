@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!-- Inherit Clearance Record Form to Secure Buttons and Smart Buttons -->
+        <record id="view_clearance_record_form_inherit_security" model="ir.ui.view">
+            <field name="name">clearance.record.form.inherit.security</field>
+            <field name="model">clearance.record</field>
+            <field name="inherit_id" ref="sas.clearance_record_form"/>
+            <field name="arch" type="xml">
+
+                <!-- 1. Restriction for Header Action Buttons (Create Reimbursement & Create Invoice) -->
+                <xpath expr="//header/button[@name='action_create_reimbursement']" position="attributes">
+                    <attribute name="groups">account.group_account_user,base.group_system</attribute>
+                </xpath>
+
+                <xpath expr="//header/button[@name='action_create_invoice']" position="attributes">
+                    <attribute name="groups">account.group_account_user,base.group_system</attribute>
+                </xpath>
+
+                <!-- 2. Restriction for Smart Buttons (Expenses, Reimbursements, Invoices) -->
+                <xpath expr="//div[@name='button_box']/button[@name='action_view_expenses']" position="attributes">
+                    <attribute name="groups">account.group_account_user,base.group_system</attribute>
+                </xpath>
+
+                <xpath expr="//div[@name='button_box']/button[@name='action_view_reimbursements']" position="attributes">
+                    <attribute name="groups">account.group_account_user,base.group_system</attribute>
+                </xpath>
+
+                <xpath expr="//div[@name='button_box']/button[@name='action_view_invoices']" position="attributes">
+                    <attribute name="groups">account.group_account_user,base.group_system</attribute>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>
