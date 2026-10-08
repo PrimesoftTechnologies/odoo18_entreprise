@@ -3,7 +3,7 @@
     'version': '18.0.1.0.0',
     'category': 'Inventory/Accounting',
     'summary': 'Adds Analytic Account to Delivery Orders and stock valuation moves',
-    'depends': ['stock', 'account', 'analytic'],
+    'depends': ['stock', 'stock_account', 'account', 'analytic'],
     'data': [
         'views/stock_picking_views.xml',
     ],
