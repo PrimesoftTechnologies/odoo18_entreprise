@@ -1,5 +1,6 @@
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
+import base64
 
 class ShippingOrder(models.Model):
     _inherit = 'shipping.order'
@@ -7,6 +8,10 @@ class ShippingOrder(models.Model):
     bl_awb_number = fields.Char(required=True)
     supplier_invoice_no = fields.Char(required=True)
     client_po_number = fields.Char(required=True)
+    
+    # Uwanja maalum wa Binary wa kuweka faili kabla ya kusave
+    attachment_file = fields.Binary(string="Document Attachment", required=True)
+    attachment_name = fields.Char(string="File Name")
 
     _sql_constraints = [
         ('client_po_number_uniq', 'unique(client_po_number)', 'The Client PO No. must be unique! A record with this PO number already exists.'),
@@ -18,7 +23,6 @@ class ShippingOrder(models.Model):
     def create(self, vals_list):
         for vals in vals_list:
             lines = vals.get('line_ids', [])
-            # Angalia kama hakuna kabisa mistari au kama kuna mstari ambao hauna product_id
             if not lines:
                 raise ValidationError("You cannot save a Shipping Order without adding at least one cargo line.")
             
@@ -29,18 +33,23 @@ class ShippingOrder(models.Model):
                     break
             if not has_product:
                 raise ValidationError("Every cargo line must have a valid Product selected before you can save.")
+            
+            # Lazima faili liwepo kabla ya kuruhusu kusave
+            if not vals.get('attachment_file'):
+                raise ValidationError("You must upload an attachment file before saving this Shipping Order!")
                 
         records = super(ShippingOrder, self).create(vals_list)
         
-        # Hakikisha kuna attachment baada ya rekodi kutengenezwa
+        # Kutengeneza rasmi ir.attachment ili lioneheke kwenye chatter
         for record in records:
-            attachment_count = self.env['ir.attachment'].search_count([
-                ('res_model', '=', 'shipping.order'),
-                ('res_id', '=', record.id)
-            ])
-            if attachment_count == 0:
-                raise ValidationError("You cannot save a Shipping Order without attaching at least one document.")
-                
+            if record.attachment_file:
+                self.env['ir.attachment'].create({
+                    'name': record.attachment_name or 'Shipping_Document.pdf',
+                    'type': 'binary',
+                    'datas': record.attachment_file,
+                    'res_model': 'shipping.order',
+                    'res_id': record.id,
+                })
         return records
 
     def write(self, vals):
@@ -58,22 +67,34 @@ class ShippingOrder(models.Model):
                 for command in lines:
                     if command[0] in (0, 1) and command[2] and command[2].get('product_id'):
                         has_product = True
-                    elif command[0] == 2: # Kama inafutwa
-                        pass
                 
                 if not has_product:
                     raise ValidationError("You must select a Product for all cargo lines before saving.")
 
-        res = super(ShippingOrder, self).write(vals)
+            if 'attachment_file' in vals and not vals.get('attachment_file'):
+                raise ValidationError("You cannot remove the attachment file.")
 
-        # Hakikisha kuna attachment wakati wa kuhifadhi (write/update)
+        res = super(ShippingOrder, self).write(vals)
+        
         for record in self:
-            attachment_count = self.env['ir.attachment'].search_count([
-                ('res_model', '=', 'shipping.order'),
-                ('res_id', '=', record.id)
-            ])
-            if attachment_count == 0:
-                raise ValidationError("You must attach at least one document before saving this Shipping Order.")
+            if vals.get('attachment_file'):
+                existing_att = self.env['ir.attachment'].search([
+                    ('res_model', '=', 'shipping.order'),
+                    ('res_id', '=', record.id)
+                ], limit=1)
+                if existing_att:
+                    existing_att.write({
+                        'datas': record.attachment_file,
+                        'name': record.attachment_name or existing_att.name
+                    })
+                else:
+                    self.env['ir.attachment'].create({
+                        'name': record.attachment_name or 'Shipping_Document.pdf',
+                        'type': 'binary',
+                        'datas': record.attachment_file,
+                        'res_model': 'shipping.order',
+                        'res_id': record.id,
+                    })
 
         return res
 
@@ -120,13 +141,8 @@ class ShippingOrder(models.Model):
             if not record.line_ids or any(not line.product_id for line in record.line_ids):
                 raise ValidationError("You cannot submit a Shipping Order without selecting a Product for all cargo lines.")
 
-            # Hakikisha attachment ipo wakati wa kusubmit pia
-            attachment_count = self.env['ir.attachment'].search_count([
-                ('res_model', '=', 'shipping.order'),
-                ('res_id', '=', record.id)
-            ])
-            if attachment_count == 0:
-                raise ValidationError("You cannot submit a Shipping Order without attaching a document!")
+            if not record.attachment_file:
+                raise ValidationError("You cannot submit a Shipping Order without an attachment file!")
 
             if record.client_po_number:
                 existing_po = self.search([
