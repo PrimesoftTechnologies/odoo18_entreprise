@@ -8,6 +8,7 @@
     'data': [
         'views/clearance_record_views.xml',
         'views/invoice_search_views.xml',
+        'views/shipping_order_views.xml',  
     ],
     'installable': True,
     'auto_install': False,
