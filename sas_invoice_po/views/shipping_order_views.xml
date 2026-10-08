@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- 1. Fomu ya kuweka Attachment chini ya sehemu ya Shipping Documents -->
+    <!-- 1. Fomu ya kuweka Attachment ndani ya Shipping Documents group -->
     <record id="view_shipping_order_form_inherit_attachment" model="ir.ui.view">
         <field name="name">shipping.order.form.inherit.attachment</field>
         <field name="model">shipping.order</field>
         <field name="inherit_id" ref="sas.view_shipping_order_form"/>
         <field name="arch" type="xml">
-            <!-- Tunaiambia Odoo iweke ndani ya group la kwanza lenye Shipping Documents -->
-            <xpath expr="//sheet/group[.//string[text()='SHIPPING DOCUMENTS'] or @string='SHIPPING DOCUMENTS']" position="inside">
+            <xpath expr="//group[@string='Shipping Documents']" position="inside">
                 <field name="attachment_file" filename="attachment_name" widget="binary" required="1"/>
                 <field name="attachment_name" invisible="1"/>
             </xpath>
