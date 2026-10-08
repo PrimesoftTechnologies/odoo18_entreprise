@@ -22,7 +22,6 @@ class ShippingOrder(models.Model):
             if not lines:
                 raise ValidationError("You cannot save a Shipping Order without adding at least one cargo line.")
             
-            # Kwenye Odoo create, line_ids hutumia amri za x2many (k.v., [(0, 0, values)])
             has_product = False
             for command in lines:
                 if len(command) >= 3 and command[2] and command[2].get('product_id'):
@@ -31,7 +30,18 @@ class ShippingOrder(models.Model):
             if not has_product:
                 raise ValidationError("Every cargo line must have a valid Product selected before you can save.")
                 
-        return super(ShippingOrder, self).create(vals_list)
+        records = super(ShippingOrder, self).create(vals_list)
+        
+        # Hakikisha kuna attachment baada ya rekodi kutengenezwa
+        for record in records:
+            attachment_count = self.env['ir.attachment'].search_count([
+                ('res_model', '=', 'shipping.order'),
+                ('res_id', '=', record.id)
+            ])
+            if attachment_count == 0:
+                raise ValidationError("You cannot save a Shipping Order without attaching at least one document.")
+                
+        return records
 
     def write(self, vals):
         for record in self:
@@ -40,15 +50,12 @@ class ShippingOrder(models.Model):
                 if not lines and not record.line_ids:
                     raise ValidationError("You cannot save a Shipping Order without at least one cargo line.")
                 
-                # Hakikisha mistari iliyopo ina product
                 has_product = False
-                # Angalia kwenye record iliyopo kama ina lines zenye product
                 active_lines = record.line_ids
                 if active_lines:
                     has_product = True
                 
                 for command in lines:
-                    # command[0] 0=create, 1=update, 2=delete, 3=forget, 4=link, 5=set, 6=set all
                     if command[0] in (0, 1) and command[2] and command[2].get('product_id'):
                         has_product = True
                     elif command[0] == 2: # Kama inafutwa
@@ -57,7 +64,18 @@ class ShippingOrder(models.Model):
                 if not has_product:
                     raise ValidationError("You must select a Product for all cargo lines before saving.")
 
-        return super(ShippingOrder, self).write(vals)
+        res = super(ShippingOrder, self).write(vals)
+
+        # Hakikisha kuna attachment wakati wa kuhifadhi (write/update)
+        for record in self:
+            attachment_count = self.env['ir.attachment'].search_count([
+                ('res_model', '=', 'shipping.order'),
+                ('res_id', '=', record.id)
+            ])
+            if attachment_count == 0:
+                raise ValidationError("You must attach at least one document before saving this Shipping Order.")
+
+        return res
 
     @api.onchange('client_po_number', 'bl_awb_number', 'supplier_invoice_no')
     def _onchange_unique_references(self):
@@ -101,6 +119,14 @@ class ShippingOrder(models.Model):
         for record in self:
             if not record.line_ids or any(not line.product_id for line in record.line_ids):
                 raise ValidationError("You cannot submit a Shipping Order without selecting a Product for all cargo lines.")
+
+            # Hakikisha attachment ipo wakati wa kusubmit pia
+            attachment_count = self.env['ir.attachment'].search_count([
+                ('res_model', '=', 'shipping.order'),
+                ('res_id', '=', record.id)
+            ])
+            if attachment_count == 0:
+                raise ValidationError("You cannot submit a Shipping Order without attaching a document!")
 
             if record.client_po_number:
                 existing_po = self.search([
