@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- 1. Fomu ya kuweka Attachment ndani ya Shipping Documents kwenye Shipping Order -->
+    <!-- 1. Fomu ya kuweka Attachment ndani ya Shipping Documents -->
     <record id="view_shipping_order_form_inherit_attachment" model="ir.ui.view">
         <field name="name">shipping.order.form.inherit.attachment</field>
         <field name="model">shipping.order</field>
-        <!-- Hapa tumeweka ID sahihi ya fomu asili ya shipping order kutoka moduli yako -->
-        <field name="inherit_id" ref="sas.view_shipping_order_form"/>
+        <!-- Jaribu kutumia ID hii ya kawaida ya fomu -->
+        <field name="inherit_id" ref="sas.shipping_order_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//group[@string='Shipping Documents']" position="inside">
+            <!-- Tunalenga moja kwa moja ndani ya page ya documents -->
+            <xpath expr="//page[@name='documents']//group[@string='Shipping Documents']" position="inside">
                 <field name="attachment_file" filename="attachment_name" widget="binary" required="1"/>
                 <field name="attachment_name" invisible="1"/>
             </xpath>
