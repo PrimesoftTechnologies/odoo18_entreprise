@@ -1,6 +1,5 @@
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
-import base64
 
 class ShippingOrder(models.Model):
     _inherit = 'shipping.order'
@@ -9,9 +8,16 @@ class ShippingOrder(models.Model):
     supplier_invoice_no = fields.Char(required=True)
     client_po_number = fields.Char(required=True)
     
-    # Uwanja maalum wa Binary wa kuweka faili kabla ya kusave
-    attachment_file = fields.Binary(string="Document Attachment", required=True)
-    attachment_name = fields.Char(string="File Name")
+    # Badilisha kuwa Many2many ir.attachment kwa ajili ya multiple files
+    attachment_ids = fields.Many2many(
+        'ir.attachment',
+        'shipping_order_ir_attachment_rel',
+        'order_id',
+        'attachment_id',
+        string="Shipping Documents Attachments",
+        required=True,
+        help="Upload mandatory multiple shipping documents here."
+    )
 
     _sql_constraints = [
         ('client_po_number_uniq', 'unique(client_po_number)', 'The Client PO No. must be unique! A record with this PO number already exists.'),
@@ -34,19 +40,17 @@ class ShippingOrder(models.Model):
             if not has_product:
                 raise ValidationError("Every cargo line must have a valid Product selected before you can save.")
             
-            # Lazima faili liwepo kabla ya kuruhusu kusave
-            if not vals.get('attachment_file'):
-                raise ValidationError("You must upload an attachment file before saving this Shipping Order!")
+            # Hakikisha attachment_ids zimejazwa wakati wa kuunda
+            if not vals.get('attachment_ids'):
+                raise ValidationError("You must upload at least one attachment file before saving this Shipping Order!")
                 
         records = super(ShippingOrder, self).create(vals_list)
         
-        # Kutengeneza rasmi ir.attachment ili lioneheke kwenye chatter
+        # Odoo Many2many ya ir.attachment inajihifadhi yenyewe kwenye database, 
+        # ila tunahakikisha res_model na res_id vimeunganishwa vizuri kama zipo kwenye command
         for record in records:
-            if record.attachment_file:
-                self.env['ir.attachment'].create({
-                    'name': record.attachment_name or 'Shipping_Document.pdf',
-                    'type': 'binary',
-                    'datas': record.attachment_file,
+            if record.attachment_ids:
+                record.attachment_ids.write({
                     'res_model': 'shipping.order',
                     'res_id': record.id,
                 })
@@ -71,30 +75,17 @@ class ShippingOrder(models.Model):
                 if not has_product:
                     raise ValidationError("You must select a Product for all cargo lines before saving.")
 
-            if 'attachment_file' in vals and not vals.get('attachment_file'):
-                raise ValidationError("You cannot remove the attachment file.")
+            if 'attachment_ids' in vals and not vals.get('attachment_ids'):
+                raise ValidationError("You cannot remove all attachment files. At least one document is required.")
 
         res = super(ShippingOrder, self).write(vals)
         
         for record in self:
-            if vals.get('attachment_file'):
-                existing_att = self.env['ir.attachment'].search([
-                    ('res_model', '=', 'shipping.order'),
-                    ('res_id', '=', record.id)
-                ], limit=1)
-                if existing_att:
-                    existing_att.write({
-                        'datas': record.attachment_file,
-                        'name': record.attachment_name or existing_att.name
-                    })
-                else:
-                    self.env['ir.attachment'].create({
-                        'name': record.attachment_name or 'Shipping_Document.pdf',
-                        'type': 'binary',
-                        'datas': record.attachment_file,
-                        'res_model': 'shipping.order',
-                        'res_id': record.id,
-                    })
+            if record.attachment_ids:
+                record.attachment_ids.filtered(lambda att: not att.res_id).write({
+                    'res_model': 'shipping.order',
+                    'res_id': record.id,
+                })
 
         return res
 
@@ -141,8 +132,8 @@ class ShippingOrder(models.Model):
             if not record.line_ids or any(not line.product_id for line in record.line_ids):
                 raise ValidationError("You cannot submit a Shipping Order without selecting a Product for all cargo lines.")
 
-            if not record.attachment_file:
-                raise ValidationError("You cannot submit a Shipping Order without an attachment file!")
+            if not record.attachment_ids:
+                raise ValidationError("You cannot submit a Shipping Order without at least one attachment file!")
 
             if record.client_po_number:
                 existing_po = self.search([
