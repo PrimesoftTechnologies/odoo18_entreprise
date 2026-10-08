@@ -7,6 +7,15 @@ class StockPicking(models.Model):
         string='Analytic Distribution',
         help="Analytic distribution for valuation moves."
     )
+    analytic_precision = fields.Integer(
+        string="Analytic Precision",
+        compute="_compute_analytic_precision",
+        store=False,
+    )
+
+    def _compute_analytic_precision(self):
+        for picking in self:
+            picking.analytic_precision = self.env['account.move.line']._fields['analytic_distribution'].get_digits(self.env)
 
 class StockValuationLayer(models.Model):
     _inherit = 'stock.valuation.layer'
