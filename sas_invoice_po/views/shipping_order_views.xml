@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- 1. Fomu ya kuweka Attachment ndani ya Shipping Documents group -->
+    <!-- 1. Fomu ya kuweka Attachment ndani ya Shipping Documents kwenye Shipping Order -->
     <record id="view_shipping_order_form_inherit_attachment" model="ir.ui.view">
         <field name="name">shipping.order.form.inherit.attachment</field>
         <field name="model">shipping.order</field>
+        <!-- Hapa tumeweka ID sahihi ya fomu asili ya shipping order kutoka moduli yako -->
         <field name="inherit_id" ref="sas.view_shipping_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//group[@string='Shipping Documents']" position="inside">
@@ -13,6 +14,7 @@
         </field>
     </record>
 
+    <!-- 2. Search View kwa ajili ya Client PO No. -->
     <record id="view_shipping_order_search_inherit_po" model="ir.ui.view">
         <field name="name">shipping.order.search.inherit.po</field>
         <field name="model">shipping.order</field>
