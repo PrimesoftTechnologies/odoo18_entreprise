@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- 1. Kuweka Attachment ndani ya Shipping Documents group -->
+    <!-- 1. Fomu ya kuweka Attachment ndani ya Shipping Documents -->
     <record id="view_shipping_order_form_inherit_attachment" model="ir.ui.view">
         <field name="name">shipping.order.form.inherit.attachment</field>
         <field name="model">shipping.order</field>
         <field name="inherit_id" ref="sas.shipping_order_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//group[@string='Shipping Documents']" position="inside">
+            <!-- Tunalenga kupitia page ya documents na group la kwanza ndani yake -->
+            <xpath expr="//page[@name='documents']/group/group[1]" position="inside">
                 <field name="attachment_file" filename="attachment_name" widget="binary" required="1"/>
                 <field name="attachment_name" invisible="1"/>
             </xpath>
         </field>
     </record>
 
-    <!-- 2. Kuongeza Client PO No. kwenye Search View -->
+    <!-- 2. Search View kwa ajili ya Client PO No. -->
     <record id="view_shipping_order_search_inherit_po" model="ir.ui.view">
         <field name="name">shipping.order.search.inherit.po</field>
         <field name="model">shipping.order</field>
