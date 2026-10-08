@@ -9,12 +9,20 @@ class StockPicking(models.Model):
         help="Select analytic account for this delivery order valuation."
     )
 
-    def _create_account_move(self, credit_account_id, debit_account_id, journal_id, quant_ids, valued_move_lines):
-        move = super()._create_account_move(credit_account_id, debit_account_id, journal_id, quant_ids, valued_move_lines)
-        if self.analytic_account_id and move:
-            for line in move.line_ids:
-                # Apply analytic distribution to lines that don't have it or all lines
-                line.write({
-                    'analytic_distribution': {str(self.analytic_account_id.id): 100.0}
-                })
-        return move
+class StockValuationLayer(models.Model):
+    _inherit = 'stock.valuation.layer'
+
+    def _validate_accounting_entries(self):
+        res = super()._validate_accounting_entries()
+        for layer in self:
+            if layer.stock_move_id.picking_id and layer.stock_move_id.picking_id.analytic_account_id:
+                analytic_id = layer.stock_move_id.picking_id.analytic_account_id.id
+                # Tafuta account moves zinazohusiana na layer hii na uweke analytic distribution
+                moves = self.env['account.move'].search([('stock_valuation_layer_ids', 'in', layer.ids)])
+                for move in moves:
+                    for line in move.line_ids:
+                        if not line.analytic_distribution:
+                            line.write({
+                                'analytic_distribution': {str(analytic_id): 100.0}
+                            })
+        return res
