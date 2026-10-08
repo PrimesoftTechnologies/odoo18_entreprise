@@ -22,7 +22,6 @@ class ShippingOrder(models.Model):
             if not lines:
                 raise ValidationError("You cannot save a Shipping Order without adding at least one cargo line.")
             
-            # Kwenye Odoo create, line_ids hutumia amri za x2many (k.v., [(0, 0, values)])
             has_product = False
             for command in lines:
                 if len(command) >= 3 and command[2] and command[2].get('product_id'):
@@ -40,18 +39,15 @@ class ShippingOrder(models.Model):
                 if not lines and not record.line_ids:
                     raise ValidationError("You cannot save a Shipping Order without at least one cargo line.")
                 
-                # Hakikisha mistari iliyopo ina product
                 has_product = False
-                # Angalia kwenye record iliyopo kama ina lines zenye product
                 active_lines = record.line_ids
                 if active_lines:
                     has_product = True
                 
                 for command in lines:
-                    # command[0] 0=create, 1=update, 2=delete, 3=forget, 4=link, 5=set, 6=set all
                     if command[0] in (0, 1) and command[2] and command[2].get('product_id'):
                         has_product = True
-                    elif command[0] == 2: # Kama inafutwa
+                    elif command[0] == 2:
                         pass
                 
                 if not has_product:
@@ -101,6 +97,14 @@ class ShippingOrder(models.Model):
         for record in self:
             if not record.line_ids or any(not line.product_id for line in record.line_ids):
                 raise ValidationError("You cannot submit a Shipping Order without selecting a Product for all cargo lines.")
+
+            # Kagua kama kuna attachment iliyowekwa kupitia mfumo wa Odoo
+            attachment_count = self.env['ir.attachment'].search_count([
+                ('res_model', '=', 'shipping.order'),
+                ('res_id', '=', record.id)
+            ])
+            if attachment_count == 0:
+                raise ValidationError("You must upload at least one attachment before submitting this Shipping Order!")
 
             if record.client_po_number:
                 existing_po = self.search([
