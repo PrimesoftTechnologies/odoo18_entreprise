@@ -1,7 +1,6 @@
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
 
-
 class ShippingOrder(models.Model):
     _inherit = 'shipping.order'
 
@@ -10,134 +9,121 @@ class ShippingOrder(models.Model):
     client_po_number = fields.Char(required=True)
 
     _sql_constraints = [
-        (
-            'client_po_number_uniq',
-            'unique(client_po_number)',
-            'The Client PO No. must be unique!'
-        ),
-        (
-            'bl_awb_number_uniq',
-            'unique(bl_awb_number)',
-            'The B/L / AWB Number must be unique!'
-        ),
-        (
-            'supplier_invoice_no_uniq',
-            'unique(supplier_invoice_no)',
-            'The Supplier Invoice No. must be unique!'
-        )
+        ('client_po_number_uniq', 'unique(client_po_number)', 'The Client PO No. must be unique! A record with this PO number already exists.'),
+        ('bl_awb_number_uniq', 'unique(bl_awb_number)', 'The B/L / AWB Number must be unique! A record with this number already exists.'),
+        ('supplier_invoice_no_uniq', 'unique(supplier_invoice_no)', 'The Supplier Invoice No. must be unique! A record with this number already exists.')
     ]
 
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
             lines = vals.get('line_ids', [])
-
+            # Angalia kama hakuna kabisa mistari au kama kuna mstari ambao hauna product_id
             if not lines:
-                raise ValidationError(
-                    "You cannot save a Shipping Order without adding at least one cargo line."
-                )
-
-            if not any(
-                len(line) >= 3
-                and line[2]
-                and line[2].get('product_id')
-                for line in lines
-            ):
-                raise ValidationError(
-                    "Every cargo line must have a valid Product selected before you can save."
-                )
-
-        return super().create(vals_list)
+                raise ValidationError("You cannot save a Shipping Order without adding at least one cargo line.")
+            
+            # Kwenye Odoo create, line_ids hutumia amri za x2many (k.v., [(0, 0, values)])
+            has_product = False
+            for command in lines:
+                if len(command) >= 3 and command[2] and command[2].get('product_id'):
+                    has_product = True
+                    break
+            if not has_product:
+                raise ValidationError("Every cargo line must have a valid Product selected before you can save.")
+                
+        return super(ShippingOrder, self).create(vals_list)
 
     def write(self, vals):
         for record in self:
             if 'line_ids' in vals:
                 lines = vals.get('line_ids', [])
-
                 if not lines and not record.line_ids:
-                    raise ValidationError(
-                        "You cannot save a Shipping Order without adding at least one cargo line."
-                    )
+                    raise ValidationError("You cannot save a Shipping Order without at least one cargo line.")
+                
+                # Hakikisha mistari iliyopo ina product
+                has_product = False
+                # Angalia kwenye record iliyopo kama ina lines zenye product
+                active_lines = record.line_ids
+                if active_lines:
+                    has_product = True
+                
+                for command in lines:
+                    # command[0] 0=create, 1=update, 2=delete, 3=forget, 4=link, 5=set, 6=set all
+                    if command[0] in (0, 1) and command[2] and command[2].get('product_id'):
+                        has_product = True
+                    elif command[0] == 2: # Kama inafutwa
+                        pass
+                
+                if not has_product:
+                    raise ValidationError("You must select a Product for all cargo lines before saving.")
 
-        return super().write(vals)
+        return super(ShippingOrder, self).write(vals)
 
-    @api.onchange(
-        'client_po_number',
-        'bl_awb_number',
-        'supplier_invoice_no'
-    )
+    @api.onchange('client_po_number', 'bl_awb_number', 'supplier_invoice_no')
     def _onchange_unique_references(self):
         if self.client_po_number:
-            existing = self.search([
+            existing_po = self.env['shipping.order'].search([
                 ('client_po_number', '=', self.client_po_number),
-                ('id', '!=', self._origin.id)
             ], limit=1)
-
-            if existing:
+            if existing_po:
                 return {
                     'warning': {
-                        'title': 'Client PO No. Already Exists!',
-                        'message': (
-                            f"Client PO No. '{self.client_po_number}' "
-                            f"is already used."
-                        )
+                        'title': "Warning: Client PO No. Already Exists!",
+                        'message': f"The Client PO No. '{self.client_po_number}' is already used in another shipping order."
                     }
                 }
-
+        
         if self.bl_awb_number:
-            existing = self.search([
+            existing_bl = self.env['shipping.order'].search([
                 ('bl_awb_number', '=', self.bl_awb_number),
-                ('id', '!=', self._origin.id)
             ], limit=1)
-
-            if existing:
+            if existing_bl:
                 return {
                     'warning': {
-                        'title': 'B/L / AWB Number Already Exists!',
-                        'message': (
-                            f"B/L / AWB Number '{self.bl_awb_number}' "
-                            f"is already used."
-                        )
+                        'title': "Warning: B/L / AWB Number Already Exists!",
+                        'message': f"The B/L / AWB Number '{self.bl_awb_number}' is already used in another shipping order."
                     }
                 }
 
         if self.supplier_invoice_no:
-            existing = self.search([
+            existing_inv = self.env['shipping.order'].search([
                 ('supplier_invoice_no', '=', self.supplier_invoice_no),
-                ('id', '!=', self._origin.id)
             ], limit=1)
-
-            if existing:
+            if existing_inv:
                 return {
                     'warning': {
-                        'title': 'Supplier Invoice No. Already Exists!',
-                        'message': (
-                            f"Supplier Invoice No. "
-                            f"'{self.supplier_invoice_no}' is already used."
-                        )
+                        'title': "Warning: Supplier Invoice No. Already Exists!",
+                        'message': f"The Supplier Invoice No. '{self.supplier_invoice_no}' is already used in another shipping order."
                     }
                 }
 
     def action_submit(self):
         for record in self:
-            if (
-                not record.line_ids
-                or any(not line.product_id for line in record.line_ids)
-            ):
-                raise ValidationError(
-                    "You cannot submit a Shipping Order without "
-                    "selecting a Product for all cargo lines."
-                )
+            if not record.line_ids or any(not line.product_id for line in record.line_ids):
+                raise ValidationError("You cannot submit a Shipping Order without selecting a Product for all cargo lines.")
 
-            attachment_count = self.env['ir.attachment'].search_count([
-                ('res_model', '=', 'shipping.order'),
-                ('res_id', '=', record.id),
-            ])
+            if record.client_po_number:
+                existing_po = self.search([
+                    ('client_po_number', '=', record.client_po_number),
+                    ('id', '!=', record.id)
+                ], limit=1)
+                if existing_po:
+                    raise ValidationError(f"Client PO No. '{record.client_po_number}' already exists in another Shipping Order!")
 
-            if attachment_count == 0:
-                raise ValidationError(
-                    "You must upload at least one attachment "
-                    "before submitting this Shipping Order!"
-                )
+            if record.bl_awb_number:
+                existing_bl = self.search([
+                    ('bl_awb_number', '=', record.bl_awb_number),
+                    ('id', '!=', record.id)
+                ], limit=1)
+                if existing_bl:
+                    raise ValidationError(f"B/L / AWB Number '{record.bl_awb_number}' already exists in another Shipping Order!")
 
-        return super().action_submit()
+            if record.supplier_invoice_no:
+                existing_inv = self.search([
+                    ('supplier_invoice_no', '=', record.supplier_invoice_no),
+                    ('id', '!=', record.id)
+                ], limit=1)
+                if existing_inv:
+                    raise ValidationError(f"Supplier Invoice No. '{record.supplier_invoice_no}' already exists in another Shipping Order!")
+
+        return super(ShippingOrder, self).action_submit()
