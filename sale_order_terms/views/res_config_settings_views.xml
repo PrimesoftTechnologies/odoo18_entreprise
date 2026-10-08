@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_res_config_settings_sale_terms" model="ir.ui.view">
+        <field name="name">res.config.settings.sale.terms</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='connectors_setting_container']" position="after">
+                <!-- Header styled like Connectors -->
+                <div class="o_setting_heading sale_terms_header">
+                    <h2>Default Sale Terms &amp; Conditions</h2>
+                </div>
+                <!-- Boolean toggle -->
+                <div class="row mt16 o_settings_container" name="sale_terms_settings_container">
+                    <div class="col-12 col-lg-6 o_setting_box">
+                        <div class="o_setting_left_pane">
+                            <field name="use_sale_terms"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="use_sale_terms"/>
+                            <div class="text-muted">
+                                Enable default terms &amp; conditions for sale orders.
+                            </div>
+                        </div>
+
+                        <div class="content-group" invisible = 'use_sale_terms == False'>
+                            <div class="mt16">
+                                <div>
+                                    <field name="sale_terms_html"
+                                           class="oe_sale_terms"
+                                           placeholder="Insert your terms &amp; conditions here..."/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
