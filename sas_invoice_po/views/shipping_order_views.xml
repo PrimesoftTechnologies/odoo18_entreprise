@@ -13,7 +13,6 @@
         </field>
     </record>
 
-    <!-- 2. Search View ya kutafutia na kupanga makundi -->
     <record id="view_shipping_order_search_inherit_po" model="ir.ui.view">
         <field name="name">shipping.order.search.inherit.po</field>
         <field name="model">shipping.order</field>
