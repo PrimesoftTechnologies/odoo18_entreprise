@@ -51,26 +51,12 @@ class ShippingOrder(models.Model):
 
     def write(self, vals):
         for record in self:
-
             if 'line_ids' in vals:
                 lines = vals.get('line_ids', [])
 
                 if not lines and not record.line_ids:
                     raise ValidationError(
                         "You cannot save a Shipping Order without adding at least one cargo line."
-                    )
-
-                if (
-                    not record.line_ids
-                    and not any(
-                        len(line) >= 3
-                        and line[2]
-                        and line[2].get('product_id')
-                        for line in lines
-                    )
-                ):
-                    raise ValidationError(
-                        "You must select a Product for all cargo lines before saving."
                     )
 
         return super().write(vals)
@@ -81,7 +67,6 @@ class ShippingOrder(models.Model):
         'supplier_invoice_no'
     )
     def _onchange_unique_references(self):
-
         if self.client_po_number:
             existing = self.search([
                 ('client_po_number', '=', self.client_po_number),
@@ -135,13 +120,9 @@ class ShippingOrder(models.Model):
 
     def action_submit(self):
         for record in self:
-
             if (
                 not record.line_ids
-                or any(
-                    not line.product_id
-                    for line in record.line_ids
-                )
+                or any(not line.product_id for line in record.line_ids)
             ):
                 raise ValidationError(
                     "You cannot submit a Shipping Order without "
@@ -159,47 +140,4 @@ class ShippingOrder(models.Model):
                     "before submitting this Shipping Order!"
                 )
 
-            if record.client_po_number:
-                existing = self.search([
-                    ('client_po_number', '=', record.client_po_number),
-                    ('id', '!=', record.id)
-                ], limit=1)
-
-                if existing:
-                    raise ValidationError(
-                        f"Client PO No. '{record.client_po_number}' "
-                        f"already exists in another Shipping Order!"
-                    )
-
-            if record.bl_awb_number:
-                existing = self.search([
-                    ('bl_awb_number', '=', record.bl_awb_number),
-                    ('id', '!=', record.id)
-                ], limit=1)
-
-                if existing:
-                    raise ValidationError(
-                        f"B/L / AWB Number '{record.bl_awb_number}' "
-                        f"already exists in another Shipping Order!"
-                    )
-
-            if record.supplier_invoice_no:
-                existing = self.search([
-                    (
-                        'supplier_invoice_no',
-                        '=',
-                        record.supplier_invoice_no
-                    ),
-                    ('id', '!=', record.id)
-                ], limit=1)
-
-                if existing:
-                    raise ValidationError(
-                        f"Supplier Invoice No. "
-                        f"'{record.supplier_invoice_no}' "
-                        f"already exists in another Shipping Order!"
-                    )
-
         return super().action_submit()
-
-
