@@ -8,7 +8,7 @@ class ShippingOrder(models.Model):
     supplier_invoice_no = fields.Char(required=True)
     client_po_number = fields.Char(required=True)
     
-    # Badilisha kuwa Many2many ir.attachment kwa ajili ya multiple files
+    # Uwanja wa Many2many ir.attachment kwa ajili ya multiple files
     attachment_ids = fields.Many2many(
         'ir.attachment',
         'shipping_order_ir_attachment_rel',
@@ -16,7 +16,7 @@ class ShippingOrder(models.Model):
         'attachment_id',
         string="Shipping Documents Attachments",
         required=True,
-        help="Upload mandatory multiple shipping documents here."
+        help="Upload mandatory minimum 3 shipping documents here."
     )
 
     _sql_constraints = [
@@ -24,6 +24,13 @@ class ShippingOrder(models.Model):
         ('bl_awb_number_uniq', 'unique(bl_awb_number)', 'The B/L / AWB Number must be unique! A record with this number already exists.'),
         ('supplier_invoice_no_uniq', 'unique(supplier_invoice_no)', 'The Supplier Invoice No. must be unique! A record with this number already exists.')
     ]
+
+    # Uhakiki wa moja kwa moja kupitia Odoo Constrains (Minimum 3 files)
+    @api.constrains('attachment_ids')
+    def _check_minimum_attachments(self):
+        for record in self:
+            if not record.attachment_ids or len(record.attachment_ids) < 3:
+                raise ValidationError("Kosa: Lazima uweke angalau faili 3 za viambatisho (Minimum 3 attachments) kabla ya kuhifadhi oda hii!")
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -40,14 +47,19 @@ class ShippingOrder(models.Model):
             if not has_product:
                 raise ValidationError("Every cargo line must have a valid Product selected before you can save.")
             
-            # Hakikisha attachment_ids zimejazwa wakati wa kuunda
-            if not vals.get('attachment_ids'):
-                raise ValidationError("You must upload at least one attachment file before saving this Shipping Order!")
+            # Uhakiki wakati wa kuunda ili kuhakikisha angalau faili 3 zipo kwenye amri za many2many
+            att_ids = vals.get('attachment_ids', [])
+            total_attachments = 0
+            for cmd in att_ids:
+                if isinstance(cmd, (list, tuple)) and len(cmd) >= 3 and cmd[0] == 6:
+                    total_attachments += len(cmd[2])
+                elif isinstance(cmd, (list, tuple)) and cmd[0] in (4, 1):
+                    total_attachments += 1
+            if total_attachments < 3:
+                raise ValidationError("Lazima uweke angalau faili 3 za viambatisho (Minimum 3 attachments) kabla ya kusave Oda hii ya Usafirishaji!")
                 
         records = super(ShippingOrder, self).create(vals_list)
         
-        # Odoo Many2many ya ir.attachment inajihifadhi yenyewe kwenye database, 
-        # ila tunahakikisha res_model na res_id vimeunganishwa vizuri kama zipo kwenye command
         for record in records:
             if record.attachment_ids:
                 record.attachment_ids.write({
@@ -75,9 +87,6 @@ class ShippingOrder(models.Model):
                 if not has_product:
                     raise ValidationError("You must select a Product for all cargo lines before saving.")
 
-            if 'attachment_ids' in vals and not vals.get('attachment_ids'):
-                raise ValidationError("You cannot remove all attachment files. At least one document is required.")
-
         res = super(ShippingOrder, self).write(vals)
         
         for record in self:
@@ -86,6 +95,9 @@ class ShippingOrder(models.Model):
                     'res_model': 'shipping.order',
                     'res_id': record.id,
                 })
+            # Hakikisha baada ya kuedit hazipungui chini ya 3
+            if len(record.attachment_ids) < 3:
+                raise ValidationError("Huwezi kupunguza mafaili yakawa chini ya 3. Lazima uwe na angalau faili 3 za viambatisho!")
 
         return res
 
@@ -132,8 +144,8 @@ class ShippingOrder(models.Model):
             if not record.line_ids or any(not line.product_id for line in record.line_ids):
                 raise ValidationError("You cannot submit a Shipping Order without selecting a Product for all cargo lines.")
 
-            if not record.attachment_ids:
-                raise ValidationError("You cannot submit a Shipping Order without at least one attachment file!")
+            if not record.attachment_ids or len(record.attachment_ids) < 3:
+                raise ValidationError("Huwezi kuwasilisha (submit) oda hii bila kuwa na angalau faili 3 za viambatisho (Minimum 3 attachments)!")
 
             if record.client_po_number:
                 existing_po = self.search([
