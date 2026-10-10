@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- ============================================================
+         ADD STAFF MODAL
+    ============================================================ -->
+
+    <t t-name="phone_point_keeping.AddStaffModal">
+
+        <t t-if="state.showStaffModal">
+
+            <div class="modal d-block" tabindex="-1"
+                 style="background-color: rgba(0,0,0,0.5);">
+
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+                            <h5 class="modal-title fw-bold">
+                                Add New Staff
+                            </h5>
+                            <button type="button" class="btn-close"
+                                    t-on-click="closeStaffModal"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Full Name <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control"
+                                           placeholder="e.g. Juma Hamisi"
+                                           t-att-value="state.newStaff.name"
+                                           t-on-input="(ev) => this.onNewStaffChange('name', ev)"/>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Job Title <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control"
+                                           placeholder="e.g. Salesperson, Manager"
+                                           t-att-value="state.newStaff.job_title"
+                                           t-on-input="(ev) => this.onNewStaffChange('job_title', ev)"/>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Department</label>
+                                    <select class="form-select"
+                                            t-on-change="(ev) => this.onNewStaffChange('department_id', ev)">
+                                        <option value="">Select Department</option>
+                                        <t t-foreach="state.departments" t-as="dept" t-key="dept.id">
+                                            <option t-att-value="dept.id"
+                                                    t-att-selected="state.newStaff.department_id == dept.id">
+                                                <t t-esc="dept.name"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Date Joined</label>
+                                    <input type="date" class="form-control"
+                                           t-att-value="state.newStaff.date_join"
+                                           t-on-input="(ev) => this.onNewStaffChange('date_join', ev)"/>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Work Phone</label>
+                                    <input type="text" class="form-control"
+                                           placeholder="e.g. +255 712 345 678"
+                                           t-att-value="state.newStaff.work_phone"
+                                           t-on-input="(ev) => this.onNewStaffChange('work_phone', ev)"/>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Mobile Phone</label>
+                                    <input type="text" class="form-control"
+                                           placeholder="e.g. +255 713 456 789"
+                                           t-att-value="state.newStaff.mobile_phone"
+                                           t-on-input="(ev) => this.onNewStaffChange('mobile_phone', ev)"/>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Work Email</label>
+                                    <input type="email" class="form-control"
+                                           placeholder="e.g. juma@phoneshop.co.tz"
+                                           t-att-value="state.newStaff.work_email"
+                                           t-on-input="(ev) => this.onNewStaffChange('work_email', ev)"/>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Salary (TSh)</label>
+                                    <input type="number" class="form-control" min="0"
+                                           placeholder="e.g. 500000"
+                                           t-att-value="state.newStaff.salary_amount"
+                                           t-on-input="(ev) => this.onNewStaffChange('salary_amount', ev)"/>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Commission Rate (%)</label>
+                                    <input type="number" class="form-control" min="0" max="100"
+                                           placeholder="e.g. 5"
+                                           t-att-value="state.newStaff.commission_rate"
+                                           t-on-input="(ev) => this.onNewStaffChange('commission_rate', ev)"/>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">Notes</label>
+                                    <textarea class="form-control" rows="2"
+                                              placeholder="Additional notes about this staff member..."
+                                              t-att-value="state.newStaff.notes"
+                                              t-on-input="(ev) => this.onNewStaffChange('notes', ev)"></textarea>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary"
+                                    t-on-click="closeStaffModal">
+                                Cancel
+                            </button>
+                            <button type="button" class="btn btn-primary"
+                                    t-on-click="_onSaveStaff">
+                                <i class="fa fa-save me-2"></i> Save Staff
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </t>
+
+    </t>
+
+
+    <!-- ============================================================
+         EDIT STAFF MODAL
+    ============================================================ -->
+
+    <t t-name="phone_point_keeping.EditStaffModal">
+
+        <t t-if="state.showEditStaffModal">
+
+            <div class="modal d-block" tabindex="-1"
+                 style="background-color: rgba(0,0,0,0.5);">
+
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+                            <h5 class="modal-title fw-bold">
+                                Edit Staff
+                            </h5>
+                            <button type="button" class="btn-close"
+                                    t-on-click="closeEditStaffModal"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Full Name <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control"
+                                           t-att-value="state.editStaff.name"
+                                           t-on-input="(ev) => this.onEditStaffChange('name', ev)"/>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Job Title <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control"
+                                           t-att-value="state.editStaff.job_title"
+                                           t-on-input="(ev) => this.onEditStaffChange('job_title', ev)"/>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Department</label>
+                                    <select class="form-select"
+                                            t-on-change="(ev) => this.onEditStaffChange('department_id', ev)">
+                                        <option value="">Select Department</option>
+                                        <t t-foreach="state.departments" t-as="dept" t-key="dept.id">
+                                            <option t-att-value="dept.id"
+                                                    t-att-selected="state.editStaff.department_id == dept.id">
+                                                <t t-esc="dept.name"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Date Joined</label>
+                                    <input type="date" class="form-control"
+                                           t-att-value="state.editStaff.date_join"
+                                           t-on-input="(ev) => this.onEditStaffChange('date_join', ev)"/>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Work Phone</label>
+                                    <input type="text" class="form-control"
+                                           t-att-value="state.editStaff.work_phone"
+                                           t-on-input="(ev) => this.onEditStaffChange('work_phone', ev)"/>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Mobile Phone</label>
+                                    <input type="text" class="form-control"
+                                           t-att-value="state.editStaff.mobile_phone"
+                                           t-on-input="(ev) => this.onEditStaffChange('mobile_phone', ev)"/>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Work Email</label>
+                                    <input type="email" class="form-control"
+                                           t-att-value="state.editStaff.work_email"
+                                           t-on-input="(ev) => this.onEditStaffChange('work_email', ev)"/>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Salary (TSh)</label>
+                                    <input type="number" class="form-control" min="0"
+                                           t-att-value="state.editStaff.salary_amount"
+                                           t-on-input="(ev) => this.onEditStaffChange('salary_amount', ev)"/>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Commission Rate (%)</label>
+                                    <input type="number" class="form-control" min="0" max="100"
+                                           t-att-value="state.editStaff.commission_rate"
+                                           t-on-input="(ev) => this.onEditStaffChange('commission_rate', ev)"/>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">Notes</label>
+                                    <textarea class="form-control" rows="2"
+                                              t-att-value="state.editStaff.notes"
+                                              t-on-input="(ev) => this.onEditStaffChange('notes', ev)"></textarea>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary"
+                                    t-on-click="closeEditStaffModal">
+                                Cancel
+                            </button>
+                            <button type="button" class="btn btn-primary"
+                                    t-on-click="_onUpdateStaff">
+                                <i class="fa fa-save me-2"></i> Update Staff
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </t>
+
+    </t>
+
+</templates>

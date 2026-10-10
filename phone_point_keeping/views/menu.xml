@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="action_phone_dashboard" model="ir.actions.client">
+        <field name="name">Phone Shop Dashboard</field>
+        <field name="tag">phone_point_keeping.PhoneDashboard</field>
+    </record>
+
+    <record id="action_phone_brand" model="ir.actions.act_window">
+        <field name="name">Brand Types</field>
+        <field name="res_model">phone.brand</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_phone_category" model="ir.actions.act_window">
+        <field name="name">Categories</field>
+        <field name="res_model">phone.category</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_phone_condition" model="ir.actions.act_window">
+        <field name="name">Condition Types</field>
+        <field name="res_model">phone.condition</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_phone_shop_root"
+              name="Mobile Store"
+              web_icon="phone_point_keeping,static/description/icon.png"
+              sequence="10"/>
+
+    <menuitem id="menu_phone_dashboard"
+              name="Dashboard"
+              parent="menu_phone_shop_root"
+              action="action_phone_dashboard"
+              sequence="1"/>
+
+    <menuitem id="menu_phone_configuration_root"
+              name="Configuration"
+              parent="menu_phone_shop_root"
+              sequence="2"/>
+
+    <menuitem id="menu_phone_brand"
+              name="Brand Types"
+              parent="menu_phone_configuration_root"
+              action="action_phone_brand"
+              sequence="1"/>
+
+    <menuitem id="menu_phone_category"
+              name="Categories"
+              parent="menu_phone_configuration_root"
+              action="action_phone_category"
+              sequence="2"/>
+
+    <menuitem id="menu_phone_condition"
+              name="Condition Types"
+              parent="menu_phone_configuration_root"
+              action="action_phone_condition"
+              sequence="3"/>
+
+</odoo>
+

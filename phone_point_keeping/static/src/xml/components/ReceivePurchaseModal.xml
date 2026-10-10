@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="phone_point_keeping.ReceivePurchaseModal">
+
+        <t t-if="state.showReceivePurchaseModal">
+
+            <div class="modal d-block" tabindex="-1"
+                 style="background-color: rgba(0,0,0,0.6); z-index: 1060;">
+
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+
+                    <div class="modal-content">
+
+                        <!-- ==========================================
+                             MODAL HEADER
+                        =========================================== -->
+                        <div class="modal-header bg-info text-white">
+                            <div>
+                                <h5 class="modal-title fw-bold mb-0">
+                                    <i class="fa fa-truck me-2"></i>
+                                    Receive Phones
+                                </h5>
+                                <small style="opacity: 0.9;">
+                                    <t t-esc="state.currentReceivePurchase?.name || 'Purchase Order'"/>
+                                    —
+                                    <t t-esc="state.currentReceivePurchase?.supplier_id ? state.currentReceivePurchase.supplier_id[1] : ''"/>
+                                </small>
+                            </div>
+                            <button type="button" class="btn-close btn-close-white"
+                                    t-on-click="closeReceivePurchaseModal"></button>
+                        </div>
+
+
+                        <!-- ==========================================
+                             MODAL BODY
+                        =========================================== -->
+                        <div class="modal-body">
+
+                            <div class="alert alert-info small mb-3">
+                                <i class="fa fa-info-circle me-1"></i>
+                                Weka <strong>qty uliyopokea sasa hivi</strong> kwa kila phone.
+                                Zilizosalia zitabaki kama <strong>pending</strong> — unaweza kureceive tena baadaye.
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table phone-stock-table mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Phone Model</th>
+                                            <th>Brand</th>
+                                            <th class="text-end">Ordered</th>
+                                            <th class="text-end">Received</th>
+                                            <th class="text-end">Pending</th>
+                                            <th class="text-end" style="width: 130px;">
+                                                Receiving Now
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-if="state.currentReceiveLines?.length">
+                                            <t t-foreach="state.currentReceiveLines"
+                                               t-as="line"
+                                               t-key="line.id">
+                                                <tr t-att-class="
+                                                    line.qty_pending == 0
+                                                    ? 'table-light text-muted'
+                                                    : ''">
+
+                                                    <td>
+                                                        <strong><t t-esc="line.phone_model"/></strong>
+                                                    </td>
+                                                    <td>
+                                                        <t t-esc="line.brand_id ? line.brand_id[1] : '-'"/>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <span class="badge bg-secondary">
+                                                            <t t-esc="line.quantity"/>
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <span class="badge bg-success">
+                                                            <t t-esc="line.qty_received"/>
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <span t-att-class="
+                                                            line.qty_pending > 0
+                                                            ? 'badge bg-warning text-dark'
+                                                            : 'badge bg-light text-muted'">
+                                                            <t t-esc="line.qty_pending"/>
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <t t-if="line.qty_pending > 0">
+                                                            <input type="number"
+                                                                   class="form-control form-control-sm text-center"
+                                                                   min="0"
+                                                                   t-att-max="line.qty_pending"
+                                                                   t-att-value="line.receiving_now"
+                                                                   t-on-input="(ev) => this.onReceiveQtyChange(line.id, ev)"/>
+                                                        </t>
+                                                        <t t-else="">
+                                                            <span class="text-muted small">
+                                                                <i class="fa fa-check-circle text-success me-1"></i>
+                                                                Done
+                                                            </span>
+                                                        </t>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <tr>
+                                                <td colspan="6" class="text-center py-4 text-muted">
+                                                    <i class="fa fa-info-circle me-1"></i>
+                                                    No lines.
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="table-active">
+                                            <td colspan="2">
+                                                <strong>TOTAL</strong>
+                                            </td>
+                                            <td class="text-end">
+                                                <strong>
+                                                    <t t-esc="getTotalOrdered()"/>
+                                                </strong>
+                                            </td>
+                                            <td class="text-end">
+                                                <strong>
+                                                    <t t-esc="getTotalReceived()"/>
+                                                </strong>
+                                            </td>
+                                            <td class="text-end">
+                                                <strong>
+                                                    <t t-esc="getTotalPending()"/>
+                                                </strong>
+                                            </td>
+                                            <td class="text-end">
+                                                <strong class="text-info">
+                                                    <t t-esc="getTotalReceivingNow()"/>
+                                                </strong>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                        </div>
+
+
+                        <!-- ==========================================
+                             MODAL FOOTER
+                        =========================================== -->
+                        <div class="modal-footer">
+                            <button type="button"
+                                    class="btn btn-secondary"
+                                    t-on-click="closeReceivePurchaseModal">
+                                <i class="fa fa-times me-1"></i> Cancel
+                            </button>
+                            <button type="button"
+                                    class="btn btn-info text-white"
+                                    t-on-click="_onConfirmReceive"
+                                    t-att-disabled="!hasAnyReceivingNow()">
+                                <i class="fa fa-check me-1"></i> Confirm Receive
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </t>
+
+    </t>
+
+</templates>

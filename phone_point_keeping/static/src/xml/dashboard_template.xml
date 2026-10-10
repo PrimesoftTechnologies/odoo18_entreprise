@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="phone_point_keeping.PhoneDashboard">
+
+        <div class="phone-admin-container">
+
+            <!-- SIDEBAR -->
+            <t t-call="phone_point_keeping.Sidebar"/>
+
+            <!-- MAIN CONTENT -->
+            <div class="phone-main-content">
+
+                <!-- DASHBOARD -->
+                <t t-if="state.activeTab == 'dashboard'">
+                    <t t-call="phone_point_keeping.DashboardView"/>
+                </t>
+
+                <!-- POS / SELL -->
+                <t t-elif="state.activeTab == 'pos'">
+                    <t t-call="phone_point_keeping.PosView"/>
+                </t>
+
+                <!-- PHONES & STOCK -->
+                <t t-elif="state.activeTab == 'phones'">
+                    <t t-call="phone_point_keeping.PhonesView"/>
+                    <t t-call="phone_point_keeping.AddPhoneModal"/>
+                    <t t-call="phone_point_keeping.EditPhoneModal"/>
+                </t>
+
+                <!-- TRADE-IN / EXCHANGE -->
+                <t t-elif="state.activeTab == 'trade_in'">
+                    <t t-call="phone_point_keeping.TradeInView"/>
+                    <t t-call="phone_point_keeping.TradeInModal"/>
+                </t>
+
+                <!-- DEBTS / INSTALLMENTS -->
+                <t t-elif="state.activeTab == 'debts'">
+                    <t t-call="phone_point_keeping.DebtsView"/>
+                    <t t-call="phone_point_keeping.AddDebtModal"/>
+                    <t t-call="phone_point_keeping.ViewInstallmentsModal"/>
+                    <t t-call="phone_point_keeping.PaymentModal"/>
+                </t>
+
+                <!-- PURCHASES -->
+                <t t-elif="state.activeTab == 'purchases'">
+                    <t t-call="phone_point_keeping.PurchaseView"/>
+                    <t t-call="phone_point_keeping.AddPurchaseModal"/>
+                    <t t-call="phone_point_keeping.QuickCreatePhoneModal"/>
+                    <t t-call="phone_point_keeping.PurchaseOrderDetailModal"/>
+                    <t t-call="phone_point_keeping.ReceivePurchaseModal"/>
+                </t>
+
+                <!-- SUPPLIERS -->
+                <t t-elif="state.activeTab == 'suppliers'">
+                    <t t-call="phone_point_keeping.SuppliersView"/>
+                    <t t-call="phone_point_keeping.AddSupplierModal"/>
+                    <t t-call="phone_point_keeping.EditSupplierModal"/>
+                </t>
+
+                <!-- STAFF / USERS -->
+                <t t-elif="state.activeTab == 'staff'">
+                    <t t-call="phone_point_keeping.StaffView"/>
+                    <t t-call="phone_point_keeping.AddStaffModal"/>
+                    <t t-call="phone_point_keeping.EditStaffModal"/>
+                </t>
+
+                <!-- REPORTS -->
+                <t t-elif="state.activeTab == 'reports'">
+                    <t t-call="phone_point_keeping.ReportsView"/>
+                </t>
+
+                <!-- CONFIGURATION -->
+                <t t-elif="state.activeTab == 'settings'">
+                    <t t-call="phone_point_keeping.SettingsView"/>
+                    <t t-call="phone_point_keeping.AddUserAccessModal"/>
+                    <t t-call="phone_point_keeping.EditUserAccessModal"/>
+                </t>
+
+                <!-- OTHER -->
+                <t t-else="">
+                    <t t-call="phone_point_keeping.OtherView"/>
+                </t>
+
+            </div>
+
+        </div>
+
+    </t>
+
+</templates>

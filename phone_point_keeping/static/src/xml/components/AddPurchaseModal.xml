@@ -1,0 +1,509 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="phone_point_keeping.AddPurchaseModal">
+
+        <t t-if="state.showPurchaseModal">
+
+            <div class="modal d-block" tabindex="-1"
+                 style="background-color: rgba(0,0,0,0.5);">
+
+                <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+
+                    <div class="modal-content">
+
+                        <!-- MODAL HEADER -->
+                        <div class="modal-header">
+                            <div>
+                                <h5 class="modal-title fw-bold mb-1">
+                                    <i class="fa fa-shopping-bag text-primary me-2"></i>
+                                    New Purchase Order (RFQ)
+                                </h5>
+                                <small class="text-muted">
+                                    Chagua phone iliyopo au unda mpya, kisha purchase.
+                                </small>
+                            </div>
+                            <button type="button" class="btn-close"
+                                    t-on-click="closePurchaseModal"></button>
+                        </div>
+
+
+                        <!-- MODAL BODY -->
+                        <div class="modal-body">
+
+                            <!-- SUPPLIER INFO -->
+                            <div class="mb-4">
+                                <div class="border-bottom pb-2 mb-3">
+                                    <h6 class="fw-bold text-primary mb-0">
+                                        <i class="fa fa-truck me-2"></i>
+                                        Supplier Information
+                                    </h6>
+                                </div>
+                                <div class="row g-3">
+
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">
+                                            Supplier <span class="text-danger">*</span>
+                                        </label>
+                                        <select class="form-select"
+                                                t-model="state.newPurchase.supplier_id">
+                                            <option value="">Select Supplier</option>
+                                            <t t-foreach="state.suppliers" t-as="supplier" t-key="supplier.id">
+                                                <option t-att-value="supplier.id">
+                                                    <t t-esc="supplier.name"/>
+                                                    <t t-if="supplier.phone"> - <t t-esc="supplier.phone"/></t>
+                                                </option>
+                                            </t>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-semibold">Order Date</label>
+                                        <input type="date" class="form-control"
+                                               t-model="state.newPurchase.date_order"/>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-semibold">Expected Delivery</label>
+                                        <input type="date" class="form-control"
+                                               t-model="state.newPurchase.date_expected"/>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Payment Method</label>
+                                        <select class="form-select"
+                                                t-model="state.newPurchase.payment_method">
+                                            <option value="cash">Cash</option>
+                                            <option value="mpesa">M-Pesa</option>
+                                            <option value="tigopesa">Tigo Pesa</option>
+                                            <option value="airtel_money">Airtel Money</option>
+                                            <option value="halopesa">HaloPesa</option>
+                                            <option value="bank">Bank</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+
+                                </div>
+                            </div>
+
+
+                            <!-- ADD PHONE LINE -->
+                            <div class="mb-4">
+                                <div class="border-bottom pb-2 mb-3 d-flex justify-content-between align-items-center">
+                                    <h6 class="fw-bold text-success mb-0">
+                                        <i class="fa fa-mobile-phone me-2"></i>
+                                        Add Phone to Purchase
+                                    </h6>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-success"
+                                            t-on-click="openCreatePhoneModal">
+                                        <i class="fa fa-plus me-1"></i> Create New Phone
+                                    </button>
+                                </div>
+
+                                <div class="row g-3 align-items-end">
+
+                                    <!-- SELECT EXISTING PHONE -->
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-semibold">
+                                            Select Existing Phone
+                                        </label>
+                                        <select class="form-select"
+                                                t-on-change="onPurchaseLinePhoneChange">
+                                            <option value="">-- Chagua Phone Iliyopo --</option>
+                                            <t t-foreach="state.phones" t-as="phone" t-key="phone.id">
+                                                <option t-att-value="phone.id"
+                                                        t-att-selected="state.newPurchaseLine.phone_id == phone.id">
+                                                    <t t-esc="phone.model_name"/>
+                                                    (<t t-esc="phone.imei_1"/>)
+                                                </option>
+                                            </t>
+                                        </select>
+                                        <small class="text-muted">
+                                            Chagua phone iliyopo, au tumia "Create New Phone".
+                                        </small>
+                                    </div>
+
+                                    <!-- OR PHONE MODEL (kwa mpya) -->
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-semibold">
+                                            Phone Model <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" class="form-control"
+                                               placeholder="e.g. iPhone 13 Pro"
+                                               t-model="state.newPurchaseLine.phone_model"/>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-semibold">
+                                            Brand <span class="text-danger">*</span>
+                                        </label>
+                                        <select class="form-select"
+                                                t-model="state.newPurchaseLine.brand_id">
+                                            <option value="">Brand</option>
+                                            <t t-foreach="state.brands" t-as="brand" t-key="brand.id">
+                                                <option t-att-value="brand.id">
+                                                    <t t-esc="brand.name"/>
+                                                </option>
+                                            </t>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-semibold">Category</label>
+                                        <select class="form-select"
+                                                t-model="state.newPurchaseLine.category_id">
+                                            <option value="">Category</option>
+                                            <t t-foreach="state.categories" t-as="cat" t-key="cat.id">
+                                                <option t-att-value="cat.id">
+                                                    <t t-esc="cat.name"/>
+                                                </option>
+                                            </t>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-semibold">Condition</label>
+                                        <select class="form-select"
+                                                t-model="state.newPurchaseLine.condition_id">
+                                            <option value="">Condition</option>
+                                            <t t-foreach="state.conditions" t-as="cond" t-key="cond.id">
+                                                <option t-att-value="cond.id">
+                                                    <t t-esc="cond.name"/>
+                                                </option>
+                                            </t>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label class="form-label fw-semibold">Qty</label>
+                                        <input type="number" class="form-control" min="1"
+                                               t-model.number="state.newPurchaseLine.quantity"/>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label class="form-label fw-semibold">
+                                            Unit Cost <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="number" class="form-control" min="0"
+                                               placeholder="0"
+                                               t-model.number="state.newPurchaseLine.price_unit"/>
+                                    </div>
+
+                                    <div class="col-md-2 d-flex align-items-end">
+                                        <button type="button"
+                                                class="btn btn-success w-100"
+                                                t-on-click="addPurchaseLine">
+                                            <i class="fa fa-plus me-1"></i> Add
+                                        </button>
+                                    </div>
+
+                                </div>
+
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">IMEI 1</label>
+                                        <input type="text" class="form-control"
+                                               placeholder="Optional"
+                                               t-model="state.newPurchaseLine.imei_1"/>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">IMEI 2</label>
+                                        <input type="text" class="form-control"
+                                               placeholder="Optional"
+                                               t-model="state.newPurchaseLine.imei_2"/>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- ADDED LINES TABLE -->
+                            <div class="mb-4">
+                                <div class="border-bottom pb-2 mb-3 d-flex justify-content-between align-items-center">
+                                    <h6 class="fw-bold text-warning mb-0">
+                                        <i class="fa fa-list me-2"></i>
+                                        Purchase Lines
+                                    </h6>
+                                    <span class="badge bg-warning text-dark">
+                                        <t t-esc="state.newPurchaseLines.length"/>
+                                    </span>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-sm phone-stock-table mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Phone Model</th>
+                                                <th>Brand</th>
+                                                <th>Condition</th>
+                                                <th>IMEI 1</th>
+                                                <th class="text-end">Qty</th>
+                                                <th class="text-end">Unit Cost</th>
+                                                <th class="text-end">Subtotal</th>
+                                                <th class="text-end"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-if="state.newPurchaseLines.length">
+                                                <t t-foreach="state.newPurchaseLines"
+                                                   t-as="line"
+                                                   t-key="line.temp_id">
+                                                    <tr>
+                                                        <td>
+                                                            <strong><t t-esc="line.phone_model"/></strong>
+                                                        </td>
+                                                        <td>
+                                                            <t t-esc="getBrandName(line.brand_id)"/>
+                                                        </td>
+                                                        <td>
+                                                            <t t-esc="line.condition_id ? getConditionName(line.condition_id) : '-'"/>
+                                                        </td>
+                                                        <td>
+                                                            <code t-if="line.imei_1">
+                                                                <t t-esc="line.imei_1"/>
+                                                            </code>
+                                                            <span t-else="" class="text-muted">-</span>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <t t-esc="line.quantity"/>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            TSh <t t-esc="formatNumber(line.price_unit)"/>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <strong>
+                                                                TSh <t t-esc="formatNumber(line.subtotal)"/>
+                                                            </strong>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <button type="button"
+                                                                    class="btn btn-sm btn-outline-danger"
+                                                                    t-on-click="() => this.removePurchaseLine(line.temp_id)"
+                                                                    title="Remove line">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </t>
+                                            <t t-else="">
+                                                <tr>
+                                                    <td colspan="8" class="text-center py-4 text-muted">
+                                                        <i class="fa fa-info-circle me-1"></i>
+                                                        No lines added yet. Add phones above.
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+
+                            <!-- TOTAL PREVIEW -->
+                            <div class="mb-4" t-if="state.newPurchaseLines.length">
+                                <div class="alert alert-info mb-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-semibold">
+                                            <i class="fa fa-calculator me-2"></i>
+                                            Total Purchase Amount:
+                                        </span>
+                                        <h5 class="fw-bold text-primary mb-0">
+                                            TSh <t t-esc="formatNumber(newPurchaseTotal)"/>
+                                        </h5>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- NOTES -->
+                            <div class="mb-2">
+                                <div class="border-bottom pb-2 mb-3">
+                                    <h6 class="fw-bold text-secondary mb-0">
+                                        <i class="fa fa-sticky-note me-2"></i>
+                                        Additional Information
+                                    </h6>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold">Notes</label>
+                                        <textarea class="form-control" rows="2"
+                                                  placeholder="Additional notes about this purchase..."
+                                                  t-model="state.newPurchase.notes"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <!-- MODAL FOOTER -->
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary"
+                                    t-on-click="closePurchaseModal">
+                                Cancel
+                            </button>
+                            <button type="button" class="btn btn-primary"
+                                    t-on-click="_onSavePurchase"
+                                    t-att-disabled="!state.newPurchaseLines.length">
+                                <i class="fa fa-save me-2"></i>
+                                Save as RFQ
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </t>
+
+    </t>
+
+
+    <!-- ============================================================
+         QUICK CREATE PHONE MODAL (mpya)
+    ============================================================ -->
+    <t t-name="phone_point_keeping.QuickCreatePhoneModal">
+
+        <t t-if="state.showQuickCreatePhoneModal">
+
+            <div class="modal d-block" tabindex="-1"
+                 style="background-color: rgba(0,0,0,0.6); z-index: 1060;">
+
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+
+                    <div class="modal-content">
+
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title fw-bold">
+                                <i class="fa fa-plus-circle me-2"></i>
+                                Create New Phone
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white"
+                                    t-on-click="closeCreatePhoneModal"></button>
+                        </div>
+
+                        <div class="modal-body">
+
+                            <div class="alert alert-info small mb-3">
+                                <i class="fa fa-info-circle me-1"></i>
+                                Unda phone mpya kwenye stock. Itakuwa tayari kuchaguliwa kwenye purchase line.
+                            </div>
+
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Phone Model <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control"
+                                           placeholder="e.g. iPhone 13 Pro"
+                                           t-model="state.quickPhone.model_name"/>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Brand <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select"
+                                            t-model="state.quickPhone.brand_id">
+                                        <option value="">Select Brand</option>
+                                        <t t-foreach="state.brands" t-as="brand" t-key="brand.id">
+                                            <option t-att-value="brand.id">
+                                                <t t-esc="brand.name"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Category <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select"
+                                            t-model="state.quickPhone.category_id">
+                                        <option value="">Select Category</option>
+                                        <t t-foreach="state.categories" t-as="cat" t-key="cat.id">
+                                            <option t-att-value="cat.id">
+                                                <t t-esc="cat.name"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Condition <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select"
+                                            t-model="state.quickPhone.condition_id">
+                                        <option value="">Select Condition</option>
+                                        <t t-foreach="state.conditions" t-as="cond" t-key="cond.id">
+                                            <option t-att-value="cond.id">
+                                                <t t-esc="cond.name"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">IMEI 1</label>
+                                    <input type="text" class="form-control"
+                                           placeholder="Optional"
+                                           t-model="state.quickPhone.imei_1"/>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">IMEI 2</label>
+                                    <input type="text" class="form-control"
+                                           placeholder="Optional"
+                                           t-model="state.quickPhone.imei_2"/>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Buying Price (TSh)</label>
+                                    <input type="number" class="form-control" min="0"
+                                           t-model.number="state.quickPhone.buying_price"/>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Selling Price (TSh)</label>
+                                    <input type="number" class="form-control" min="0"
+                                           t-model.number="state.quickPhone.selling_price"/>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Quantity</label>
+                                    <input type="number" class="form-control" min="1"
+                                           t-model.number="state.quickPhone.quantity"/>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary"
+                                    t-on-click="closeCreatePhoneModal">
+                                Cancel
+                            </button>
+                            <button type="button" class="btn btn-success"
+                                    t-on-click="_onQuickCreatePhone">
+                                <i class="fa fa-save me-2"></i>
+                                Create Phone
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </t>
+
+    </t>
+
+</templates>

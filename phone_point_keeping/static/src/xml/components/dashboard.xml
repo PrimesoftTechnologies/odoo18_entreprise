@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="phone_point_keeping.DashboardView">
+
+        <div>
+
+            <!-- =================================================
+                 HEADER + PERIOD FILTER
+            ================================================== -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+
+                <div>
+                    <h4 class="fw-bold mb-1">Business Overview</h4>
+                    <p class="text-muted small mb-0">
+                        Quick summary of your phone shop performance.
+                    </p>
+                </div>
+
+                <!-- PERIOD FILTER -->
+                <div class="d-flex align-items-center gap-2">
+                    <label class="form-label fw-semibold mb-0 small">Period:</label>
+                    <select class="form-select form-select-sm"
+                            style="width: 160px;"
+                            t-on-change="onDashboardPeriodChange">
+                        <option value="all"
+                                t-att-selected="state.dashboardFilters.period == 'all'">
+                            All Time
+                        </option>
+                        <option value="today"
+                                t-att-selected="state.dashboardFilters.period == 'today'">
+                            Today
+                        </option>
+                        <option value="week"
+                                t-att-selected="state.dashboardFilters.period == 'week'">
+                            This Week
+                        </option>
+                        <option value="month"
+                                t-att-selected="state.dashboardFilters.period == 'month'">
+                            This Month
+                        </option>
+                        <option value="year"
+                                t-att-selected="state.dashboardFilters.period == 'year'">
+                            This Year
+                        </option>
+                    </select>
+                </div>
+
+            </div>
+
+
+            <!-- KPI CARDS -->
+
+            <div class="row g-3 mb-4">
+
+                <!-- SALES (dynamic label) -->
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 shadow-sm h-100 kpi-card dashboard-kpi-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="text-muted small fw-semibold mb-1">
+                                        <t t-if="state.dashboardFilters.period == 'today'">TODAY'S SALES</t>
+                                        <t t-elif="state.dashboardFilters.period == 'week'">THIS WEEK SALES</t>
+                                        <t t-elif="state.dashboardFilters.period == 'month'">THIS MONTH SALES</t>
+                                        <t t-elif="state.dashboardFilters.period == 'year'">THIS YEAR SALES</t>
+                                        <t t-else="">TOTAL SALES</t>
+                                    </div>
+                                    <h3 class="fw-bold mb-1 text-dark">
+                                        TSh <t t-esc="formatNumber(state.dashboard?.today_sales || 0)"/>
+                                    </h3>
+                                    <div class="text-muted small">
+                                        <i class="fa fa-shopping-cart me-1"></i>
+                                        Sales for selected period
+                                    </div>
+                                </div>
+                                <div class="rounded-3 bg-primary d-flex align-items-center justify-content-center"
+                                     style="width: 38px; height: 38px;">
+                                    <i class="fa fa-shopping-cart"></i>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-2 border-top">
+                                <span class="text-primary small fw-semibold">
+                                    <i class="fa fa-arrow-up me-1"></i> Sales Performance
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PROFIT (dynamic label) -->
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 shadow-sm h-100 kpi-card dashboard-kpi-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="text-muted small fw-semibold mb-1">
+                                        <t t-if="state.dashboardFilters.period == 'today'">TODAY'S PROFIT</t>
+                                        <t t-elif="state.dashboardFilters.period == 'week'">THIS WEEK PROFIT</t>
+                                        <t t-elif="state.dashboardFilters.period == 'month'">THIS MONTH PROFIT</t>
+                                        <t t-elif="state.dashboardFilters.period == 'year'">THIS YEAR PROFIT</t>
+                                        <t t-else="">TOTAL PROFIT</t>
+                                    </div>
+                                    <h3 class="fw-bold mb-1 text-dark">
+                                        TSh <t t-esc="formatNumber(state.dashboard?.gross_profit || 0)"/>
+                                    </h3>
+                                    <div class="text-muted small">
+                                        <i class="fa fa-line-chart me-1"></i>
+                                        Gross profit for selected period
+                                    </div>
+                                </div>
+                                <div class="rounded-3 bg-success d-flex align-items-center justify-content-center"
+                                     style="width: 38px; height: 38px;">
+                                    <i class="fa fa-line-chart"></i>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-2 border-top">
+                                <span class="text-success small fw-semibold">
+                                    <i class="fa fa-bar-chart me-1"></i> Profit Overview
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PENDING DEBTS (haitegemei period) -->
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 shadow-sm h-100 kpi-card dashboard-kpi-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="text-muted small fw-semibold mb-1">PENDING DEBTS</div>
+                                    <h3 class="fw-bold mb-1 text-dark">
+                                        TSh <t t-esc="formatNumber(state.dashboard?.pending_debts || 0)"/>
+                                    </h3>
+                                    <div class="text-muted small">
+                                        <i class="fa fa-money me-1"></i>
+                                        Outstanding customer balances
+                                    </div>
+                                </div>
+                                <div class="rounded-3 bg-warning d-flex align-items-center justify-content-center"
+                                     style="width: 38px; height: 38px;">
+                                    <i class="fa fa-money"></i>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-2 border-top">
+                                <span class="text-warning small fw-semibold">
+                                    <i class="fa fa-exclamation-circle me-1"></i> Requires Attention
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PHONES IN STOCK (haitegemei period) -->
+                <div class="col-xl-3 col-md-6">
+                    <div class="card border-0 shadow-sm h-100 kpi-card dashboard-kpi-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="text-muted small fw-semibold mb-1">PHONES IN STOCK</div>
+                                    <h3 class="fw-bold mb-1 text-dark">
+                                        <t t-esc="state.phones.filter(p => p.status === 'in_stock').length"/>
+                                    </h3>
+                                    <div class="text-muted small">
+                                        <i class="fa fa-mobile-phone me-1"></i>
+                                        Phones currently in stock
+                                    </div>
+                                </div>
+                                <div class="rounded-3 bg-info d-flex align-items-center justify-content-center"
+                                     style="width: 38px; height: 38px;">
+                                    <i class="fa fa-mobile-phone"></i>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-2 border-top">
+                                <span class="text-info small fw-semibold">
+                                    <i class="fa fa-database me-1"></i> Inventory Overview
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- ANALYTICS -->
+
+            <div class="row g-3">
+
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-0 py-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="fw-bold mb-1">Sales Overview</h5>
+                                    <p class="text-muted small mb-0">
+                                        Monitor your sales activity and business performance.
+                                    </p>
+                                </div>
+                                <div class="rounded-3 bg-primary bg-opacity-10 p-2">
+                                    <i class="fa fa-bar-chart text-primary"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <t t-if="state.dashboard?.sales_chart_available">
+                                <div class="text-center py-4">
+                                    <i class="fa fa-line-chart text-primary fs-1 mb-3"></i>
+                                    <h6 class="fw-bold">Sales Analytics</h6>
+                                    <p class="text-muted mb-0">Sales chart will be displayed here.</p>
+                                </div>
+                            </t>
+                            <t t-else="">
+                                <div class="text-center py-4">
+                                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3"
+                                         style="width: 64px; height: 64px;">
+                                        <i class="fa fa-bar-chart text-muted fs-3"></i>
+                                    </div>
+                                    <h6 class="fw-bold text-dark">Sales analytics</h6>
+                                    <p class="text-muted small mb-0">
+                                        Sales analytics will be available here as transactions are recorded.
+                                    </p>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-0 py-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="fw-bold mb-1">Top Brands</h5>
+                                    <p class="text-muted small mb-0">
+                                        Popular brands in your inventory.
+                                    </p>
+                                </div>
+                                <div class="rounded-3 bg-success bg-opacity-10 p-2">
+                                    <i class="fa fa-mobile text-success"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <t t-if="state.dashboard?.top_brands?.length">
+                                <t t-foreach="state.dashboard.top_brands" t-as="brand" t-key="brand.id">
+                                    <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3"
+                                                 style="width: 32px; height: 32px;">
+                                                <i class="fa fa-mobile text-primary"></i>
+                                            </div>
+                                            <span class="fw-semibold"><t t-esc="brand.name"/></span>
+                                        </div>
+                                        <span class="badge bg-primary rounded-pill px-3">
+                                            <t t-esc="brand.count"/>
+                                        </span>
+                                    </div>
+                                </t>
+                            </t>
+                            <t t-else="">
+                                <div class="text-center py-4">
+                                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3"
+                                         style="width: 56px; height: 56px;">
+                                        <i class="fa fa-mobile text-muted fs-4"></i>
+                                    </div>
+                                    <h6 class="fw-bold text-dark">No brand data</h6>
+                                    <p class="text-muted small mb-0">
+                                        Brand statistics will appear here when inventory data is available.
+                                    </p>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </t>
+
+</templates>
