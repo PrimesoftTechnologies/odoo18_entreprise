@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="apex_purchase_order_form" model="ir.ui.view">
+        <field name="name">apex.purchase.order.form</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Status bar: RFQ, RFQ Sent, Wait for Approval, Purchase Order -->
+            <xpath expr="//field[@name='state'][@widget='statusbar']" position="attributes">
+                <attribute name="statusbar_visible">draft,sent,to approve,purchase</attribute>
+            </xpath>
+
+            <!-- Hide the standard approve button, use ours -->
+            <xpath expr="//button[@name='button_approve']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//button[@name='button_approve']" position="after">
+                <field name="is_apex_approver" invisible="1"/>
+                <button name="action_apex_approve" type="object" string="Approve"
+                        class="btn-primary"
+                        invisible="state != 'to approve' or not is_apex_approver"/>
+                <button name="action_apex_open_reject" type="object" string="Reject"
+                        class="btn-secondary"
+                        invisible="state != 'to approve' or not is_apex_approver"/>
+            </xpath>
+
+            <!-- Waiting banner -->
+            <xpath expr="//header" position="after">
+                <div class="alert alert-warning mb-0" role="alert" invisible="state != 'to approve'">
+                    This order is waiting for approval by the assigned approver.
+                </div>
+            </xpath>
+
+            <!-- Approver field -->
+            <xpath expr="//field[@name='partner_ref']" position="after">
+                <field name="apex_approver_id"
+                       options="{'no_create': True, 'no_open': True}"
+                       readonly="state not in ('draft', 'sent')"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="apex_purchase_order_search" model="ir.ui.view">
+        <field name="name">apex.purchase.order.search</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.view_purchase_order_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <filter name="apex_my_approval" string="Waiting for my approval"
+                        domain="[('state', '=', 'to approve'), ('apex_approver_id', '=', uid)]"/>
+                <filter name="apex_wait_approval" string="Wait for Approval"
+                        domain="[('state', '=', 'to approve')]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_apex_purchase_to_approve" model="ir.actions.act_window">
+        <field name="name">Waiting for Approval</field>
+        <field name="res_model">purchase.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('state', '=', 'to approve')]</field>
+    </record>
+
+    <menuitem id="menu_apex_purchase_to_approve"
+              name="Waiting for Approval"
+              parent="purchase.menu_procurement_management"
+              action="action_apex_purchase_to_approve"
+              groups="purchase.group_purchase_user"
+              sequence="5"/>
+</odoo>
