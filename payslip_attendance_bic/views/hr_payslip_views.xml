@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_payslip_view_form_attendance_bic" model="ir.ui.view">
+        <field name="name">hr.payslip.form.attendance.bic</field>
+        <field name="model">hr.payslip</field>
+        <field name="inherit_id" ref="hr_payroll.view_hr_payslip_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Attendance (BIC)" name="attendance_bic">
+                    <group>
+                        <field name="attendance_bic_days"/>
+                    </group>
+                    <field name="attendance_bic_ids" readonly="1">
+                        <list>
+                            <field name="employee_id"/>
+                            <field name="date"/>
+                            <field name="time" widget="float_time"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_payslip_attendance_bic_user,payslip.attendance.bic.user,model_payslip_attendance_bic,hr_payroll.group_hr_payroll_user,1,1,1,1
+access_payslip_attendance_bic_manager,payslip.attendance.bic.manager,model_payslip_attendance_bic,hr_payroll.group_hr_payroll_manager,1,1,1,1
