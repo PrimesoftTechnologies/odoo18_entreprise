@@ -1,0 +1,64 @@
+/* ==========================================================================
+   APEX HOLDINGS - PDF format (Reports / POs / Quotes / Delivery Notes)
+   --------------------------------------------------------------------------
+   Fonts all ............................ Arial
+   Body, Header, Footer ................. 8pt
+   Quote data inside tables ............. 7.4pt
+   Header "APEX HOLDINGS" ............... UPPERCASE, 10pt
+   APEX Reference (document title/no.) .. 14pt
+   Logo ................................. decreased size
+   Loaded through the web.report_assets_common bundle, so it applies to every
+   PDF (header and footer included) whatever layout the company uses.
+   ========================================================================== */
+
+/* 1. Font family: Arial everywhere (icon fonts excluded) */
+body,
+body *:not(.fa):not([class^="fa-"]):not([class*=" fa-"]) {
+    font-family: Arial, Helvetica, sans-serif !important;
+}
+
+/* 2. Body, header and footer: 8pt */
+body,
+.header, .header *,
+.footer, .footer *,
+.article, .article *,
+.page, .page * {
+    font-size: 8pt !important;
+}
+
+/* 3. Data inside tables (quote lines, totals, delivery lines): 7.4pt */
+.page table td, .page table th,
+.page table td *, .page table th *,
+.article table td, .article table th,
+.article table td *, .article table th * {
+    font-size: 7.4pt !important;
+}
+
+/* 4. APEX Reference (document title / number): 14pt */
+.page h1, .page h1 *,
+.page h2, .page h2 *,
+.article h1, .article h1 *,
+.article h2, .article h2 *,
+.page .apex-reference, .page .apex-reference * {
+    font-size: 14pt !important;
+}
+
+/* 5. Header "APEX HOLDINGS": capitalised, 10pt */
+.header h4, .header h4 *,
+.header [name="company_address"] strong,
+.header [name="company_address"] strong *,
+.header .apex-company-name, .header .apex-company-name *,
+.footer .apex-company-name, .footer .apex-company-name * {
+    font-size: 10pt !important;
+    text-transform: uppercase !important;
+    font-weight: bold !important;
+}
+
+/* 6. Logo: decreased size (change the two numbers to resize) */
+.header img,
+.header img.o_company_logo {
+    max-height: 40px !important;
+    max-width: 120px !important;
+    width: auto !important;
+    height: auto !important;
+}

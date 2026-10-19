@@ -382,7 +382,7 @@
 
                                 <!-- DELIVERY NOTE TITLE -->
 
-                                <div style="
+                                <div class="apex-reference" style="
                                     text-align: center;
                                     font-weight: bold;
                                     font-size: 18px;
