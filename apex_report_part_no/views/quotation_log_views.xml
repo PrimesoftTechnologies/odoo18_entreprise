@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="apex_quotation_log_list" model="ir.ui.view">
+        <field name="name">apex.quotation.log.list</field>
+        <field name="model">apex.quotation.log</field>
+        <field name="arch" type="xml">
+            <list string="Quotation Analytic Logs" create="0" edit="0" delete="0"
+                  decoration-success="action in ('create', 'line_add')"
+                  decoration-warning="action in ('update', 'line_update', 'state')"
+                  decoration-danger="action in ('delete', 'line_delete')">
+                <field name="date"/>
+                <field name="order_name"/>
+                <field name="partner_id" optional="show"/>
+                <field name="user_id"/>
+                <field name="action"/>
+                <field name="line_name" optional="show"/>
+                <field name="field_label" optional="show"/>
+                <field name="old_value" optional="show"/>
+                <field name="new_value" optional="show"/>
+                <field name="description" optional="hide"/>
+                <field name="company_id" optional="hide" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="apex_quotation_log_form" model="ir.ui.view">
+        <field name="name">apex.quotation.log.form</field>
+        <field name="model">apex.quotation.log</field>
+        <field name="arch" type="xml">
+            <form string="Quotation Analytic Log" create="0" edit="0" delete="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="user_id"/>
+                            <field name="action"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="order_id"/>
+                            <field name="order_name"/>
+                            <field name="partner_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="line_name"/>
+                            <field name="field_label"/>
+                        </group>
+                        <group>
+                            <field name="old_value"/>
+                            <field name="new_value"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="apex_quotation_log_search" model="ir.ui.view">
+        <field name="name">apex.quotation.log.search</field>
+        <field name="model">apex.quotation.log</field>
+        <field name="arch" type="xml">
+            <search string="Search Quotation Logs">
+                <field name="order_name"/>
+                <field name="partner_id"/>
+                <field name="user_id"/>
+                <field name="line_name"/>
+                <field name="field_label"/>
+                <field name="description"/>
+                <filter name="today" string="Today"
+                        domain="[('date', '&gt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="my_changes" string="My Changes" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter name="created" string="Created" domain="[('action', '=', 'create')]"/>
+                <filter name="updated" string="Updated" domain="[('action', 'in', ('update', 'state'))]"/>
+                <filter name="lines" string="Line Changes"
+                        domain="[('action', 'in', ('line_add', 'line_update', 'line_delete'))]"/>
+                <filter name="deleted" string="Deleted" domain="[('action', '=', 'delete')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_order" string="Quotation" context="{'group_by': 'order_name'}"/>
+                    <filter name="group_user" string="Changed By" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_action" string="Action" context="{'group_by': 'action'}"/>
+                    <filter name="group_customer" string="Customer" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_date" string="Date" context="{'group_by': 'date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="apex_quotation_log_pivot" model="ir.ui.view">
+        <field name="name">apex.quotation.log.pivot</field>
+        <field name="model">apex.quotation.log</field>
+        <field name="arch" type="xml">
+            <pivot string="Quotation Analytic Logs">
+                <field name="user_id" type="row"/>
+                <field name="action" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="apex_quotation_log_graph" model="ir.ui.view">
+        <field name="name">apex.quotation.log.graph</field>
+        <field name="model">apex.quotation.log</field>
+        <field name="arch" type="xml">
+            <graph string="Quotation Analytic Logs" type="bar">
+                <field name="user_id"/>
+                <field name="action"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_apex_quotation_log" model="ir.actions.act_window">
+        <field name="name">Quotation Analytic Logs</field>
+        <field name="res_model">apex.quotation.log</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No logs yet</p>
+            <p>Every change made while preparing a sales quotation is recorded here.</p>
+        </field>
+    </record>
+
+    <!-- Sales > Reporting > Quotation Analytic Logs -->
+    <menuitem id="menu_apex_quotation_log"
+              name="Quotation Analytic Logs"
+              parent="sale.menu_sale_report"
+              action="action_apex_quotation_log"
+              sequence="90"/>
+
+    <!-- Smart button on the quotation form (managers only) -->
+    <record id="apex_sale_order_form_logs" model="ir.ui.view">
+        <field name="name">sale.order.form.apex.logs</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_apex_logs" type="object" class="oe_stat_button"
+                        icon="fa-history" groups="sales_team.group_sale_manager">
+                    <field name="apex_log_count" widget="statinfo" string="Analytic Logs"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

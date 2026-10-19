@@ -1,6 +1,6 @@
 {
     'name': 'Apex Report Part No',
-    'version': '18.0.3.0.0',
+    'version': '18.0.4.0.0',
     'category': 'Sales/Purchase',
     'summary': 'Apex PDF format (Arial, font sizes, logo) and custom Sales / Purchase / Delivery reports',
     'description': """
@@ -9,12 +9,15 @@
 * Sales order form: "Customer Reference" renamed "Purchase Order No."
 * Delivery order: Delivery Details, Delivery Terms, GRN No. and line Remarks
 * Custom Delivery Note report
+* Sales > Reporting > Quotation Analytic Logs: every change made while preparing a quotation is logged
 * Apex PDF format: Arial, body/header/footer 8pt, table data 7.4pt,
   APEX HOLDINGS header 10pt uppercase, reference 14pt, smaller logo
 """,
     'author': 'Apex',
     'depends': ['sale', 'purchase', 'stock'],
     'data': [
+        'security/ir.model.access.csv',
+        'views/quotation_log_views.xml',
         'views/sale_report_templates.xml',
         'views/purchase_report_templates.xml',
     ],
