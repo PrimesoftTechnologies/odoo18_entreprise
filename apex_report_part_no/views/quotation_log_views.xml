@@ -5,19 +5,23 @@
         <field name="model">apex.quotation.log</field>
         <field name="arch" type="xml">
             <list string="Quotation Analytic Logs" create="0" edit="0" delete="0"
-                  decoration-success="action in ('create', 'line_add')"
-                  decoration-warning="action in ('update', 'line_update', 'state')"
-                  decoration-danger="action in ('delete', 'line_delete')">
-                <field name="date"/>
+                  decoration-success="action == 'line_add'"
+                  decoration-warning="action == 'line_update'"
+                  decoration-danger="action == 'line_delete'">
                 <field name="order_name"/>
-                <field name="partner_id" optional="show"/>
-                <field name="user_id"/>
-                <field name="action"/>
-                <field name="line_name" optional="show"/>
-                <field name="field_label" optional="show"/>
-                <field name="old_value" optional="show"/>
-                <field name="new_value" optional="show"/>
-                <field name="description" optional="hide"/>
+                <field name="partner_id"/>
+                <field name="product_name"/>
+                <field name="part_no"/>
+                <field name="quantity"/>
+                <field name="uom_id"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="unit_price"/>
+                <field name="total_amount"/>
+                <field name="reason_lost"/>
+                <field name="action" optional="show"/>
+                <field name="user_id" optional="show"/>
+                <field name="date" optional="show"/>
+                <field name="changes" optional="hide"/>
                 <field name="company_id" optional="hide" groups="base.group_multi_company"/>
             </list>
         </field>
@@ -31,29 +35,27 @@
                 <sheet>
                     <group>
                         <group>
-                            <field name="date"/>
-                            <field name="user_id"/>
-                            <field name="action"/>
-                            <field name="company_id" groups="base.group_multi_company"/>
-                        </group>
-                        <group>
                             <field name="order_id"/>
                             <field name="order_name"/>
                             <field name="partner_id"/>
+                            <field name="action"/>
+                            <field name="user_id"/>
+                            <field name="date"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="product_name"/>
+                            <field name="part_no"/>
+                            <field name="quantity"/>
+                            <field name="uom_id"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="unit_price"/>
+                            <field name="total_amount"/>
                         </group>
                     </group>
                     <group>
-                        <group>
-                            <field name="line_name"/>
-                            <field name="field_label"/>
-                        </group>
-                        <group>
-                            <field name="old_value"/>
-                            <field name="new_value"/>
-                        </group>
-                    </group>
-                    <group>
-                        <field name="description"/>
+                        <field name="reason_lost"/>
+                        <field name="changes"/>
                     </group>
                 </sheet>
             </form>
@@ -67,24 +69,23 @@
             <search string="Search Quotation Logs">
                 <field name="order_name"/>
                 <field name="partner_id"/>
+                <field name="product_name"/>
+                <field name="part_no"/>
+                <field name="reason_lost"/>
                 <field name="user_id"/>
-                <field name="line_name"/>
-                <field name="field_label"/>
-                <field name="description"/>
                 <filter name="today" string="Today"
                         domain="[('date', '&gt;=', context_today().strftime('%Y-%m-%d'))]"/>
                 <filter name="my_changes" string="My Changes" domain="[('user_id', '=', uid)]"/>
                 <separator/>
-                <filter name="created" string="Created" domain="[('action', '=', 'create')]"/>
-                <filter name="updated" string="Updated" domain="[('action', 'in', ('update', 'state'))]"/>
-                <filter name="lines" string="Line Changes"
-                        domain="[('action', 'in', ('line_add', 'line_update', 'line_delete'))]"/>
-                <filter name="deleted" string="Deleted" domain="[('action', '=', 'delete')]"/>
+                <filter name="added" string="Added" domain="[('action', '=', 'line_add')]"/>
+                <filter name="updated" string="Updated" domain="[('action', '=', 'line_update')]"/>
+                <filter name="removed" string="Removed (LOST)" domain="[('action', '=', 'line_delete')]"/>
                 <group expand="0" string="Group By">
                     <filter name="group_order" string="Quotation" context="{'group_by': 'order_name'}"/>
-                    <filter name="group_user" string="Changed By" context="{'group_by': 'user_id'}"/>
-                    <filter name="group_action" string="Action" context="{'group_by': 'action'}"/>
                     <filter name="group_customer" string="Customer" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_product" string="Product" context="{'group_by': 'product_name'}"/>
+                    <filter name="group_action" string="Action" context="{'group_by': 'action'}"/>
+                    <filter name="group_user" string="Changed By" context="{'group_by': 'user_id'}"/>
                     <filter name="group_date" string="Date" context="{'group_by': 'date:day'}"/>
                 </group>
             </search>
@@ -96,8 +97,10 @@
         <field name="model">apex.quotation.log</field>
         <field name="arch" type="xml">
             <pivot string="Quotation Analytic Logs">
-                <field name="user_id" type="row"/>
+                <field name="product_name" type="row"/>
                 <field name="action" type="col"/>
+                <field name="quantity" type="measure"/>
+                <field name="total_amount" type="measure"/>
             </pivot>
         </field>
     </record>
@@ -107,8 +110,9 @@
         <field name="model">apex.quotation.log</field>
         <field name="arch" type="xml">
             <graph string="Quotation Analytic Logs" type="bar">
-                <field name="user_id"/>
+                <field name="product_name"/>
                 <field name="action"/>
+                <field name="total_amount" type="measure"/>
             </graph>
         </field>
     </record>
@@ -119,7 +123,7 @@
         <field name="view_mode">list,form,pivot,graph</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">No logs yet</p>
-            <p>Every change made while preparing a sales quotation is recorded here.</p>
+            <p>Changes to the products of a quotation (added, updated, removed) are recorded here.</p>
         </field>
     </record>
 
@@ -130,7 +134,27 @@
               action="action_apex_quotation_log"
               sequence="90"/>
 
-    <!-- Smart button on the quotation form (managers only) -->
+    <!-- "Reason for LOST" wizard shown when a product is removed -->
+    <record id="apex_quotation_remove_line_form" model="ir.ui.view">
+        <field name="name">apex.quotation.remove.line.form</field>
+        <field name="model">apex.quotation.remove.line</field>
+        <field name="arch" type="xml">
+            <form string="Remove Product">
+                <group>
+                    <field name="line_id" invisible="1"/>
+                    <field name="product_name"/>
+                    <field name="reason_lost" placeholder="Why is this product removed / lost?"/>
+                </group>
+                <footer>
+                    <button name="action_confirm" type="object" string="Remove Product"
+                            class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Quotation form: smart button + "remove with reason" button on lines -->
     <record id="apex_sale_order_form_logs" model="ir.ui.view">
         <field name="name">sale.order.form.apex.logs</field>
         <field name="model">sale.order</field>
@@ -141,6 +165,13 @@
                         icon="fa-history" groups="sales_team.group_sale_manager">
                     <field name="apex_log_count" widget="statinfo" string="Analytic Logs"/>
                 </button>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/list" position="attributes">
+                <attribute name="delete">0</attribute>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/list" position="inside">
+                <button name="action_apex_remove_line" type="object" icon="fa-trash"
+                        title="Remove (reason required)" class="text-danger"/>
             </xpath>
         </field>
     </record>

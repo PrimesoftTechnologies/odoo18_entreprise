@@ -2,17 +2,10 @@ from odoo import _, api, fields, models
 
 QUOTATION_STATES = ('draft', 'sent')
 
-# Technical / noisy fields that are never logged on the quotation header
-ORDER_SKIP_FIELDS = {
-    'write_date', 'write_uid', 'create_date', 'create_uid', '__last_update',
-    'message_main_attachment_id', 'access_token', 'signature', 'signed_by', 'signed_on',
-    'invoice_status', 'locked', 'transaction_ids', 'authorized_transaction_ids',
-}
-
-# Quotation line fields that are logged
-LINE_LOG_FIELDS = [
-    'product_id', 'name', 'product_uom_qty', 'product_uom', 'price_unit',
-    'discount', 'tax_id', 'customer_lead',
+# Line fields watched for "Product Updated" logs
+LINE_WATCHED_FIELDS = [
+    'product_id', 'product_uom_qty', 'product_uom', 'product_uom_id',
+    'price_unit', 'discount',
 ]
 
 
@@ -36,112 +29,80 @@ class SaleOrder(models.Model):
             'domain': [('order_id', '=', self.id)],
         }
 
-    def _apex_loggable_fields(self, vals):
-        result = []
-        for fname in vals:
-            field = self._fields.get(fname)
-            if (field and field.store and fname not in ORDER_SKIP_FIELDS
-                    and field.type not in ('one2many', 'binary')
-                    and not fname.startswith('message_')):
-                result.append(fname)
-        return result
-
-    # ------------------------------------------------------------------
     @api.model_create_multi
     def create(self, vals_list):
-        orders = super().create(vals_list)
-        if not self.env.context.get('install_mode'):
-            log = self.env['apex.quotation.log']
-            for order in orders.filtered(lambda o: o.state in QUOTATION_STATES):
-                log._log(order, 'create', _("Quotation %s was created.", order.name or ''))
-        return orders
-
-    def write(self, vals):
-        if self.env.context.get('install_mode'):
-            return super().write(vals)
-        fnames = self._apex_loggable_fields(vals)
-        if 'order_line' in vals:
-            fnames.append('amount_total')
-        quotes = self.filtered(lambda o: o.state in QUOTATION_STATES) if fnames else self.browse()
-        log = self.env['apex.quotation.log']
-        before = {o.id: log._snapshot(o, fnames) for o in quotes}
-        res = super().write(vals)
-        for order in quotes.exists():
-            after = log._snapshot(order, fnames)
-            for fname in fnames:
-                old, new = before[order.id].get(fname, ''), after.get(fname, '')
-                if old == new:
-                    continue
-                label = self._fields[fname].string
-                action = 'state' if fname == 'state' else 'update'
-                log._log(order, action,
-                         _("%(field)s changed from '%(old)s' to '%(new)s'", field=label, old=old or '-', new=new or '-'),
-                         field_label=label, old=old, new=new)
-        return res
+        # Nothing is logged while the quotation is being created (lines included).
+        orders = super(SaleOrder, self.with_context(apex_no_line_log=True)).create(vals_list)
+        return orders.with_context(apex_no_line_log=False)
 
     def unlink(self):
-        if not self.env.context.get('install_mode'):
-            log = self.env['apex.quotation.log']
-            for order in self:
-                log._log(order, 'delete', _("Quotation %s was deleted.", order.name or ''))
-        return super().unlink()
+        # Deleting a whole quotation must not log every line.
+        return super(SaleOrder, self.with_context(apex_no_line_log=True)).unlink()
 
 
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
-    def _apex_line_title(self):
+    def _apex_is_loggable(self):
         self.ensure_one()
-        return self.product_id.display_name or self.name or _('Section / Note')
+        return bool(self.order_id) and self.order_id.state in QUOTATION_STATES and not self.display_type
 
-    def _apex_is_quotation_line(self):
-        self.ensure_one()
-        return self.order_id and self.order_id.state in QUOTATION_STATES
+    def _apex_logging_active(self):
+        ctx = self.env.context
+        return not ctx.get('apex_no_line_log') and not ctx.get('install_mode')
 
     @api.model_create_multi
     def create(self, vals_list):
         lines = super().create(vals_list)
-        if not self.env.context.get('install_mode'):
+        if lines._apex_logging_active():
             log = self.env['apex.quotation.log']
-            for line in lines.filtered(lambda l: l._apex_is_quotation_line()):
-                log._log(
-                    line.order_id, 'line_add',
-                    _("Line added: %(product)s (Qty: %(qty)s, Unit Price: %(price)s)",
-                      product=line._apex_line_title(), qty=line.product_uom_qty, price=line.price_unit),
-                    line_name=line._apex_line_title(),
-                    new='%s x %s' % (line.product_uom_qty, line.price_unit))
+            for line in lines:
+                if line._apex_is_loggable():
+                    log._log_line(line, 'line_add')
         return lines
 
     def write(self, vals):
-        if self.env.context.get('install_mode'):
+        if not self._apex_logging_active():
             return super().write(vals)
         log = self.env['apex.quotation.log']
-        fnames = [f for f in LINE_LOG_FIELDS if f in self._fields]
-        quotes = self.filtered(lambda l: l._apex_is_quotation_line())
-        before = {l.id: log._snapshot(l, fnames) for l in quotes}
+        fnames = [f for f in LINE_WATCHED_FIELDS if f in self._fields]
+        tracked = self.filtered(lambda l: l._apex_is_loggable())
+        before = {l.id: log._snapshot(l, fnames) for l in tracked}
         res = super().write(vals)
-        for line in quotes.exists():
+        for line in tracked.exists():
             after = log._snapshot(line, fnames)
+            diffs = []
             for fname in fnames:
                 old, new = before[line.id].get(fname, ''), after.get(fname, '')
-                if old == new or not line.order_id:
-                    continue
-                label = self._fields[fname].string
-                log._log(
-                    line.order_id, 'line_update',
-                    _("%(product)s: %(field)s changed from '%(old)s' to '%(new)s'",
-                      product=line._apex_line_title(), field=label, old=old or '-', new=new or '-'),
-                    field_label=label, old=old, new=new, line_name=line._apex_line_title())
+                if old != new:
+                    diffs.append("%s: %s -> %s" % (self._fields[fname].string, old or '-', new or '-'))
+            if diffs:
+                log._log_line(line, 'line_update', changes='\n'.join(diffs))
         return res
 
     def unlink(self):
-        if not self.env.context.get('install_mode'):
+        if self._apex_logging_active():
             log = self.env['apex.quotation.log']
-            for line in self.filtered(lambda l: l._apex_is_quotation_line()):
-                log._log(
-                    line.order_id, 'line_delete',
-                    _("Line removed: %(product)s (Qty: %(qty)s, Unit Price: %(price)s)",
-                      product=line._apex_line_title(), qty=line.product_uom_qty, price=line.price_unit),
-                    line_name=line._apex_line_title(),
-                    old='%s x %s' % (line.product_uom_qty, line.price_unit))
+            reason = self.env.context.get('apex_lost_reason')
+            for line in self:
+                if line._apex_is_loggable():
+                    log._log_line(line, 'line_delete', reason=reason)
         return super().unlink()
+
+    def action_apex_remove_line(self):
+        """Replacement of the trash icon: ask for the reason before removing a product."""
+        self.ensure_one()
+        if self.order_id.state not in QUOTATION_STATES:
+            from odoo.exceptions import UserError
+            raise UserError(_("Products can only be removed while the order is a quotation."))
+        if self.display_type:  # section / note: no reason needed
+            self.unlink()
+            return {'type': 'ir.actions.client', 'tag': 'soft_reload'}
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _("Remove Product"),
+            'res_model': 'apex.quotation.remove.line',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_line_id': self.id},
+        }
