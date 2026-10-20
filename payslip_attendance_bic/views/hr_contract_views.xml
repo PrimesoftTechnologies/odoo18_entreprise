@@ -8,8 +8,8 @@
             <xpath expr="//div[@name='wage']" position="after">
                 <label for="meals_amount"/>
                 <div class="o_row" name="meals_amount">
-                    <field name="meals_amount" nolabel="1"/>
-                    <span>/ month</span>
+                    <field name="meals_amount" nolabel="1" class="oe_inline o_hr_narrow_field"/>
+                    <field name="meals_period_label" nolabel="1" readonly="1" class="oe_inline"/>
                 </div>
             </xpath>
         </field>

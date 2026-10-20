@@ -1,6 +1,6 @@
 {
     'name': 'Payslip Attendance BIC',
-    'version': '18.0.1.1.0',
+    'version': '18.0.1.2.0',
     'category': 'Human Resources/Payroll',
     'summary': 'Record employee attendance and pull worked days into payslips',
     'description': """
@@ -9,7 +9,8 @@ Employee, Date and Time. On a payslip, once the Employee and Period are
 set, the days attended within the period are pulled in automatically as a
 worked days line (code ATTBIC) and listed in an "Attendance (BIC)" tab.
 
-Also adds a "Meals Amount" field next to the Wage on the contract form.
+Also adds a "Meals Amount" field next to the Wage on the contract form
+(its period label follows Schedule Pay) and a prorated Meals Amount on payslips.
     """,
     'author': 'BIC',
     'depends': ['hr', 'hr_contract', 'hr_payroll'],
