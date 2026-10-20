@@ -14,7 +14,7 @@ class HrPayslip(models.Model):
         string='Meals Amount',
         compute='_compute_meals_amount',
         currency_field='currency_id',
-        help='Total meals allowance calculated based on attendance days and contract rate'
+        help='Total meals allowance calculated based on attendance days'
     )
 
     def _get_attendance_bic_records(self):
@@ -34,10 +34,13 @@ class HrPayslip(models.Model):
             slip.attendance_bic_ids = records
             slip.attendance_bic_days = len(set(records.mapped('date')))
 
-    @api.depends('attendance_bic_days', 'contract_id.meals_per_day')
+    # Tumebadilisha depends iwe inasubiri siku za attendance na contract_id tu ili kuepusha Error
+    @api.depends('attendance_bic_days', 'contract_id')
     def _compute_meals_amount(self):
         for slip in self:
-            rate = slip.contract_id.meals_per_day if slip.contract_id else 0.0
+            rate = 0.0
+            if slip.contract_id and 'meals_per_day' in slip.contract_id._fields:
+                rate = slip.contract_id.meals_per_day
             slip.meals_amount = slip.attendance_bic_days * rate
 
     def _get_worked_day_lines(self, *args, **kwargs):
