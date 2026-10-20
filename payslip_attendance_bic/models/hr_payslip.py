@@ -9,13 +9,6 @@ class HrPayslip(models.Model):
         compute='_compute_attendance_bic_ids')
     attendance_bic_days = fields.Integer(
         string='Attendance Days (BIC)', compute='_compute_attendance_bic_ids')
-    
-    meals_amount = fields.Monetary(
-        string='Meals Amount',
-        compute='_compute_meals_amount',
-        currency_field='currency_id',
-        help='Total meals allowance calculated based on attendance days'
-    )
 
     def _get_attendance_bic_records(self):
         self.ensure_one()
@@ -33,15 +26,6 @@ class HrPayslip(models.Model):
             records = slip._get_attendance_bic_records()
             slip.attendance_bic_ids = records
             slip.attendance_bic_days = len(set(records.mapped('date')))
-
-    # Tumebadilisha depends iwe inasubiri siku za attendance na contract_id tu ili kuepusha Error
-    @api.depends('attendance_bic_days', 'contract_id')
-    def _compute_meals_amount(self):
-        for slip in self:
-            rate = 0.0
-            if slip.contract_id and 'meals_per_day' in slip.contract_id._fields:
-                rate = slip.contract_id.meals_per_day
-            slip.meals_amount = slip.attendance_bic_days * rate
 
     def _get_worked_day_lines(self, *args, **kwargs):
         """Append a worked-days line built from the BIC attendance records."""

@@ -9,7 +9,6 @@
                 <page string="Attendance (BIC)" name="attendance_bic">
                     <group>
                         <field name="attendance_bic_days"/>
-                        <field name="meals_amount" widget="monetary"/>
                     </group>
                     <field name="attendance_bic_ids" readonly="1">
                         <list>
