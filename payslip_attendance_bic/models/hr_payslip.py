@@ -10,7 +10,6 @@ class HrPayslip(models.Model):
     attendance_bic_days = fields.Integer(
         string='Attendance Days (BIC)', compute='_compute_attendance_bic_ids')
     
-    # Field mpya ya kuhesabu jumla ya fedha za chakula kwenye payslip
     meals_amount = fields.Monetary(
         string='Meals Amount',
         compute='_compute_meals_amount',
