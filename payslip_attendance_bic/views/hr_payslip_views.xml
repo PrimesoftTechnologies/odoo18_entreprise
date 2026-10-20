@@ -8,13 +8,7 @@
             <xpath expr="//notebook" position="inside">
                 <page string="Attendance (BIC)" name="attendance_bic">
                     <group>
-                        <group>
-                            <field name="attendance_bic_days"/>
-                            <field name="expected_days_bic"/>
-                        </group>
-                        <group>
-                            <field name="meals_amount_bic"/>
-                        </group>
+                        <field name="attendance_bic_days"/>
                     </group>
                     <field name="attendance_bic_ids" readonly="1">
                         <list>
