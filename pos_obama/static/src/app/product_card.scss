@@ -1,7 +1,18 @@
-.pos-obama-reference {
-    font-size: 0.75rem;
-    color: #6c757d;
-    text-align: center;
-    width: 100%;
-    padding: 0 4px 4px;
+.product-name .pos-obama-reference {
+    display: block !important;
+    margin: 3px auto 0;
+    padding: 1px 8px;
+    width: fit-content;
+    max-width: 100%;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.4px;
+    color: #495057;
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 10px;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    word-break: break-all;
 }

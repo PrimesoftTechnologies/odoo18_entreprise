@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
     <t t-name="pos_obama.ProductCard" t-inherit="point_of_sale.ProductCard" t-inherit-mode="extension">
-        <xpath expr="//*[hasclass('product-name')]" position="after">
-            <div t-if="obamaReference" class="pos-obama-reference">
+        <xpath expr="//*[hasclass('product-name')]" position="inside">
+            <span t-if="obamaReference" class="pos-obama-reference d-block">
                 <t t-esc="obamaReference"/>
-            </div>
+            </span>
         </xpath>
     </t>
 </templates>
