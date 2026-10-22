@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_asset_asset_list" model="ir.ui.view">
+        <field name="name">asset.asset.list</field>
+        <field name="model">asset.asset</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state == 'disposed'" decoration-info="state == 'draft'"
+                  decoration-warning="state == 'maintenance'" decoration-success="state == 'in_use'">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="category_id"/>
+                <field name="serial_no" optional="show"/>
+                <field name="employee_id" optional="show"/>
+                <field name="department_id" optional="show"/>
+                <field name="location_id" optional="show"/>
+                <field name="purchase_date" optional="hide"/>
+                <field name="warranty_end" optional="hide"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="purchase_value" optional="show" sum="Total"/>
+                <field name="book_value" optional="show" sum="Total"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'" decoration-success="state == 'in_use'"
+                       decoration-warning="state == 'maintenance'" decoration-primary="state == 'available'"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_asset_asset_kanban" model="ir.ui.view">
+        <field name="name">asset.asset.kanban</field>
+        <field name="model">asset.asset</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_mobile">
+                <field name="state"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex">
+                            <field name="image_1920" widget="image" class="me-2" options="{'size': [64, 64]}"/>
+                            <div class="flex-grow-1">
+                                <strong><field name="name"/></strong>
+                                <div class="text-muted"><field name="code"/></div>
+                                <div><field name="category_id"/></div>
+                                <div t-if="record.employee_id.raw_value">
+                                    <i class="fa fa-user me-1"/><field name="employee_id"/>
+                                </div>
+                                <div><i class="fa fa-map-marker me-1"/><field name="location_id"/></div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_asset_asset_form" model="ir.ui.view">
+        <field name="name">asset.asset.form</field>
+        <field name="model">asset.asset</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm" string="Confirm" type="object" class="btn-primary"
+                            invisible="state != 'draft'" groups="asset_management_prime.group_asset_manager"/>
+                    <button name="action_assign" string="Assign" type="object" class="btn-primary"
+                            invisible="state != 'available'" groups="asset_management_prime.group_asset_manager"/>
+                    <button name="action_transfer" string="Transfer" type="object"
+                            invisible="state != 'in_use'" groups="asset_management_prime.group_asset_manager"/>
+                    <button name="action_request_maintenance" string="Request Maintenance" type="object"
+                            invisible="state not in ('available', 'in_use')"/>
+                    <button name="compute_depreciation_board" string="Compute Depreciation" type="object"
+                            invisible="state in ('draft', 'disposed')" groups="asset_management_prime.group_asset_manager"/>
+                    <button name="action_print_tag" string="Print Tag" type="object"
+                            invisible="state == 'draft'"/>
+                    <button name="action_dispose" string="Dispose" type="object"
+                            invisible="state not in ('available', 'in_use', 'maintenance')"
+                            groups="asset_management_prime.group_asset_manager"/>
+                    <button name="action_set_draft" string="Set to Draft" type="object"
+                            invisible="state != 'available'" groups="asset_management_prime.group_asset_manager"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,available,in_use,maintenance,disposed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_assignments" type="object" class="oe_stat_button" icon="fa-exchange">
+                            <field name="assignment_count" widget="statinfo" string="Assignments"/>
+                        </button>
+                        <button name="action_view_maintenance" type="object" class="oe_stat_button" icon="fa-wrench">
+                            <field name="maintenance_count" widget="statinfo" string="Maintenance"/>
+                        </button>
+                        <button name="action_view_transfers" type="object" class="oe_stat_button" icon="fa-truck">
+                            <field name="transfer_count" widget="statinfo" string="Transfers"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Disposed" bg_color="text-bg-danger" invisible="state != 'disposed'"/>
+                    <field name="active" invisible="1"/>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="image_1920" widget="image" class="oe_avatar"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Dell Latitude 7420" readonly="state == 'disposed'"/></h1>
+                        <h3><field name="code"/></h3>
+                    </div>
+                    <group>
+                        <group string="General">
+                            <field name="category_id" readonly="state != 'draft'"/>
+                            <field name="brand"/>
+                            <field name="model_no"/>
+                            <field name="serial_no"/>
+                            <field name="barcode"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Custody">
+                            <field name="employee_id"/>
+                            <field name="department_id"/>
+                            <field name="location_id"/>
+                            <field name="responsible_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Acquisition" name="acquisition">
+                            <group>
+                                <group string="Purchase">
+                                    <field name="purchase_date"/>
+                                    <field name="vendor_id"/>
+                                    <field name="invoice_id"/>
+                                    <field name="purchase_value" readonly="state != 'draft'"/>
+                                </group>
+                                <group string="Warranty &amp; Insurance">
+                                    <field name="warranty_start"/>
+                                    <field name="warranty_end"/>
+                                    <field name="insurance_provider"/>
+                                    <field name="insurance_policy"/>
+                                    <field name="insurance_expiry"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Depreciation" name="depreciation">
+                            <group>
+                                <group string="Settings">
+                                    <field name="method" readonly="state not in ('draft', 'available')"/>
+                                    <field name="useful_life" readonly="state not in ('draft', 'available')"
+                                           invisible="method == 'manual'"/>
+                                    <field name="degressive_factor" invisible="method != 'degressive'"
+                                           readonly="state not in ('draft', 'available')"/>
+                                    <field name="salvage_value" readonly="state != 'draft'"/>
+                                    <field name="first_depreciation_date" readonly="state not in ('draft', 'available')"/>
+                                </group>
+                                <group string="Values">
+                                    <field name="purchase_value"/>
+                                    <field name="depreciable_value"/>
+                                    <field name="depreciated_value"/>
+                                    <field name="book_value" class="fw-bold"/>
+                                </group>
+                            </group>
+                            <field name="depreciation_line_ids" readonly="1">
+                                <list decoration-success="state == 'posted'" create="0" delete="0">
+                                    <field name="sequence"/>
+                                    <field name="date"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="amount"/>
+                                    <field name="depreciated_value"/>
+                                    <field name="remaining_value"/>
+                                    <field name="move_id"/>
+                                    <field name="state" widget="badge" decoration-success="state == 'posted'"/>
+                                    <button name="action_post" type="object" string="Post" icon="fa-check"
+                                            invisible="state == 'posted'"
+                                            groups="asset_management_prime.group_asset_manager"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Assignment History" name="assignments">
+                            <field name="assignment_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="employee_id"/>
+                                    <field name="date_from"/>
+                                    <field name="date_to"/>
+                                    <field name="assignment_type"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Maintenance History" name="maintenance">
+                            <field name="maintenance_ids" readonly="1">
+                                <list>
+                                    <field name="reference"/>
+                                    <field name="name"/>
+                                    <field name="maintenance_type"/>
+                                    <field name="scheduled_date"/>
+                                    <field name="total_cost" sum="Total"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_asset_asset_search" model="ir.ui.view">
+        <field name="name">asset.asset.search</field>
+        <field name="model">asset.asset</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" string="Asset" filter_domain="['|', '|', '|', ('name', 'ilike', self), ('code', 'ilike', self), ('barcode', 'ilike', self), ('serial_no', 'ilike', self)]"/>
+                <field name="category_id"/>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="location_id"/>
+                <field name="vendor_id"/>
+                <separator/>
+                <filter name="f_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="f_available" string="Available" domain="[('state', '=', 'available')]"/>
+                <filter name="f_in_use" string="In Use" domain="[('state', '=', 'in_use')]"/>
+                <filter name="f_maintenance" string="Under Maintenance" domain="[('state', '=', 'maintenance')]"/>
+                <filter name="f_disposed" string="Disposed" domain="[('state', '=', 'disposed')]"/>
+                <separator/>
+                <filter name="f_idle" string="Idle (Not Assigned)"
+                        domain="[('state', '=', 'available')]"/>
+                <filter name="f_warranty_expiring" string="Warranty Expiring (30 days)"
+                        domain="[('warranty_end', '&gt;=', context_today().strftime('%Y-%m-%d')), ('warranty_end', '&lt;=', (context_today() + relativedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <filter name="f_warranty_expired" string="Warranty Expired"
+                        domain="[('warranty_end', '&lt;', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="f_insurance_expiring" string="Insurance Expiring (30 days)"
+                        domain="[('insurance_expiry', '&gt;=', context_today().strftime('%Y-%m-%d')), ('insurance_expiry', '&lt;=', (context_today() + relativedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="g_category" string="Category" context="{'group_by': 'category_id'}"/>
+                    <filter name="g_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="g_department" string="Department" context="{'group_by': 'department_id'}"/>
+                    <filter name="g_location" string="Location" context="{'group_by': 'location_id'}"/>
+                    <filter name="g_employee" string="Holder" context="{'group_by': 'employee_id'}"/>
+                    <filter name="g_vendor" string="Vendor" context="{'group_by': 'vendor_id'}"/>
+                    <filter name="g_purchase_month" string="Purchase Month" context="{'group_by': 'purchase_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_asset_asset_pivot" model="ir.ui.view">
+        <field name="name">asset.asset.pivot</field>
+        <field name="model">asset.asset</field>
+        <field name="arch" type="xml">
+            <pivot>
+                <field name="category_id" type="row"/>
+                <field name="state" type="col"/>
+                <field name="purchase_value" type="measure"/>
+                <field name="depreciated_value" type="measure"/>
+                <field name="book_value" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_asset_asset_graph" model="ir.ui.view">
+        <field name="name">asset.asset.graph</field>
+        <field name="model">asset.asset</field>
+        <field name="arch" type="xml">
+            <graph type="bar">
+                <field name="category_id"/>
+                <field name="book_value" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_asset_asset" model="ir.actions.act_window">
+        <field name="name">Assets</field>
+        <field name="res_model">asset.asset</field>
+        <field name="view_mode">list,kanban,form,pivot,graph</field>
+        <field name="search_view_id" ref="view_asset_asset_search"/>
+        
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Register your first asset</p>
+            <p>Track every office asset from purchase to disposal. You can also import assets from Excel/CSV using the Favorites &gt; Import records menu.</p>
+        </field>
+    </record>
+
+    <record id="action_asset_my" model="ir.actions.act_window">
+        <field name="name">My Assets</field>
+        <field name="res_model">asset.asset</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="domain">[('employee_id.user_id', '=', uid)]</field>
+    </record>
+
+    <record id="action_asset_analysis" model="ir.actions.act_window">
+        <field name="name">Asset Analysis</field>
+        <field name="res_model">asset.asset</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="search_view_id" ref="view_asset_asset_search"/>
+        <field name="domain">[('state', '!=', 'draft')]</field>
+    </record>
+
+    <record id="action_asset_warranty" model="ir.actions.act_window">
+        <field name="name">Warranty / Insurance Expiring</field>
+        <field name="res_model">asset.asset</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('state', '!=', 'disposed'), '|', ('warranty_end', '!=', False), ('insurance_expiry', '!=', False)]</field>
+        <field name="context">{'search_default_f_warranty_expiring': 1}</field>
+        <field name="search_view_id" ref="view_asset_asset_search"/>
+    </record>
+
+    <!-- Employee smart button -->
+    <record id="view_employee_form_asset" model="ir.ui.view">
+        <field name="name">hr.employee.form.asset</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_view_assets" type="object" class="oe_stat_button" icon="fa-laptop"
+                        groups="asset_management_prime.group_asset_user">
+                    <field name="asset_count" widget="statinfo" string="Assets"/>
+                </button>
+            </div>
+        </field>
+    </record>
+</odoo>

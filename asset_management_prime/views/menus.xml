@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_asset_root" name="Assets Prime" web_icon="asset_management_prime,static/description/icon.png"
+              sequence="40" groups="asset_management_prime.group_asset_user"/>
+
+    <!-- Assets -->
+    <menuitem id="menu_asset_main" name="Assets" parent="menu_asset_root" sequence="10"/>
+    <menuitem id="menu_asset_all" name="Assets On Hands" parent="menu_asset_main"
+              action="action_asset_asset" sequence="20"/>
+    <menuitem id="menu_asset_my" name="My Assets Requests" parent="menu_asset_main"
+              action="action_asset_my" sequence="30"/>
+    <menuitem id="menu_asset_request" name="Asset Requests" parent="menu_asset_main"
+              action="action_asset_request" sequence="10"/>
+
+    <!-- Operations -->
+    <menuitem id="menu_asset_operations" name="Operations" parent="menu_asset_root" sequence="20"/>
+    <menuitem id="menu_asset_assignment" name="Assignments" parent="menu_asset_operations"
+              action="action_asset_assignment" sequence="10"/>
+    <menuitem id="menu_asset_transfer" name="Transfers" parent="menu_asset_operations"
+              action="action_asset_transfer" sequence="20"/>
+    <menuitem id="menu_asset_maintenance" name="Maintenance" parent="menu_asset_operations"
+              action="action_asset_maintenance" sequence="30"/>
+    <menuitem id="menu_asset_audit" name="Audits" parent="menu_asset_operations"
+              action="action_asset_audit" sequence="40"/>
+    <menuitem id="menu_asset_disposal" name="Disposals" parent="menu_asset_operations"
+              action="action_asset_disposal" sequence="50"/>
+
+    <!-- Accounting -->
+    <menuitem id="menu_asset_accounting" name="Accounting" parent="menu_asset_root" sequence="30"
+              groups="asset_management_prime.group_asset_manager"/>
+    <menuitem id="menu_asset_depreciation" name="Depreciation Entries" parent="menu_asset_accounting"
+              action="action_asset_depreciation_line" sequence="10"/>
+
+    <!-- Reporting -->
+    <menuitem id="menu_asset_reporting" name="Reporting" parent="menu_asset_root" sequence="40"/>
+    <menuitem id="menu_asset_analysis" name="Asset Analysis (Dashboard)" parent="menu_asset_reporting"
+              action="action_asset_analysis" sequence="10"/>
+    <menuitem id="menu_asset_warranty" name="Warranty / Insurance Expiring" parent="menu_asset_reporting"
+              action="action_asset_warranty" sequence="20"/>
+    <menuitem id="menu_asset_maint_report" name="Maintenance Costs" parent="menu_asset_reporting"
+              action="action_asset_maintenance_report" sequence="30"/>
+    <menuitem id="menu_asset_audit_exc" name="Audit Exceptions" parent="menu_asset_reporting"
+              action="action_asset_audit_exceptions" sequence="40"/>
+
+    <!-- Configuration -->
+    <menuitem id="menu_asset_config" name="Configuration" parent="menu_asset_root" sequence="90"
+              groups="asset_management_prime.group_asset_manager"/>
+    <menuitem id="menu_asset_category" name="Categories" parent="menu_asset_config"
+              action="action_asset_category" sequence="10"/>
+    <menuitem id="menu_asset_location" name="Locations" parent="menu_asset_config"
+              action="action_asset_location" sequence="20"/>
+</odoo>

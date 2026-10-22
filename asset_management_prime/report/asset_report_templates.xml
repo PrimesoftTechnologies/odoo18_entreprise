@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ======================= Asset Tag ======================= -->
+    <template id="report_asset_tag">
+        <t t-call="web.basic_layout">
+            <t t-foreach="docs" t-as="o">
+                <div class="page" style="page-break-after: always; font-family: sans-serif;">
+                    <table style="width:100%; border:1px solid #000;">
+                        <tr>
+                            <td style="width:35%; padding:4px; text-align:center;">
+                                <img t-att-src="'/report/barcode/QR/%s?width=300&amp;height=300' % (o.barcode or o.code)"
+                                     style="width:110px; height:110px;"/>
+                            </td>
+                            <td style="padding:4px; vertical-align:middle;">
+                                <div style="font-size:11px; color:#555;" t-field="o.company_id.name"/>
+                                <div style="font-size:15px; font-weight:bold;" t-field="o.name"/>
+                                <div style="font-size:13px;" t-field="o.code"/>
+                                <div style="font-size:11px;" t-if="o.serial_no">S/N: <span t-field="o.serial_no"/></div>
+                                <div style="font-size:11px;" t-if="o.category_id"><span t-field="o.category_id.name"/></div>
+                                <div style="font-size:10px; color:#a00; margin-top:4px;">PROPERTY OF <span t-field="o.company_id.name"/></div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- ======================= Asset Card ======================= -->
+    <template id="report_asset_card">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <t t-set="company" t-value="o.company_id"/>
+                    <div class="page">
+                        <h2>Asset Card: <span t-field="o.name"/></h2>
+                        <h5><span t-field="o.code"/> - <span t-field="o.state"/></h5>
+                        <div class="row mt-3">
+                            <div class="col-6">
+                                <table class="table table-sm">
+                                    <tr><th>Category</th><td><span t-field="o.category_id"/></td></tr>
+                                    <tr><th>Brand / Model</th><td><span t-field="o.brand"/> <span t-field="o.model_no"/></td></tr>
+                                    <tr><th>Serial Number</th><td><span t-field="o.serial_no"/></td></tr>
+                                    <tr><th>Holder</th><td><span t-field="o.employee_id"/></td></tr>
+                                    <tr><th>Department</th><td><span t-field="o.department_id"/></td></tr>
+                                    <tr><th>Location</th><td><span t-field="o.location_id"/></td></tr>
+                                </table>
+                            </div>
+                            <div class="col-6">
+                                <table class="table table-sm">
+                                    <tr><th>Purchase Date</th><td><span t-field="o.purchase_date"/></td></tr>
+                                    <tr><th>Vendor</th><td><span t-field="o.vendor_id"/></td></tr>
+                                    <tr><th>Purchase Value</th><td><span t-field="o.purchase_value"/></td></tr>
+                                    <tr><th>Accumulated Depreciation</th><td><span t-field="o.depreciated_value"/></td></tr>
+                                    <tr><th>Net Book Value</th><td><strong><span t-field="o.book_value"/></strong></td></tr>
+                                    <tr><th>Warranty Expiry</th><td><span t-field="o.warranty_end"/></td></tr>
+                                </table>
+                            </div>
+                        </div>
+                        <h4 class="mt-3">Depreciation Schedule</h4>
+                        <table class="table table-sm table-bordered">
+                            <thead><tr><th>#</th><th>Date</th><th class="text-end">Amount</th><th class="text-end">Remaining</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="o.depreciation_line_ids.sorted('sequence')" t-as="l">
+                                    <td><span t-field="l.sequence"/></td>
+                                    <td><span t-field="l.date"/></td>
+                                    <td class="text-end"><span t-field="l.amount"/></td>
+                                    <td class="text-end"><span t-field="l.remaining_value"/></td>
+                                    <td><span t-field="l.state"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <h4 class="mt-3">Assignment History</h4>
+                        <table class="table table-sm table-bordered">
+                            <thead><tr><th>Employee</th><th>From</th><th>To</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="o.assignment_ids.sorted('date_from')" t-as="a">
+                                    <td><span t-field="a.employee_id"/></td>
+                                    <td><span t-field="a.date_from"/></td>
+                                    <td><span t-field="a.date_to"/></td>
+                                    <td><span t-field="a.state"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- ======================= Handover Form ======================= -->
+    <template id="report_asset_handover">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <t t-set="company" t-value="o.company_id"/>
+                    <div class="page">
+                        <h2 class="text-center">Asset Handover Form</h2>
+                        <p class="text-center text-muted"><span t-field="o.name"/></p>
+                        <table class="table table-sm table-bordered mt-4">
+                            <tr><th style="width:30%">Asset</th><td><span t-field="o.asset_id.name"/> (<span t-field="o.asset_id.code"/>)</td></tr>
+                            <tr><th>Serial Number</th><td><span t-field="o.asset_id.serial_no"/></td></tr>
+                            <tr><th>Assigned To</th><td><span t-field="o.employee_id"/></td></tr>
+                            <tr><th>Department</th><td><span t-field="o.department_id"/></td></tr>
+                            <tr><th>Location</th><td><span t-field="o.location_id"/></td></tr>
+                            <tr><th>Type</th><td><span t-field="o.assignment_type"/></td></tr>
+                            <tr><th>Check-out Date</th><td><span t-field="o.date_from"/></td></tr>
+                            <tr t-if="o.expected_return_date"><th>Expected Return</th><td><span t-field="o.expected_return_date"/></td></tr>
+                            <tr><th>Condition at Check-out</th><td><span t-field="o.condition_out"/></td></tr>
+                            <tr t-if="o.note"><th>Accessories / Notes</th><td><span t-field="o.note"/></td></tr>
+                            <tr t-if="o.date_to"><th>Returned On</th><td><span t-field="o.date_to"/> (<span t-field="o.condition_in"/>)</td></tr>
+                        </table>
+                        <p class="mt-4">
+                            I acknowledge receipt of the above asset in the stated condition. I agree to use it for
+                            official purposes only, to take reasonable care of it, to report any loss, theft or damage
+                            immediately, and to return it when requested or when I leave the organization.
+                        </p>
+                        <div class="row mt-5">
+                            <div class="col-6">
+                                <p><strong>Employee</strong></p>
+                                <img t-if="o.signature" t-att-src="image_data_uri(o.signature)" style="max-height:80px;"/>
+                                <div t-else="" style="height:60px;"></div>
+                                <hr/>
+                                <span t-field="o.employee_id.name"/>
+                            </div>
+                            <div class="col-6">
+                                <p><strong>Issued By (Asset Manager)</strong></p>
+                                <div style="height:60px;"></div>
+                                <hr/>
+                                Name / Signature / Date
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

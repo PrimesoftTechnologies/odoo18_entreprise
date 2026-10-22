@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="rule_asset_category_company" model="ir.rule">
+        <field name="name">Asset Category: multi-company</field>
+        <field name="model_id" ref="model_asset_category"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_asset_location_company" model="ir.rule">
+        <field name="name">Asset Location: multi-company</field>
+        <field name="model_id" ref="model_asset_location"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_asset_asset_company" model="ir.rule">
+        <field name="name">Asset Asset: multi-company</field>
+        <field name="model_id" ref="model_asset_asset"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_asset_depreciation_line_company" model="ir.rule">
+        <field name="name">Asset Depreciation Line: multi-company</field>
+        <field name="model_id" ref="model_asset_depreciation_line"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_asset_assignment_company" model="ir.rule">
+        <field name="name">Asset Assignment: multi-company</field>
+        <field name="model_id" ref="model_asset_assignment"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_asset_transfer_company" model="ir.rule">
+        <field name="name">Asset Transfer: multi-company</field>
+        <field name="model_id" ref="model_asset_transfer"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_asset_request_company" model="ir.rule">
+        <field name="name">Asset Request: multi-company</field>
+        <field name="model_id" ref="model_asset_request"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_asset_maintenance_company" model="ir.rule">
+        <field name="name">Asset Maintenance: multi-company</field>
+        <field name="model_id" ref="model_asset_maintenance"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_asset_audit_company" model="ir.rule">
+        <field name="name">Asset Audit: multi-company</field>
+        <field name="model_id" ref="model_asset_audit"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_asset_disposal_company" model="ir.rule">
+        <field name="name">Asset Disposal: multi-company</field>
+        <field name="model_id" ref="model_asset_disposal"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

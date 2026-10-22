@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="paperformat_asset_tag" model="report.paperformat">
+        <field name="name">Asset Tag Label</field>
+        <field name="default" eval="False"/>
+        <field name="format">custom</field>
+        <field name="page_height">50</field>
+        <field name="page_width">90</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">2</field>
+        <field name="margin_bottom">2</field>
+        <field name="margin_left">2</field>
+        <field name="margin_right">2</field>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_asset_tag" model="ir.actions.report">
+        <field name="name">Asset Tag (QR)</field>
+        <field name="model">asset.asset</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">asset_management_prime.report_asset_tag</field>
+        <field name="report_file">asset_management_prime.report_asset_tag</field>
+        <field name="print_report_name">'Tag - %s' % object.code</field>
+        <field name="paperformat_id" ref="paperformat_asset_tag"/>
+        <field name="binding_model_id" ref="model_asset_asset"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <record id="action_report_asset_card" model="ir.actions.report">
+        <field name="name">Asset Card</field>
+        <field name="model">asset.asset</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">asset_management_prime.report_asset_card</field>
+        <field name="report_file">asset_management_prime.report_asset_card</field>
+        <field name="print_report_name">'Asset Card - %s' % object.code</field>
+        <field name="binding_model_id" ref="model_asset_asset"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <record id="action_report_asset_handover" model="ir.actions.report">
+        <field name="name">Asset Handover Form</field>
+        <field name="model">asset.assignment</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">asset_management_prime.report_asset_handover</field>
+        <field name="report_file">asset_management_prime.report_asset_handover</field>
+        <field name="print_report_name">'Handover - %s' % object.name</field>
+        <field name="binding_model_id" ref="model_asset_assignment"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>
