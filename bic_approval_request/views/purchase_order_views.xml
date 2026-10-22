@@ -11,18 +11,25 @@
             </xpath>
 
             <xpath expr="//header" position="inside">
+                <!-- FINANCE APPROVER BUTTONS -->
                 <button name="action_finance_approve" string="Approve [Finance Approver]"
                         type="object" class="btn-primary"
                         invisible="state != 'finance_approval'"
                         groups="bic_approval_request.group_finance_approver"/>
+                <button name="action_bic_reject" string="Reject"
+                        type="object" class="btn-secondary"
+                        invisible="state != 'finance_approval'"
+                        groups="bic_approval_request.group_finance_approver"/>
+
+                <!-- CEO APPROVER BUTTONS -->
                 <button name="action_ceo_approve" string="Approve [CEO]"
                         type="object" class="btn-primary"
                         invisible="state != 'ceo_approval'"
                         groups="bic_approval_request.group_ceo_approver"/>
                 <button name="action_bic_reject" string="Reject"
-                        type="object"
-                        invisible="state not in ('finance_approval', 'ceo_approval')"
-                        groups="bic_approval_request.group_finance_approver,bic_approval_request.group_ceo_approver"/>
+                        type="object" class="btn-secondary"
+                        invisible="state != 'ceo_approval'"
+                        groups="bic_approval_request.group_ceo_approver"/>
             </xpath>
 
             <xpath expr="//notebook" position="inside">
