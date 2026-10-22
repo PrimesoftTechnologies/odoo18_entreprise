@@ -10,6 +10,7 @@
         'security/ir.model.access.csv',
         'views/purchase_order_views.xml',
         'report/purchase_order_report.xml',
+        'report/delivery_slip_report.xml',
     ],
     'installable': True,
     'application': False,

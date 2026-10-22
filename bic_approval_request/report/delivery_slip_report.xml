@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_delivery_document_bic_signature"
+              inherit_id="stock.report_delivery_document">
+        <xpath expr="//div[hasclass('page')]" position="inside">
+            <div style="margin-top: 50px; page-break-inside: avoid;">
+                <table style="width: 100%; border-collapse: separate; border-spacing: 15px 0;">
+                    <tr>
+                        <!-- 1. DELIVERED / CREATED BY (DRIVER & TRUCK) -->
+                        <td style="width: 48%; vertical-align: top;">
+                            <div style="border: 1px solid #dcdcdc; border-radius: 6px; padding: 12px; background-color: #fafafa;">
+                                <div style="border-bottom: 2px solid #0056b3; padding-bottom: 4px; margin-bottom: 8px;">
+                                    <strong style="color: #333; font-size: 0.9em; text-transform: uppercase;">Delivered By (Driver)</strong>
+                                </div>
+                                <div style="font-size: 0.85em; color: #333; line-height: 1.6;">
+                                    <div><strong>Driver Name:</strong> _____________________</div>
+                                    <div><strong>Truck No:</strong> _____________________</div>
+                                    <div style="margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 5px;">
+                                        <strong>Signature:</strong> _____________________<br/>
+                                        <strong>Date:</strong> ________________________
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- 2. RECEIVED BY (NAME, CONDITION, SIGNATURE) -->
+                        <td style="width: 48%; vertical-align: top;">
+                            <div style="border: 1px solid #dcdcdc; border-radius: 6px; padding: 12px; background-color: #fafafa;">
+                                <div style="border-bottom: 2px solid #28a745; padding-bottom: 4px; margin-bottom: 8px;">
+                                    <strong style="color: #333; font-size: 0.9em; text-transform: uppercase;">Received By (Customer / Store)</strong>
+                                </div>
+                                <div style="font-size: 0.85em; color: #333; line-height: 1.6;">
+                                    <div><strong>Receiver Name:</strong> _____________________</div>
+                                    <div><strong>Condition:</strong> [ ] Good  [ ] Damaged  [ ] Short</div>
+                                    <div style="margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 5px;">
+                                        <strong>Signature:</strong> _____________________<br/>
+                                        <strong>Date:</strong> ________________________
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </xpath>
+    </template>
+</odoo>
