@@ -12,7 +12,6 @@
             </xpath>
 
             <xpath expr="//header" position="inside">
-                <!-- FINANCE APPROVER BUTTONS -->
                 <!-- Inaonekana finance ashapitisha lakini bado CEO hajapitisha au finance haja-approve kabisa -->
                 <button name="action_finance_approve" string="Approve [Finance]"
                         type="object" class="btn-primary"
