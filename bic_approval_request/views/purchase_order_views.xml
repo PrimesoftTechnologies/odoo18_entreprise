@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- FORM VIEW INHERITANCE -->
     <record id="purchase_order_form_bic_approval" model="ir.ui.view">
         <field name="name">purchase.order.form.bic.approval</field>
         <field name="model">purchase.order</field>
@@ -12,13 +13,15 @@
 
             <xpath expr="//header" position="inside">
                 <!-- FINANCE APPROVER BUTTONS -->
-                <button name="action_finance_approve" string="Approve [Finance Approver]"
+                <!-- Inaonekana finance ashapitisha lakini bado CEO hajapitisha au finance haja-approve kabisa -->
+                <button name="action_finance_approve" string="Approve [Finance]"
                         type="object" class="btn-primary"
                         invisible="state != 'finance_approval'"
                         groups="bic_approval_request.group_finance_approver"/>
-                <button name="action_bic_reject" string="Reject"
+                
+                <button name="action_bic_reject_wizard" string="Reject"
                         type="object" class="btn-secondary"
-                        invisible="state != 'finance_approval'"
+                        invisible="state not in ('finance_approval', 'ceo_approval')"
                         groups="bic_approval_request.group_finance_approver"/>
 
                 <!-- CEO APPROVER BUTTONS -->
@@ -26,7 +29,8 @@
                         type="object" class="btn-primary"
                         invisible="state != 'ceo_approval'"
                         groups="bic_approval_request.group_ceo_approver"/>
-                <button name="action_bic_reject" string="Reject"
+
+                <button name="action_bic_reject_wizard" string="Reject"
                         type="object" class="btn-secondary"
                         invisible="state != 'ceo_approval'"
                         groups="bic_approval_request.group_ceo_approver"/>
@@ -48,8 +52,28 @@
                             <field name="ceo_approval_date"/>
                         </group>
                     </group>
+                    <group string="Rejection Details" invisible="not reject_reason">
+                        <field name="reject_reason"/>
+                    </group>
                 </page>
             </xpath>
+        </field>
+    </record>
+
+    <!-- REJECTION WIZARD FORM VIEW -->
+    <record id="view_purchase_order_reject_wizard_form" model="ir.ui.view">
+        <field name="name">purchase.order.reject.wizard.form</field>
+        <field name="model">purchase.order.reject.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Reason for Rejection">
+                <group>
+                    <field name="reject_reason" placeholder="Type the reason for rejection here..."/>
+                </group>
+                <footer>
+                    <button string="Reject Order" name="action_confirm_rejection" type="object" class="btn-danger"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
         </field>
     </record>
 </odoo>

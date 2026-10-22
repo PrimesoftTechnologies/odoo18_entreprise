@@ -1,4 +1,4 @@
-from odoo import fields, models, _
+from odoo import fields, models, _, api
 from odoo.exceptions import UserError
 
 FINANCE_GROUP = 'bic_approval_request.group_finance_approver'
@@ -26,6 +26,9 @@ class PurchaseOrder(models.Model):
     finance_approval_date = fields.Datetime(string='Finance Approved On', copy=False, readonly=True)
     ceo_approver_id = fields.Many2one('res.users', string='CEO Approver', copy=False, readonly=True, tracking=True)
     ceo_approval_date = fields.Datetime(string='CEO Approved On', copy=False, readonly=True)
+    
+    # Field mpya ya sababu ya kukataa
+    reject_reason = fields.Text(string='Rejection Reason', copy=False, readonly=True, tracking=True)
 
     # ------------------------------------------------------------------
     # Helpers
@@ -48,7 +51,6 @@ class PurchaseOrder(models.Model):
     # Workflow
     # ------------------------------------------------------------------
     def button_confirm(self):
-        """Confirm now sends the order for Finance approval instead of confirming."""
         if self.env.context.get('bic_skip_approval'):
             return super().button_confirm()
 
@@ -63,6 +65,7 @@ class PurchaseOrder(models.Model):
                 'finance_approval_date': False,
                 'ceo_approver_id': False,
                 'ceo_approval_date': False,
+                'reject_reason': False,
             })
             order.message_post(body=_("Purchase Order submitted for Finance approval by %s.", self.env.user.name))
             order._bic_notify_group(FINANCE_GROUP, _("Finance approval required"))
@@ -96,21 +99,23 @@ class PurchaseOrder(models.Model):
             })
             order._bic_clear_activities()
             order.message_post(body=_("Approved by CEO: %s. Order confirmed.", self.env.user.name))
-            # Hand back to standard Odoo confirmation (creates receipts, etc.)
+            
             order.write({'state': 'draft'})
             order.with_context(bic_skip_approval=True).button_confirm()
         return True
 
-    def action_bic_reject(self):
+    def action_bic_reject_wizard(self):
+        """Inafungua pop-up wizard ya kuandika sababu ya reject"""
         if not (self.env.user.has_group(FINANCE_GROUP) or self.env.user.has_group(CEO_GROUP)):
             raise UserError(_("Only approvers can reject an order."))
-        for order in self:
-            if order.state not in ('finance_approval', 'ceo_approval'):
-                raise UserError(_("Order %s is not waiting for approval.", order.name))
-            order.write({'state': 'draft'})
-            order._bic_clear_activities()
-            order.message_post(body=_("Approval rejected by %s. Order returned to draft.", self.env.user.name))
-        return True
+        return {
+            'name': _('Reason for Rejection'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'purchase.order.reject.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_order_id': self.id},
+        }
 
     def button_draft(self):
         res = super().button_draft()
@@ -118,5 +123,29 @@ class PurchaseOrder(models.Model):
             'prepared_by_id': False, 'prepared_date': False,
             'finance_approver_id': False, 'finance_approval_date': False,
             'ceo_approver_id': False, 'ceo_approval_date': False,
+            'reject_reason': False,
         })
         return res
+
+
+class PurchaseOrderRejectWizard(models.TransientModel):
+    _name = 'purchase.order.reject.wizard'
+    _description = 'Purchase Order Reject Wizard'
+
+    order_id = fields.Many2one('purchase.order', string='Purchase Order', required=True)
+    reject_reason = fields.Text(string='Reason for Rejection', required=True)
+
+    def action_confirm_rejection(self):
+        self.ensure_one()
+        order = self.order_id
+        order.write({
+            'state': 'draft',
+            'reject_reason': self.reject_reason,
+        })
+        order._bic_clear_activities()
+        order.message_post(body=_(
+            "Approval rejected by <b>%s</b>.<br/><b>Reason:</b> %s", 
+            self.env.user.name, 
+            self.reject_reason
+        ))
+        return True
