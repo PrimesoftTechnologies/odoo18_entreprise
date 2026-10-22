@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="purchase_order_form_bic_approval" model="ir.ui.view">
+        <field name="name">purchase.order.form.bic.approval</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='state']" position="attributes">
+                <attribute name="statusbar_visible">draft,sent,finance_approval,ceo_approval,purchase</attribute>
+            </xpath>
+
+            <xpath expr="//header" position="inside">
+                <button name="action_finance_approve" string="Approve [Finance Approver]"
+                        type="object" class="btn-primary"
+                        invisible="state != 'finance_approval'"
+                        groups="bic_approval_request.group_finance_approver"/>
+                <button name="action_ceo_approve" string="Approve [CEO]"
+                        type="object" class="btn-primary"
+                        invisible="state != 'ceo_approval'"
+                        groups="bic_approval_request.group_ceo_approver"/>
+                <button name="action_bic_reject" string="Reject"
+                        type="object"
+                        invisible="state not in ('finance_approval', 'ceo_approval')"
+                        groups="bic_approval_request.group_finance_approver,bic_approval_request.group_ceo_approver"/>
+            </xpath>
+
+            <xpath expr="//notebook" position="inside">
+                <page string="Approvals" name="bic_approvals">
+                    <group>
+                        <group string="Prepared">
+                            <field name="prepared_by_id"/>
+                            <field name="prepared_date"/>
+                        </group>
+                        <group string="Finance">
+                            <field name="finance_approver_id"/>
+                            <field name="finance_approval_date"/>
+                        </group>
+                        <group string="CEO">
+                            <field name="ceo_approver_id"/>
+                            <field name="ceo_approval_date"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
