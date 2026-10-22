@@ -10,8 +10,8 @@ class PurchaseOrder(models.Model):
 
     state = fields.Selection(
         selection_add=[
-            ('finance_approval', 'Waiting Finance Approval'),
-            ('ceo_approval', 'Waiting CEO Approval'),
+            ('finance_approval', 'Finance Approval'),
+            ('ceo_approval', 'CEO Approval'),
             ('to approve',),
         ],
         ondelete={
