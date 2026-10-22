@@ -3,47 +3,66 @@
     <template id="report_purchaseorder_document_bic_signature"
               inherit_id="purchase.report_purchaseorder_document">
         <xpath expr="//div[hasclass('page')]" position="inside">
-            <!-- Tunairudisha ndani ya page kwa muundo safi wa sanduku dogo na kuzuia isikatishwe katikati -->
-            <div style="margin-top: 50px; page-break-inside: avoid;">
-                <table style="width:100%; border-collapse: collapse; font-size: 0.9em;">
+            <div style="margin-top: 40px; page-break-inside: avoid;">
+                <table style="width: 100%; border-collapse: separate; border-spacing: 15px 0;">
                     <tr>
-                        <!-- PREPARED BY -->
-                        <td style="width:45%; vertical-align: top; padding: 5px;">
-                            <div style="border: 1px solid #ccc; padding: 8px; border-radius: 4px; background-color: #fcfcfc;">
-                                <strong style="font-size: 0.85em; color: #555;">Prepared By:</strong>
-                                <div style="margin-top: 4px;">
-                                    <span t-if="o.prepared_by_id" t-field="o.prepared_by_id.name" style="font-weight: bold;"/>
-                                    <span t-else="" class="text-muted">N/A</span>
+                        <!-- 1. PREPARED BY -->
+                        <td style="width: 33%; vertical-align: top;">
+                            <div style="border: 1px solid #dcdcdc; border-radius: 6px; padding: 10px; background-color: #fafafa;">
+                                <div style="border-bottom: 2px solid #0056b3; padding-bottom: 4px; margin-bottom: 8px;">
+                                    <strong style="color: #333; font-size: 0.9em; text-transform: uppercase;">1. Prepared By</strong>
                                 </div>
-                                <div class="text-muted" style="font-size: 0.8em; margin-top: 2px;">
-                                    Date: <span t-if="o.prepared_date" t-field="o.prepared_date" t-options='{"widget": "date"}'/>
+                                <div style="min-height: 45px;">
+                                    <span t-if="o.prepared_by_id" t-field="o.prepared_by_id.name" style="font-weight: bold; font-size: 0.9em; display: block;"/>
+                                    <span t-else="" class="text-muted" style="font-size: 0.85em;">Name: _________________</span>
+                                </div>
+                                <div style="border-top: 1px solid #ccc; padding-top: 4px; font-size: 0.8em; color: #666;">
+                                    <strong>Signature:</strong> _______________<br/>
+                                    <strong>Date:</strong> <span t-if="o.prepared_date" t-field="o.prepared_date" t-options='{"widget": "date"}'/>
                                 </div>
                             </div>
                         </td>
-                        
-                        <td style="width:10%;"/>
 
-                        <!-- APPROVALS (Finance & CEO) -->
-                        <td style="width:45%; vertical-align: top; padding: 5px;">
-                            <div style="border: 1px solid #ccc; padding: 8px; border-radius: 4px; background-color: #fcfcfc;">
-                                <strong style="font-size: 0.85em; color: #555;">Approvals:</strong>
-                                <div style="margin-top: 4px; font-size: 0.85em;">
-                                    <div>
-                                        <span t-if="o.finance_approver_id">Finance: <span t-field="o.finance_approver_id.name" style="font-weight: bold;"/></span>
-                                        <span t-else="" class="text-muted">Finance: Pending</span>
-                                    </div>
-                                    <div class="text-muted" style="font-size: 0.8em;">
-                                        <span t-if="o.finance_approval_date" t-field="o.finance_approval_date" t-options='{"widget": "date"}'/>
-                                    </div>
+                        <!-- 2. FINANCE APPROVAL -->
+                        <td style="width: 33%; vertical-align: top;">
+                            <div style="border: 1px solid #dcdcdc; border-radius: 6px; padding: 10px; background-color: #fafafa;">
+                                <div style="border-bottom: 2px solid #28a745; padding-bottom: 4px; margin-bottom: 8px;">
+                                    <strong style="color: #333; font-size: 0.9em; text-transform: uppercase;">2. Finance Manager</strong>
                                 </div>
-                                <div style="margin-top: 6px; font-size: 0.85em; border-top: 1px dashed #ddd; padding-top: 4px;">
-                                    <div>
-                                        <span t-if="o.ceo_approver_id">CEO: <span t-field="o.ceo_approver_id.name" style="font-weight: bold;"/></span>
-                                        <span t-else="" class="text-muted">CEO: Pending</span>
-                                    </div>
-                                    <div class="text-muted" style="font-size: 0.8em;">
-                                        <span t-if="o.ceo_approval_date" t-field="o.ceo_approval_date" t-options='{"widget": "date"}'/>
-                                    </div>
+                                <div style="min-height: 45px;">
+                                    <t t-if="o.finance_approver_id">
+                                        <span t-field="o.finance_approver_id.name" style="font-weight: bold; font-size: 0.9em; display: block;"/>
+                                        <span class="badge text-bg-success" style="font-size: 0.7em;">Approved</span>
+                                    </t>
+                                    <t t-else="">
+                                        <span class="text-muted" style="font-size: 0.85em;">Pending Approval</span>
+                                    </t>
+                                </div>
+                                <div style="border-top: 1px solid #ccc; padding-top: 4px; font-size: 0.8em; color: #666;">
+                                    <strong>Signature:</strong> _______________<br/>
+                                    <strong>Date:</strong> <span t-if="o.finance_approval_date" t-field="o.finance_approval_date" t-options='{"widget": "date"}'/>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- 3. CEO APPROVAL -->
+                        <td style="width: 33%; vertical-align: top;">
+                            <div style="border: 1px solid #dcdcdc; border-radius: 6px; padding: 10px; background-color: #fafafa;">
+                                <div style="border-bottom: 2px solid #dc3545; padding-bottom: 4px; margin-bottom: 8px;">
+                                    <strong style="color: #333; font-size: 0.9em; text-transform: uppercase;">3. CEO Approval</strong>
+                                </div>
+                                <div style="min-height: 45px;">
+                                    <t t-if="o.ceo_approver_id">
+                                        <span t-field="o.ceo_approver_id.name" style="font-weight: bold; font-size: 0.9em; display: block;"/>
+                                        <span class="badge text-bg-success" style="font-size: 0.7em;">Approved</span>
+                                    </t>
+                                    <t t-else="">
+                                        <span class="text-muted" style="font-size: 0.85em;">Pending Approval</span>
+                                    </t>
+                                </div>
+                                <div style="border-top: 1px solid #ccc; padding-top: 4px; font-size: 0.8em; color: #666;">
+                                    <strong>Signature:</strong> _______________<br/>
+                                    <strong>Date:</strong> <span t-if="o.ceo_approval_date" t-field="o.ceo_approval_date" t-options='{"widget": "date"}'/>
                                 </div>
                             </div>
                         </td>
