@@ -5,12 +5,16 @@ from odoo.exceptions import ValidationError
 class PosConfig(models.Model):
     _inherit = "pos.config"
 
-    is_van_pos = fields.Boolean(string="Is Van POS", tracking=True)
+    is_van_pos = fields.Boolean(
+        string="Is Van POS", 
+        tracking=True
+    )
     van_id = fields.Many2one(
         "fleet.vehicle",
         string="Van",
         tracking=True,
         domain="[('is_van', '=', True), ('van_active', '=', True)]",
+        help="Select the van assigned to this POS Configuration."
     )
     van_salesman_id = fields.Many2one(
         "res.users",

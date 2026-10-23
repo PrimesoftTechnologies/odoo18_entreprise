@@ -68,7 +68,7 @@
         <field name="perm_unlink" eval="False"/>
     </record>
 
-    <!-- Supervisor & Manager: All Fleet Vehicles -->
+    <!-- Supervisor & Manager: All Fleet Vehicles (Fixes Dropdown Filtering) -->
     <record id="rule_van_vehicle_manager" model="ir.rule">
         <field name="name">Supervisor/Manager: All Vans</field>
         <field name="model_id" ref="fleet.model_fleet_vehicle"/>
