@@ -20,8 +20,8 @@
               action="action_asset_transfer" sequence="20"/>
     <menuitem id="menu_asset_maintenance" name="Maintenance" parent="menu_asset_operations"
               action="action_asset_maintenance" sequence="30"/>
-    <menuitem id="menu_asset_audit" name="Audits" parent="menu_asset_operations"
-              action="action_asset_audit" sequence="40"/>
+    <!-- <menuitem id="menu_asset_audit" name="Audits" parent="menu_asset_operations"
+              action="action_asset_audit" sequence="40"/> -->
     <menuitem id="menu_asset_disposal" name="Disposals" parent="menu_asset_operations"
               action="action_asset_disposal" sequence="50"/>
 
@@ -39,8 +39,8 @@
               action="action_asset_warranty" sequence="20"/>
     <menuitem id="menu_asset_maint_report" name="Maintenance Costs" parent="menu_asset_reporting"
               action="action_asset_maintenance_report" sequence="30"/>
-    <menuitem id="menu_asset_audit_exc" name="Audit Exceptions" parent="menu_asset_reporting"
-              action="action_asset_audit_exceptions" sequence="40"/>
+    <!-- <menuitem id="menu_asset_audit_exc" name="Audit Exceptions" parent="menu_asset_reporting"
+              action="action_asset_audit_exceptions" sequence="40"/> -->
 
     <!-- Configuration -->
     <menuitem id="menu_asset_config" name="Configuration" parent="menu_asset_root" sequence="90"
