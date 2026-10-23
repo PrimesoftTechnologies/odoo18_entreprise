@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <menuitem id="menu_asset_root" name="Assets Trucking" web_icon="asset_management_prime,static/description/icon.png"
+    <menuitem id="menu_asset_root" name="Assets Tracking" web_icon="asset_management_prime,static/description/icon.png"
               sequence="40" groups="asset_management_prime.group_asset_user"/>
 
     <!-- Assets -->
