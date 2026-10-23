@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <menuitem id="menu_asset_root" name="Assets Prime" web_icon="asset_management_prime,static/description/icon.png"
+    <menuitem id="menu_asset_root" name="Assets Trucking" web_icon="asset_management_prime,static/description/icon.png"
               sequence="40" groups="asset_management_prime.group_asset_user"/>
 
     <!-- Assets -->
     <menuitem id="menu_asset_main" name="Assets" parent="menu_asset_root" sequence="10"/>
-    <menuitem id="menu_asset_all" name="Assets On Hands" parent="menu_asset_main"
+    <menuitem id="menu_asset_all" name="Assigned Assets" parent="menu_asset_main"
               action="action_asset_asset" sequence="20"/>
     <menuitem id="menu_asset_my" name="My Assets Requests" parent="menu_asset_main"
               action="action_asset_my" sequence="30"/>
@@ -26,10 +26,10 @@
               action="action_asset_disposal" sequence="50"/>
 
     <!-- Accounting -->
-    <menuitem id="menu_asset_accounting" name="Accounting" parent="menu_asset_root" sequence="30"
+    <!-- <menuitem id="menu_asset_accounting" name="Accounting" parent="menu_asset_root" sequence="30"
               groups="asset_management_prime.group_asset_manager"/>
     <menuitem id="menu_asset_depreciation" name="Depreciation Entries" parent="menu_asset_accounting"
-              action="action_asset_depreciation_line" sequence="10"/>
+              action="action_asset_depreciation_line" sequence="10"/> -->
 
     <!-- Reporting -->
     <menuitem id="menu_asset_reporting" name="Reporting" parent="menu_asset_root" sequence="40"/>
