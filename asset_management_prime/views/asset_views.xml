@@ -133,40 +133,6 @@
                                 </group>
                             </group>
                         </page>
-                        <page string="Depreciation" name="depreciation">
-                            <group>
-                                <group string="Settings">
-                                    <field name="method" readonly="state not in ('draft', 'available')"/>
-                                    <field name="useful_life" readonly="state not in ('draft', 'available')"
-                                           invisible="method == 'manual'"/>
-                                    <field name="degressive_factor" invisible="method != 'degressive'"
-                                           readonly="state not in ('draft', 'available')"/>
-                                    <field name="salvage_value" readonly="state != 'draft'"/>
-                                    <field name="first_depreciation_date" readonly="state not in ('draft', 'available')"/>
-                                </group>
-                                <group string="Values">
-                                    <field name="purchase_value"/>
-                                    <field name="depreciable_value"/>
-                                    <field name="depreciated_value"/>
-                                    <field name="book_value" class="fw-bold"/>
-                                </group>
-                            </group>
-                            <field name="depreciation_line_ids" readonly="1">
-                                <list decoration-success="state == 'posted'" create="0" delete="0">
-                                    <field name="sequence"/>
-                                    <field name="date"/>
-                                    <field name="currency_id" column_invisible="1"/>
-                                    <field name="amount"/>
-                                    <field name="depreciated_value"/>
-                                    <field name="remaining_value"/>
-                                    <field name="move_id"/>
-                                    <field name="state" widget="badge" decoration-success="state == 'posted'"/>
-                                    <button name="action_post" type="object" string="Post" icon="fa-check"
-                                            invisible="state == 'posted'"
-                                            groups="asset_management_prime.group_asset_manager"/>
-                                </list>
-                            </field>
-                        </page>
                         <page string="Assignment History" name="assignments">
                             <field name="assignment_ids" readonly="1">
                                 <list>
