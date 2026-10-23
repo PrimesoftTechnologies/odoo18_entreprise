@@ -224,8 +224,8 @@ class VanRetirementRoute(models.Model):
                 ], limit=1)
                 if existing:
                     raise ValidationError(_(
-                        f"POS ID / Session '{record.pos_session_ref}' Sorry! This POS ID already used in previously retirement "
-                        f"Retirement nyingine (Ref: {existing.name}). Not allowed to repeat this id!"
+                        f"POS ID / Session '{record.pos_session_ref}' Sorry! This POS ID already used in previous "
+                        f"Retirement (Ref: {existing.name}). Not allowed to repeat this id!"
                     ))
 
     @api.depends("pos_session_ref")
@@ -375,9 +375,10 @@ class VanRetirementRoute(models.Model):
                 if not product:
                     continue
 
+                # Inasoma remaining_quantity kama ipo kwa ajili ya partial sales, au inachukua approved_quantity
                 expected_quantity = 0.0
-                if "expected_quantity" in route_line._fields:
-                    expected_quantity = route_line.expected_quantity
+                if hasattr(route_line, 'remaining_quantity') and route_line.remaining_quantity > 0:
+                    expected_quantity = route_line.remaining_quantity
                 elif "approved_quantity" in route_line._fields:
                     expected_quantity = route_line.approved_quantity
                 elif "quantity" in route_line._fields:
@@ -404,7 +405,6 @@ class VanRetirementRoute(models.Model):
             if not record.product_line_ids:
                 raise ValidationError(_("The retirement route has no products."))
             
-            # Ukaguzi wa ziada wa POS ID wakati wa kubonyeza Submit
             if record.pos_session_ref:
                 existing = self.search([
                     ('pos_session_ref', '=', record.pos_session_ref.strip()),
@@ -413,8 +413,8 @@ class VanRetirementRoute(models.Model):
                 ], limit=1)
                 if existing:
                     raise ValidationError(_(
-                        f"POS ID / Session '{record.pos_session_ref}'  Sorry! This POS ID already used in previously record "
-                        f"Retirement nyingine (Ref: {existing.name}). Not allowed to submit!"
+                        f"POS ID / Session '{record.pos_session_ref}' Sorry! This POS ID already used in "
+                        f"Retirement (Ref: {existing.name}). Not allowed to submit!"
                     ))
 
             record.write({
