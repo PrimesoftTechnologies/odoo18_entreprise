@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
+    <!-- ========================================================== -->
+    <!-- MODULE CATEGORY & GROUPS                                   -->
+    <!-- ========================================================== -->
+
     <record id="module_category_van_distribution" model="ir.module.category">
         <field name="name">Van Distribution</field>
         <field name="description">Van Distribution Management</field>
@@ -11,7 +16,6 @@
         <field name="category_id" ref="module_category_van_distribution"/>
     </record>
 
-    <!-- Supervisor (Hasirithi Salesman moja kwa moja ili kuondoa mgongano wa ruhusa) -->
     <record id="group_van_supervisor" model="res.groups">
         <field name="name">Van Supervisor</field>
         <field name="category_id" ref="module_category_van_distribution"/>
@@ -22,6 +26,7 @@
         <field name="category_id" ref="module_category_van_distribution"/>
         <field name="implied_ids" eval="[(4, ref('group_van_supervisor'))]"/>
     </record>
+
 
     <!-- ========================================================== -->
     <!-- RECORD RULES                                               -->
@@ -36,10 +41,10 @@
         <field name="perm_read" eval="True"/>
         <field name="perm_write" eval="True"/>
         <field name="perm_create" eval="True"/>
-        <field name="perm_unlink" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
     </record>
 
-    <!-- Van Transfer Approver: See All Company Transfers -->
+    <!-- Approver / Manager: All Van Transfers -->
     <record id="rule_van_transfer_approver" model="ir.rule">
         <field name="name">Van Transfer Approver: See All Company Transfers</field>
         <field name="model_id" ref="model_van_stock_transfer"/>
@@ -51,7 +56,7 @@
         <field name="perm_unlink" eval="True"/>
     </record>
 
-    <!-- Salesman: Own Van -->
+    <!-- Salesman: Own Van Vehicles -->
     <record id="rule_van_vehicle_salesman" model="ir.rule">
         <field name="name">Salesman: Own Van</field>
         <field name="model_id" ref="fleet.model_fleet_vehicle"/>
@@ -63,24 +68,48 @@
         <field name="perm_unlink" eval="False"/>
     </record>
 
-    <!-- Salesman: Own Van Routes (Retirement) -->
-    <record id="rule_van_route_salesman" model="ir.rule">
-        <field name="name">Salesman: Own Van Routes</field>
-        <field name="model_id" ref="model_van_route"/>
-        <field name="groups" eval="[(4, ref('group_van_salesman'))]"/>
-        <field name="domain_force">['|', ('van_id.van_salesman_id', '=', user.id), ('van_id', '=', False)]</field>
+    <!-- Supervisor & Manager: All Fleet Vehicles -->
+    <record id="rule_van_vehicle_manager" model="ir.rule">
+        <field name="name">Supervisor/Manager: All Vans</field>
+        <field name="model_id" ref="fleet.model_fleet_vehicle"/>
+        <field name="groups" eval="[(4, ref('group_van_supervisor')), (4, ref('group_van_manager'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
         <field name="perm_read" eval="True"/>
         <field name="perm_write" eval="True"/>
         <field name="perm_create" eval="True"/>
         <field name="perm_unlink" eval="True"/>
     </record>
 
-    <!-- Supervisor & Manager: See All Van Routes (Retirement) -->
+    <!-- Salesman: Own Van Routes -->
+    <record id="rule_van_route_salesman" model="ir.rule">
+        <field name="name">Salesman: Own Van Routes</field>
+        <field name="model_id" ref="model_van_route"/>
+        <field name="groups" eval="[(4, ref('group_van_salesman'))]"/>
+        <field name="domain_force">['|', '|', ('van_id.van_salesman_id', '=', user.id), ('salesman_id', '=', user.id), ('van_id', '=', False)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- Supervisor & Manager: All Van Routes (Global Override) -->
     <record id="rule_van_route_manager" model="ir.rule">
         <field name="name">Supervisor/Manager: All Van Routes</field>
         <field name="model_id" ref="model_van_route"/>
         <field name="groups" eval="[(4, ref('group_van_supervisor')), (4, ref('group_van_manager'))]"/>
-        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="domain_force">['|', ('company_id', 'in', company_ids), ('company_id', '=', False)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- Global Rule za Retirement Route (Manager/Supervisor access) -->
+    <record id="rule_van_retirement_route_manager" model="ir.rule">
+        <field name="name">Supervisor/Manager: All Retirement Routes</field>
+        <field name="model_id" ref="model_van_retirement_route"/>
+        <field name="groups" eval="[(4, ref('group_van_supervisor')), (4, ref('group_van_manager'))]"/>
+        <field name="domain_force">['|', ('company_id', 'in', company_ids), ('company_id', '=', False)]</field>
         <field name="perm_read" eval="True"/>
         <field name="perm_write" eval="True"/>
         <field name="perm_create" eval="True"/>
