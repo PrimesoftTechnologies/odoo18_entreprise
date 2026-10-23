@@ -139,8 +139,11 @@ class VanRouteProduct(models.Model):
     quantity = fields.Float(string="Quantity", readonly=True, digits="Product Unit of Measure")
     approved_quantity = fields.Float(string="Approved Quantity", readonly=True, digits="Product Unit of Measure")
     
+    # Sehemu mpya ya kufuatilia mauzo ya sehemu (Partial Sales) na kilichobaki
+    sold_quantity = fields.Float(string="Sold Quantity", compute="_compute_sold_quantity", store=True, digits="Product Unit of Measure", help="Total quantity sold via POS for this route.")
+    remaining_quantity = fields.Float(string="Remaining Quantity", compute="_compute_sold_quantity", store=True, digits="Product Unit of Measure", help="Remaining stock in van to be sold in next sessions.")
+
     sales_price = fields.Float(string="Sales Price", digits="Product Price")
-    
     expected_revenue = fields.Float(string="Expected Revenue", compute="_compute_expected_revenue", store=True, readonly=True, digits="Product Price")
     product_uom_id = fields.Many2one("uom.uom", string="Unit", related="move_id.product_uom", readonly=True)
 
@@ -148,6 +151,25 @@ class VanRouteProduct(models.Model):
     def _compute_expected_revenue(self):
         for line in self:
             line.expected_revenue = line.approved_quantity * line.sales_price
+
+    @api.depends("route_id.pos_session_id", "route_id.pos_session_id.state", "approved_quantity")
+    def _compute_sold_quantity(self):
+        for line in self:
+            sold = 0.0
+            if line.route_id.pos_session_id:
+                # Kukusanya mauzo yote kutoka kwenye POS orders za session husika
+                orders = self.env["pos.order"].search([
+                    ("session_id", "=", line.route_id.pos_session_id.id),
+                    ("state", "in", ("paid", "done", "invoiced"))
+                ])
+                for order in orders:
+                    for order_line in order.lines:
+                        if order_line.product_id == line.product_id:
+                            sold += order_line.qty
+            
+            line.sold_quantity = sold
+            # Kiasi kilichobaki gari = approved_quantity - kilichouzwa
+            line.remaining_quantity = max(0.0, line.approved_quantity - sold)
 
 
 # ============================================================================
@@ -162,7 +184,6 @@ class VanRouteCompleteWizard(models.TransientModel):
     salesman_id = fields.Many2one("res.users", related="route_id.salesman_id", readonly=True)
     end_location = fields.Char(string="End Location", required=True)
     
-    # Domain inaonyesha POS Session za Salesman huyu pekee
     pos_session_id = fields.Many2one(
         "pos.session", 
         string="POS Session / ID", 
@@ -176,14 +197,9 @@ class VanRouteCompleteWizard(models.TransientModel):
     def action_confirm_complete_route(self):
         self.ensure_one()
         
-        # ==========================================================
-        # UKAGUZI WA POS ID: Kuzuia isitumike mara mbili kwenye Retirement
-        # ==========================================================
         if self.pos_session_id:
             pos_name = self.pos_session_id.name.strip()
             
-            # Tunatafuta kama POS Session hii imeshawahi kutumika kwenye rekodi nyingine HAI 
-            # (bila kuhesabu rekodi zilizofutwa au route hii ya sasa)
             existing = self.env["van.retirement.route"].search([
                 ("pos_session_ref", "=", pos_name),
                 ("state", "in", ("submitted", "approved", "done")),
@@ -196,9 +212,6 @@ class VanRouteCompleteWizard(models.TransientModel):
                     f"Retirement record (Ref: {existing.name}). Not allowed to complete!"
                 ))
 
-        # ==========================================================
-        # KAMA HAIJATUMIKA KWENYE ROUTE NYINGINE, ENDELEA
-        # ==========================================================
         route = self.route_id
         
         route.write({
@@ -219,7 +232,6 @@ class VanRouteCompleteWizard(models.TransientModel):
         else:
             retirement.write({"pos_session_ref": pos_name})
 
-        # Kusoma Mauzo Otomatiki kutoka kwenye POS Session iliyochaguliwa
         if self.pos_session_id and retirement.product_line_ids:
             sold_quantities = {}
             pos_orders = self.env["pos.order"].search([("session_id", "=", self.pos_session_id.id)])
