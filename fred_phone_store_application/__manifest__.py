@@ -1,6 +1,6 @@
 {
     'name': 'Fred Phone Store Application',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Sales/Point of Sale',
     'summary': 'Simple Profit & Loss report for phone shops inside Point of Sale',
     'description': """

@@ -8,7 +8,7 @@ from odoo.exceptions import UserError
 from ..models.store_expense import EXPENSE_CATEGORIES
 
 
-class FredPlReportLine(models.TransientModel):
+class FredPlReportLine(models.Model):
     _name = 'fred.pl.report.line'
     _description = 'Phone Store P&L Line'
     _order = 'profit desc, id'
@@ -30,10 +30,12 @@ class FredPlReportLine(models.TransientModel):
             rec.margin = (rec.profit / rec.sales * 100.0) if rec.sales else 0.0
 
 
-class FredPlReportWizard(models.TransientModel):
+class FredPlReportWizard(models.Model):
     _name = 'fred.pl.report.wizard'
     _description = 'Phone Store Profit and Loss'
+    _order = 'id desc'
 
+    name = fields.Char(string='Report', compute='_compute_name', store=True)
     date_from = fields.Date(
         required=True, default=lambda self: fields.Date.context_today(self).replace(day=1))
     date_to = fields.Date(required=True, default=fields.Date.context_today)
@@ -56,6 +58,12 @@ class FredPlReportWizard(models.TransientModel):
     total_expenses = fields.Monetary(string='Expenses')
     net_profit = fields.Monetary(string='Net Profit')
     margin = fields.Float(string='Net Margin %')
+
+    @api.depends('date_from', 'date_to')
+    def _compute_name(self):
+        for rec in self:
+            rec.name = _('Profit and Loss: %(f)s to %(t)s') % {
+                'f': rec.date_from or '', 't': rec.date_to or ''}
 
     # ------------------------------------------------------------------
     def _get_utc_range(self):

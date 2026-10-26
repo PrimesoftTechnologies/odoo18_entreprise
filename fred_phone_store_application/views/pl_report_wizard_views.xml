@@ -1,5 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- LIST -->
+    <record id="view_fred_pl_report_list" model="ir.ui.view">
+        <field name="name">fred.pl.report.wizard.list</field>
+        <field name="model">fred.pl.report.wizard</field>
+        <field name="arch" type="xml">
+            <list string="Profit and Loss" create="0">
+                <header>
+                    <button name="%(action_fred_pl_report_new)d" type="action"
+                            string="Compute Profit" class="btn-primary" display="always"/>
+                </header>
+                <field name="name"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="config_ids" widget="many2many_tags"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="total_sales" widget="monetary"/>
+                <field name="total_cost" widget="monetary"/>
+                <field name="gross_profit" widget="monetary"/>
+                <field name="total_expenses" widget="monetary"/>
+                <field name="net_profit" widget="monetary"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- FORM -->
     <record id="view_fred_pl_report_wizard_form" model="ir.ui.view">
         <field name="name">fred.pl.report.wizard.form</field>
         <field name="model">fred.pl.report.wizard</field>
@@ -11,7 +36,7 @@
                 </header>
                 <sheet>
                     <div class="oe_title">
-                        <h1>Profit and Loss</h1>
+                        <h1><field name="name" readonly="1"/></h1>
                     </div>
                     <group>
                         <group>
@@ -27,18 +52,17 @@
                     </group>
                     <group string="Summary">
                         <group>
-                            <field name="total_sales" widget="monetary"/>
-                            <field name="total_cost" widget="monetary"/>
-                            <field name="gross_profit" widget="monetary" class="fw-bold"/>
+                            <field name="total_sales" widget="monetary" readonly="1"/>
+                            <field name="total_cost" widget="monetary" readonly="1"/>
+                            <field name="gross_profit" widget="monetary" readonly="1" class="fw-bold"/>
                         </group>
                         <group>
-                            <field name="total_expenses" widget="monetary"/>
-                            <field name="net_profit" widget="monetary" class="fw-bold"/>
-                            <field name="margin" widget="percentage" invisible="1"/>
+                            <field name="total_expenses" widget="monetary" readonly="1"/>
+                            <field name="net_profit" widget="monetary" readonly="1" class="fw-bold"/>
                         </group>
                     </group>
                     <notebook>
-                        <page string="Products (Sales - Cost = Profit)" name="products">
+                        <page string="Products" name="products">
                             <field name="product_line_ids" readonly="1">
                                 <list create="0" delete="0" edit="0">
                                     <field name="name" string="Product"/>
@@ -66,10 +90,23 @@
         </field>
     </record>
 
-    <record id="action_fred_pl_report_wizard" model="ir.actions.act_window">
+    <!-- Opens a NEW empty form (used by the "Compute Profit" button) -->
+    <record id="action_fred_pl_report_new" model="ir.actions.act_window">
         <field name="name">Profit and Loss</field>
         <field name="res_model">fred.pl.report.wizard</field>
         <field name="view_mode">form</field>
+        <field name="view_ids" eval="[(5, 0, 0), (0, 0, {'view_mode': 'form', 'view_id': ref('view_fred_pl_report_wizard_form')})]"/>
         <field name="target">current</field>
+    </record>
+
+    <!-- Menu action: LIST of reports -->
+    <record id="action_fred_pl_report_wizard" model="ir.actions.act_window">
+        <field name="name">Profit and Loss</field>
+        <field name="res_model">fred.pl.report.wizard</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No Profit and Loss report yet</p>
+            <p>Click <b>Compute Profit</b> to create your first report.</p>
+        </field>
     </record>
 </odoo>
