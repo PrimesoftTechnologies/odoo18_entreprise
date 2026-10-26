@@ -11,7 +11,7 @@
         'views/purchase_order_views.xml',
         'report/purchase_order_report.xml',
         'report/delivery_slip_report.xml',
-        'report/invoice_report.xml',
+        'report/report_invoice.xml',
     ],
     'installable': True,
     'application': False,
