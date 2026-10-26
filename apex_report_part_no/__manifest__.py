@@ -1,6 +1,6 @@
 {
     'name': 'Apex Report Part No',
-    'version': '18.0.5.4.0',
+    'version': '18.0.5.5.0',
     'category': 'Sales/Purchase',
     'summary': 'Apex PDF format (Arial, font sizes, logo) and custom Sales / Purchase / Delivery reports',
     'description': """
