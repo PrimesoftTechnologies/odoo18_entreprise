@@ -31,9 +31,22 @@
         <!-- Description cell = line text without the [CODE] prefix -->
         <xpath expr="//span[@t-field='line.name']" position="replace">
             <t t-if="line.product_id">
-                <t t-set="ln_code" t-value="'[%s] ' % (line.product_id.default_code or '')"/>
+                <!-- Description column = description only.
+                     1) Remove the leading product name ("[CODE] Name" / "Name"),
+                        but only when it is followed by a new line or nothing
+                        (Odoo's automatic text). Text typed manually on the
+                        same line is kept as is.
+                     2) If nothing is left (no description filled), show the
+                        product name instead. -->
+                <t t-set="ln_txt" t-value="line.name or ''"/>
+                <t t-set="ln_cands"
+                   t-value="[line.product_id.display_name or '', '[%s] %s' % (line.product_id.default_code or '', line.product_id.name or ''), line.product_id.name or '']"/>
+                <t t-set="ln_match"
+                   t-value="[c for c in ln_cands if c and (ln_txt == c or ln_txt.startswith(c + '\n'))]"/>
+                <t t-set="ln_desc"
+                   t-value="ln_txt[len((ln_match + [''])[0]):].strip()"/>
                 <span style="white-space: pre-line;"
-                      t-esc="(line.name or '')[len(ln_code):] if (line.product_id.default_code and (line.name or '').startswith(ln_code)) else (line.name or '')"/>
+                      t-esc="ln_desc or line.product_id.name"/>
             </t>
             <t t-else="">
                 <span t-field="line.name"/>

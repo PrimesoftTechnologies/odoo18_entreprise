@@ -1,10 +1,10 @@
 {
     'name': 'Apex Report Part No',
-    'version': '18.0.5.3.0',
+    'version': '18.0.5.4.0',
     'category': 'Sales/Purchase',
     'summary': 'Apex PDF format (Arial, font sizes, logo) and custom Sales / Purchase / Delivery reports',
     'description': """
-* Sales and purchase reports (Quotation, Sales Order, PO, RFQ): separate "Product Name" and "Description" columns (internal reference hidden)
+* Sales and purchase reports (Quotation, Sales Order, PO, RFQ): separate "Product Name" and "Description" columns; Description = description only, shows the product name when no description is filled
 * Sales order report: currency removed from line prices, dynamic Amount header
 * Document reference (top right) in APEX style on Quotation / Sales Order / PO / RFQ:
   bold navy Arial, 2 lines ("Quotation No." + number); PO number always carries "PO-"
