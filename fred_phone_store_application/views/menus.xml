@@ -8,11 +8,23 @@
               groups="point_of_sale.group_pos_manager"
               sequence="50"/>
 
-    <!-- Point of Sale > Store Expenses -->
-    <menuitem id="menu_fred_store_expense"
+    <!-- Point of Sale > Store Expenses > List of Expenses -->
+    <menuitem id="menu_fred_store_expense_root"
               name="Store Expenses"
               parent="point_of_sale.menu_point_root"
-              action="action_fred_store_expense"
               groups="point_of_sale.group_pos_manager"
               sequence="45"/>
+    <menuitem id="menu_fred_store_expense_list"
+              name="List of Expenses"
+              parent="menu_fred_store_expense_root"
+              action="action_fred_store_expense"
+              sequence="10"/>
+
+    <!-- Point of Sale > Configuration > Expense Types -->
+    <menuitem id="menu_fred_expense_type"
+              name="Expense Types"
+              parent="point_of_sale.menu_point_config_product"
+              action="action_fred_expense_type"
+              groups="point_of_sale.group_pos_manager"
+              sequence="90"/>
 </odoo>

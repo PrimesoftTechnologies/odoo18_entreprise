@@ -5,8 +5,6 @@ import pytz
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
-from ..models.store_expense import EXPENSE_CATEGORIES
-
 
 class FredPlReportLine(models.Model):
     _name = 'fred.pl.report.line'
@@ -131,16 +129,18 @@ class FredPlReportWizard(models.Model):
         if self.config_ids:
             exp_domain += ['|', ('config_id', 'in', self.config_ids.ids),
                            ('config_id', '=', False)]
-        labels = dict(EXPENSE_CATEGORIES)
         by_cat = {}
+        names = {}
         for exp in self.env['fred.store.expense'].search(exp_domain):
-            by_cat[exp.category] = by_cat.get(exp.category, 0.0) + exp.amount
+            key = exp.expense_type_id.id or 0
+            names[key] = exp.expense_type_id.name or _('Uncategorized')
+            by_cat[key] = by_cat.get(key, 0.0) + exp.amount
         total_expenses = 0.0
-        for cat, amount in by_cat.items():
+        for key, amount in by_cat.items():
             total_expenses += amount
             vals_list.append({
                 'wizard_id': self.id, 'line_type': 'expense',
-                'name': labels.get(cat, cat), 'sales': 0.0, 'cost': 0.0,
+                'name': names[key], 'sales': 0.0, 'cost': 0.0,
                 'profit': amount,  # expense amount is stored in "profit" column
             })
 

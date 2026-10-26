@@ -1,16 +1,5 @@
 from odoo import fields, models
 
-EXPENSE_CATEGORIES = [
-    ('rent', 'Rent'),
-    ('salary', 'Salaries'),
-    ('electricity', 'Electricity / Water'),
-    ('transport', 'Transport'),
-    ('marketing', 'Marketing / Advertising'),
-    ('repair', 'Repairs / Maintenance'),
-    ('tax', 'Taxes / Licenses'),
-    ('other', 'Other'),
-]
-
 
 class FredStoreExpense(models.Model):
     _name = 'fred.store.expense'
@@ -19,7 +8,9 @@ class FredStoreExpense(models.Model):
 
     name = fields.Char(string='Description', required=True)
     date = fields.Date(required=True, default=fields.Date.context_today)
-    category = fields.Selection(EXPENSE_CATEGORIES, required=True, default='other')
+    expense_type_id = fields.Many2one(
+        'fred.expense.type', string='Expense Type', required=True,
+        ondelete='restrict')
     amount = fields.Monetary(required=True)
     config_id = fields.Many2one(
         'pos.config', string='Shop',

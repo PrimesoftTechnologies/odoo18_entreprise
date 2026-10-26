@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="expense_type_rent" model="fred.expense.type"><field name="name">Rent</field><field name="sequence">10</field></record>
+    <record id="expense_type_salary" model="fred.expense.type"><field name="name">Salaries</field><field name="sequence">20</field></record>
+    <record id="expense_type_electricity" model="fred.expense.type"><field name="name">Electricity / Water</field><field name="sequence">30</field></record>
+    <record id="expense_type_transport" model="fred.expense.type"><field name="name">Transport</field><field name="sequence">40</field></record>
+    <record id="expense_type_marketing" model="fred.expense.type"><field name="name">Marketing / Advertising</field><field name="sequence">50</field></record>
+    <record id="expense_type_repair" model="fred.expense.type"><field name="name">Repairs / Maintenance</field><field name="sequence">60</field></record>
+    <record id="expense_type_tax" model="fred.expense.type"><field name="name">Taxes / Licenses</field><field name="sequence">70</field></record>
+    <record id="expense_type_other" model="fred.expense.type"><field name="name">Other</field><field name="sequence">100</field></record>
+</odoo>
