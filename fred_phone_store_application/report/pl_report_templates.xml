@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_phone_pl" model="ir.actions.report">
+        <field name="name">Profit and Loss</field>
+        <field name="model">fred.pl.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">fred_phone_store_application.report_phone_pl_document</field>
+        <field name="report_file">fred_phone_store_application.report_phone_pl_document</field>
+        <field name="print_report_name">'Profit and Loss'</field>
+    </record>
+
+    <template id="report_phone_pl_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="text-center">Profit and Loss Report</h2>
+                        <p class="text-center">
+                            <strong>Period:</strong>
+                            <span t-field="o.date_from"/> - <span t-field="o.date_to"/>
+                            <br/>
+                            <strong>Shop:</strong> <span t-out="o._shop_names()"/>
+                        </p>
+
+                        <h4 class="mt-4">Sales</h4>
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th class="text-end">Qty</th>
+                                    <th class="text-end">Sales Price</th>
+                                    <th class="text-end">Cost Price</th>
+                                    <th class="text-end">Profit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.product_line_ids" t-as="l">
+                                    <td><span t-field="l.name"/></td>
+                                    <td class="text-end"><span t-out="'%g' % l.qty"/></td>
+                                    <td class="text-end"><span t-field="l.sales"/></td>
+                                    <td class="text-end"><span t-field="l.cost"/></td>
+                                    <td class="text-end"><span t-field="l.profit"/></td>
+                                </tr>
+                                <tr class="fw-bold">
+                                    <td colspan="2">TOTAL</td>
+                                    <td class="text-end"><span t-field="o.total_sales"/></td>
+                                    <td class="text-end"><span t-field="o.total_cost"/></td>
+                                    <td class="text-end"><span t-field="o.gross_profit"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="mt-4">Expenses</h4>
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.expense_line_ids" t-as="e">
+                                    <td><span t-field="e.name"/></td>
+                                    <td class="text-end"><span t-field="e.profit"/></td>
+                                </tr>
+                                <tr class="fw-bold">
+                                    <td>TOTAL EXPENSES</td>
+                                    <td class="text-end"><span t-field="o.total_expenses"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="mt-4">Summary</h4>
+                        <table class="table table-sm table-bordered">
+                            <tbody>
+                                <tr>
+                                    <td>Sales Price</td>
+                                    <td class="text-end"><span t-field="o.total_sales"/></td>
+                                </tr>
+                                <tr>
+                                    <td>Less: Cost Price</td>
+                                    <td class="text-end"><span t-field="o.total_cost"/></td>
+                                </tr>
+                                <tr class="fw-bold">
+                                    <td>PROFIT</td>
+                                    <td class="text-end"><span t-field="o.gross_profit"/></td>
+                                </tr>
+                                <tr>
+                                    <td>Less: Expenses</td>
+                                    <td class="text-end"><span t-field="o.total_expenses"/></td>
+                                </tr>
+                                <tr class="fw-bold"
+                                    t-att-class="'fw-bold ' + ('text-danger' if o.net_profit &lt; 0 else 'text-success')">
+                                    <td>NET PROFIT</td>
+                                    <td class="text-end"><span t-field="o.net_profit"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

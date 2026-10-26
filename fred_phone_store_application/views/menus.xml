@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Point of Sale > Reporting > Profit and Loss -->
+    <menuitem id="menu_fred_pl_report"
+              name="Profit and Loss"
+              parent="point_of_sale.menu_point_rep"
+              action="action_fred_pl_report_wizard"
+              groups="point_of_sale.group_pos_manager"
+              sequence="50"/>
+
+    <!-- Point of Sale > Store Expenses -->
+    <menuitem id="menu_fred_store_expense"
+              name="Store Expenses"
+              parent="point_of_sale.menu_point_root"
+              action="action_fred_store_expense"
+              groups="point_of_sale.group_pos_manager"
+              sequence="45"/>
+</odoo>
