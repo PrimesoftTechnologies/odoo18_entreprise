@@ -2,63 +2,100 @@
    APEX HOLDINGS - PDF format (Reports / POs / Quotes / Delivery Notes)
    --------------------------------------------------------------------------
    Fonts all ............................ Arial
-   Body, Header, Footer ................. 8pt
-   Quote data inside tables ............. 7.4pt
-   Header "APEX HOLDINGS" ............... UPPERCASE, 10pt
-   APEX Reference (document title/no.) .. 14pt
-   Logo ................................. decreased size
+   Header "APEX HOLDINGS (A) LIMITED" ... UPPERCASE, bold, 14pt
+   Address info below APEX .............. 11pt
+   APEX Reference (document title/no.) .. 16pt (right side)
+   Body ................................. 14pt
+   Data inside tables ................... 10pt
+   Terms and Conditions ................. 11pt
+   Header base and Footer ............... 14pt
+   Logo ................................. 80px high (clear and sharp)
    Loaded through the web.report_assets_common bundle, so it applies to every
    PDF (header and footer included) whatever layout the company uses.
    ========================================================================== */
 
 /* 1. Font family: Arial everywhere (icon fonts excluded) */
-body,
-body *:not(.fa):not([class^="fa-"]):not([class*=" fa-"]) {
+html, body, table, tr, td, th, div, span, p, a, b, i, u, strong, em, small,
+h1, h2, h3, h4, h5, h6, ul, ol, li, dl, dt, dd, label, address, pre, code,
+input, select, textarea, button,
+body *:not(.fa):not([class^="fa-"]):not([class*=" fa-"]),
+body *:not(.fa):not([class^="fa-"]):not([class*=" fa-"])::before,
+body *:not(.fa):not([class^="fa-"]):not([class*=" fa-"])::after {
     font-family: Arial, Helvetica, sans-serif !important;
 }
 
-/* 2. Body, header and footer: 8pt */
+/* 2. Body: 14pt */
 body,
-.header, .header *,
-.footer, .footer *,
 .article, .article *,
 .page, .page * {
-    font-size: 8pt !important;
+    font-size: 14pt !important;
 }
 
-/* 3. Data inside tables (quote lines, totals, delivery lines): 7.4pt */
+/* 3. Header base and footer: 14pt -----*/
+.header, .header *,
+.footer, .footer * {
+    font-size: 14pt !important;
+}
+
+/* 4. Data inside tables (quote lines, totals, delivery lines): 10pt */
 .page table td, .page table th,
 .page table td *, .page table th *,
 .article table td, .article table th,
 .article table td *, .article table th * {
-    font-size: 7.4pt !important;
+    font-size: 10pt !important;
 }
 
-/* 4. APEX Reference (document title / number): 14pt */
-.page h1, .page h1 *,
-.page h2, .page h2 *,
-.article h1, .article h1 *,
-.article h2, .article h2 *,
-.page .apex-reference, .page .apex-reference * {
-    font-size: 14pt !important;
+/* 5. Address info below "APEX HOLDINGS (A) LIMITED": 11pt */
+.header [name="company_address"],
+.header [name="company_address"] *,
+.header address, .header address *,
+.header .apex-company-address, .header .apex-company-address * {
+    font-size: 11pt !important;
+    text-transform: none !important;
+    font-weight: normal !important;
 }
 
-/* 5. Header "APEX HOLDINGS": capitalised, 10pt */
+/* 6. Header "APEX HOLDINGS (A) LIMITED": uppercase, bold, 14pt */
 .header h4, .header h4 *,
 .header [name="company_address"] strong,
 .header [name="company_address"] strong *,
 .header .apex-company-name, .header .apex-company-name *,
 .footer .apex-company-name, .footer .apex-company-name * {
-    font-size: 10pt !important;
+    font-size: 14pt !important;
     text-transform: uppercase !important;
     font-weight: bold !important;
 }
 
-/* 6. Logo: decreased size (change the two numbers to resize) */
+/* 7. APEX Reference (document title / number): 16pt, aligned right */
+.page h1, .page h1 *,
+.page h2, .page h2 *,
+.article h1, .article h1 *,
+.article h2, .article h2 *,
+.page .apex-reference, .page .apex-reference * {
+    font-size: 16pt !important;
+}
+.page .apex-reference,
+.article .apex-reference {
+    text-align: right !important;
+}
+
+/* 8. Terms and Conditions: 11pt
+      Add class "apex-terms" to the terms block if your layout uses another name */
+.page .apex-terms, .page .apex-terms *,
+.page .o_terms_conditions, .page .o_terms_conditions *,
+.page [name="order_note"], .page [name="order_note"] *,
+.page [name="payment_term"], .page [name="payment_term"] *,
+.article .apex-terms, .article .apex-terms * {
+    font-size: 11pt !important;
+}
+
+/* 9. Logo: larger and clear (change the two numbers to resize) */
 .header img,
 .header img.o_company_logo {
-    max-height: 40px !important;
-    max-width: 120px !important;
+    max-height: 80px !important;
+    max-width: 220px !important;
     width: auto !important;
     height: auto !important;
+    object-fit: contain !important;
+    image-rendering: -webkit-optimize-contrast !important;
 }
