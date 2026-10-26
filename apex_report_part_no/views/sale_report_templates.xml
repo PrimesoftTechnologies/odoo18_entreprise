@@ -1,64 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
+    <!-- ============================================================
+         SALES ORDER / QUOTATION REPORT
+         Description column = Product name (bold) + description below
+         (Product Description / Sales Description / manual line text)
+         ============================================================ -->
+
     <template id="report_saleorder_document_inherit_part_no"
               inherit_id="sale.report_saleorder_document">
 
-        <!-- Product Name and Description Headers -->
-        <xpath expr="//th[@name='th_description']" position="replace">
-            <th name="th_product_name" class="text-start">
-                Product Name
-            </th>
-            <th name="th_product_description" class="text-start">
-                Description
-            </th>
-        </xpath>
+        <xpath expr="//span[@t-field='line.name']" position="replace">
 
-        <!-- Separate Product Name and Description -->
-        <xpath expr="//td[@name='td_name']" position="replace">
+            <t t-if="line.product_id">
 
-            <!-- Product Name: Limit to approximately 2 lines -->
-            <td name="td_product_name"
-                class="text-start"
-                style="vertical-align: top;">
+                <strong><span t-field="line.product_id.name"/></strong>
 
-                <div style="
-                    max-height: 2.8em;
-                    line-height: 1.4em;
-                    overflow: hidden;
-                    word-wrap: break-word;
-                    overflow-wrap: anywhere;
-                ">
-                    <span t-field="line.product_id.name"/>
+                <!-- Remove only the leading "[CODE] Product name" from the line text;
+                     what remains is the product description -->
+                <t t-set="ln_txt" t-value="line.name or ''"/>
+                <t t-set="ln_cands"
+                   t-value="[line.product_id.display_name or '', '[%s] %s' % (line.product_id.default_code or '', line.product_id.name or ''), line.product_id.name or '']"/>
+                <t t-set="ln_match"
+                   t-value="[c for c in ln_cands if c and ln_txt.startswith(c)]"/>
+                <t t-set="extra_desc"
+                   t-value="ln_txt[len((ln_match + [''])[0]):].strip()"/>
+
+                <div t-if="extra_desc"
+                     style="white-space: pre-line;">
+                    <span t-esc="extra_desc"/>
                 </div>
 
-            </td>
+            </t>
 
-            <!-- Description: Show extra description or product name -->
-            <td name="td_product_description"
-                class="text-start"
-                style="vertical-align: top;">
 
-                <t t-set="full_desc"
-                   t-value="(line.name or '').strip()"/>
+            <t t-else="">
+                <span t-field="line.name"/>
+            </t>
 
-                <t t-set="product_name"
-                   t-value="(line.product_id.name or '').strip()"/>
+        </xpath>
 
-                <t t-set="part_no"
-                   t-value="(line.product_id.default_code or '').strip()"/>
+    </template>
 
-                <!-- Remove product reference from the beginning -->
-                <t t-set="clean_desc"
-                   t-value="full_desc.replace('[' + part_no + ']', '', 1).strip() if part_no else full_desc"/>
+    <!-- ============================================================
+         DOCUMENT REFERENCE (top right) - APEX style
+         "Quotation No." / "Sales Order No." on line 1, number on line 2
+         Bold, navy, right aligned, Arial (size set in apex_report_format.css)
+         Appended at the end of the t-call body, so it overrides any
+         earlier layout_document_title.
+         ============================================================ -->
 
-                <!-- Remove product name if it starts the description -->
-                <t t-set="extra_desc"
-                   t-value="clean_desc[len(product_name):].strip() if product_name and clean_desc.startswith(product_name) else clean_desc"/>
+    <template id="report_saleorder_document_apex_reference"
+              inherit_id="sale.report_saleorder_document"
+              priority="99">
 
-                <!-- Fallback: show product name if no extra description -->
-                <span t-esc="extra_desc or product_name"/>
+        <xpath expr="//t[@t-call='web.external_layout']" position="inside">
 
-            </td>
+            <t t-set="layout_document_title">
+                <span class="apex-reference"
+                      style="display: block; text-align: right; font-weight: bold;">
+                    <span style="display: block;">
+                        <t t-if="doc.state in ('draft', 'sent')">Quotation No.</t>
+                        <t t-else="">Sales Order No.</t>
+                    </span>
+                    <span style="display: block;" t-esc="doc.name"/>
+                </span>
+            </t>
 
         </xpath>
 

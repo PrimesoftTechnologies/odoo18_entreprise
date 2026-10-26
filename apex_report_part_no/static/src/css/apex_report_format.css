@@ -31,7 +31,7 @@ body,
     font-size: 14pt !important;
 }
 
-/* 3. Header base and footer: 14pt -----*/
+/* 3. Header base and footer: 14pt */
 .header, .header *,
 .footer, .footer * {
     font-size: 14pt !important;
@@ -98,4 +98,19 @@ body,
     height: auto !important;
     object-fit: contain !important;
     image-rendering: -webkit-optimize-contrast !important;
+}
+
+/* 10. APEX Reference at the top right (Quotation No. / Sales Order No. /
+       Purchase Order No. / Request for Quotation No.)
+       Bold, navy, 2 lines, right aligned, Arial. Works inside the header
+       too (not only under .page). Change the colour / size here. */
+.apex-reference,
+.apex-reference * {
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: 16pt !important;
+    font-weight: bold !important;
+    color: #1B1B8F !important;
+    text-align: right !important;
+    line-height: 1.25 !important;
+    text-transform: none !important;
 }

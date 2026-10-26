@@ -1,18 +1,20 @@
 {
     'name': 'Apex Report Part No',
-    'version': '18.0.5.0.0',
+    'version': '18.0.5.2.0',
     'category': 'Sales/Purchase',
     'summary': 'Apex PDF format (Arial, font sizes, logo) and custom Sales / Purchase / Delivery reports',
     'description': """
-* Sales and purchase reports show the product name only (no internal reference)
+* Sales and purchase reports: Description column shows the product name (bold) and the product description below it
 * Sales order report: currency removed from line prices, dynamic Amount header
+* Document reference (top right) in APEX style on Quotation / Sales Order / PO / RFQ:
+  bold navy Arial, 2 lines ("Quotation No." + number); PO number always carries "PO-"
 * Sales order form: "Customer Reference" renamed "Purchase Order No."
 * Delivery order: Delivery Details, Delivery Terms, GRN No. and line Remarks
 * Custom Delivery Note report
 * Sales > Reporting > Quotation Analytic Logs: product added / updated / removed on a quotation
   (Quotation No., Customer, Product, Part No., Qty, UoM, Unit Price, Total, Reason for LOST)
-* Apex PDF format: Arial, body/header/footer 8pt, table data 7.4pt,
-  APEX HOLDINGS header 10pt uppercase, reference 14pt, smaller logo
+* Apex PDF format: Arial, body/header/footer 14pt, table data 10pt,
+  APEX HOLDINGS header 14pt uppercase, reference 16pt, logo 80px
 """,
     'author': 'Apex',
     'depends': ['sale', 'purchase', 'stock'],
