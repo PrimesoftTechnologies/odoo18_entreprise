@@ -20,11 +20,10 @@
               action="action_fred_store_expense"
               sequence="10"/>
 
-    <!-- Point of Sale > Configuration > Expense Types -->
+    <!-- Point of Sale > Store Expenses > Expense Types -->
     <menuitem id="menu_fred_expense_type"
               name="Expense Types"
-              parent="point_of_sale.menu_point_config_product"
+              parent="menu_fred_store_expense_root"
               action="action_fred_expense_type"
-              groups="point_of_sale.group_pos_manager"
-              sequence="90"/>
+              sequence="20"/>
 </odoo>

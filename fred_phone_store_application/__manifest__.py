@@ -1,6 +1,6 @@
 {
     'name': 'Fred Phone Store Application',
-    'version': '18.0.1.0.3',
+    'version': '18.0.1.0.4',
     'category': 'Sales/Point of Sale',
     'summary': 'Simple Profit & Loss report for phone shops inside Point of Sale',
     'description': """
@@ -18,7 +18,6 @@ Simple Profit and Loss for a phone store
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
-        'data/expense_type_data.xml',
         'report/pl_report_templates.xml',
         'views/expense_type_views.xml',
         'views/store_expense_views.xml',
