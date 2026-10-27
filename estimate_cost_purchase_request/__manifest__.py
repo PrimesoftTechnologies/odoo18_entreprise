@@ -1,6 +1,6 @@
 {
     "name": "Purchase Request - Estimated Cost Total on Report",
-    "version": "18.0.1.0.1",
+    "version": "18.0.1.0.2",
     "category": "Inventory/Purchase",
     "summary": "Shows Total Estimated Cost at the bottom of the printed Purchase Request",
     "depends": ["purchase_request"],
