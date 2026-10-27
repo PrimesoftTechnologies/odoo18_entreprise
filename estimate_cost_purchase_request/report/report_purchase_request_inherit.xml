@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- NOTE: if the ID below differs in your purchase_request version, check it in
+         Settings > Technical > User Interface > Views (search "report_purchaserequest")
+         and change inherit_id accordingly. -->
+    <template
+        id="report_purchaserequests_total"
+        inherit_id="purchase_request.report_purchaserequests"
+    >
+        <xpath expr="(//table)[last()]" position="after">
+            <div class="row justify-content-end mt-3">
+                <div class="col-5">
+                    <table class="table table-sm">
+                        <tr class="border-black">
+                            <td><strong>Total Estimated Cost</strong></td>
+                            <td class="text-end">
+                                <strong>
+                                    <span
+                                        t-esc="sum(o.line_ids.mapped('estimated_cost'))"
+                                        t-options="{'widget': 'monetary', 'display_currency': o.company_id.currency_id}"
+                                    />
+                                </strong>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>
