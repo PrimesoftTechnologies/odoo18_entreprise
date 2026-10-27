@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <template
+        id="report_purchase_request_estimated_total"
+        inherit_id="purchase_request.report_purchase_request"
+    >
+        <xpath expr="//t[@t-if='o.line_ids']/table" position="after">
+            <div class="row justify-content-end mt-3">
+                <div class="col-5">
+                    <table class="table table-sm">
+                        <tr class="border-black">
+                            <td><strong>Total Estimated Cost</strong></td>
+                            <td class="text-end">
+                                <strong>
+                                    <span
+                                        t-out="sum(o.line_ids.mapped('estimated_cost'))"
+                                        t-options="{'widget': 'monetary', 'display_currency': o.company_id.currency_id}"
+                                    />
+                                </strong>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>
