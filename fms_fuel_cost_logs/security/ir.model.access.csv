@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_fms_fuel_cost_user,fms.fuel.cost.user,model_fms_fuel_cost,fleet.fleet_group_user,1,1,1,0
+access_fms_fuel_cost_manager,fms.fuel.cost.manager,model_fms_fuel_cost,fleet.fleet_group_manager,1,1,1,1
+access_fms_fuel_cost_line_user,fms.fuel.cost.line.user,model_fms_fuel_cost_line,fleet.fleet_group_user,1,1,1,1
+access_fms_fuel_cost_line_manager,fms.fuel.cost.line.manager,model_fms_fuel_cost_line,fleet.fleet_group_manager,1,1,1,1
