@@ -7,10 +7,10 @@
             <list>
                 <field name="name"/>
                 <field name="date"/>
-                <field name="vehicle_id"/>
-                <field name="driver_id"/>
+                <field name="partner_id"/>
                 <field name="total_quantity" sum="Total Liters"/>
                 <field name="total_cost" sum="Total Cost"/>
+                <field name="state" widget="badge"/>
                 <field name="currency_id" column_invisible="True"/>
             </list>
         </field>
@@ -21,31 +21,43 @@
         <field name="model">fms.fuel.cost</field>
         <field name="arch" type="xml">
             <form>
+                <header>
+                    <button name="action_confirm" string="Confirm" type="object" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_create_vendor_bill" string="Create Vendor Bill" type="object"
+                            class="btn-primary" invisible="state != 'confirmed'"/>
+                    <button name="action_reset_draft" string="Reset to Draft" type="object"
+                            invisible="state != 'confirmed'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,billed"/>
+                </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_bills" type="object" class="oe_stat_button"
+                                icon="fa-pencil-square-o" invisible="bill_count == 0">
+                            <field name="bill_count" widget="statinfo" string="Vendor Bills"/>
+                        </button>
+                    </div>
                     <div class="oe_title">
                         <h1><field name="name"/></h1>
                     </div>
                     <group>
                         <group>
-                            <field name="date"/>
+                            <field name="date" readonly="state != 'draft'"/>
+                            <field name="partner_id" readonly="state != 'draft'"/>
                             <field name="company_id" invisible="1"/>
                             <field name="currency_id" invisible="1"/>
-                        </group>
-                        <group>
-                            <field name="vehicle_id"/>
-                            <field name="driver_id"/>
                         </group>
                     </group>
                     <notebook>
                         <page string="Fuel Details" name="fuel_details">
-                            <field name="line_ids">
+                            <field name="line_ids" readonly="state != 'draft'">
                                 <list editable="bottom">
                                     <field name="description"/>
                                     <field name="quantity" sum="Total Liters"/>
                                     <field name="unit_price"/>
                                     <field name="total_cost" sum="Total Cost"/>
-                                    <field name="partner_id"/>
                                     <field name="analytic_account_id"/>
+                                    <field name="account_id" optional="hide"/>
                                     <field name="currency_id" column_invisible="True"/>
                                 </list>
                             </field>
@@ -53,6 +65,18 @@
                                 <field name="total_quantity"/>
                                 <field name="total_cost" class="oe_subtotal_footer_separator"/>
                             </group>
+                        </page>
+                        <page string="Vendor Bills" name="vendor_bills">
+                            <field name="bill_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="partner_id"/>
+                                    <field name="invoice_date"/>
+                                    <field name="amount_total"/>
+                                    <field name="payment_state" widget="badge"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
                         </page>
                         <page string="Notes" name="notes">
                             <field name="notes" placeholder="Add notes..."/>
@@ -70,11 +94,9 @@
         <field name="arch" type="xml">
             <search>
                 <field name="name"/>
-                <field name="vehicle_id"/>
-                <field name="driver_id"/>
+                <field name="partner_id"/>
                 <group expand="0" string="Group By">
-                    <filter name="group_vehicle" string="Vehicle" context="{'group_by': 'vehicle_id'}"/>
-                    <filter name="group_driver" string="Driver" context="{'group_by': 'driver_id'}"/>
+                    <filter name="group_partner" string="Supplier" context="{'group_by': 'partner_id'}"/>
                     <filter name="group_month" string="Month" context="{'group_by': 'date:month'}"/>
                 </group>
             </search>
