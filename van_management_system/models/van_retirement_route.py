@@ -136,7 +136,7 @@ class VanRetirementRoute(models.Model):
         currency_field="currency_id",
     )
 
-    # PAYMENT METHOD SUMMARY FIELD
+    # PAYMENT METHOD SUMMARY FIELD (Updated to support multiple sessions)
     payment_method_summary = fields.Text(
         string="Payment Methods Summary",
         compute="_compute_payment_method_summary",
@@ -228,14 +228,28 @@ class VanRetirementRoute(models.Model):
                         f"Retirement (Ref: {existing.name}). Not allowed to repeat this id!"
                     ))
 
-    @api.depends("pos_session_ref")
+    @api.depends("pos_session_ref", "route_id", "route_id.pos_session_ids")
     def _compute_payment_method_summary(self):
         for record in self:
             summary_text = ""
-            if record.pos_session_ref:
-                session = self.env['pos.session'].search([('name', '=', record.pos_session_ref)], limit=1)
-                if session:
-                    orders = self.env['pos.order'].search([('session_id', '=', session.id)])
+            sessions = self.env['pos.session']
+            
+            # 1. Jaribu kuchukua kupitia route_id.pos_session_ids kwanza (Multiple sessions)
+            if record.route_id and record.route_id.pos_session_ids:
+                sessions = record.route_id.pos_session_ids
+            # 2. Kama haipo, jaribu kupambanua pos_session_ref (kama zimetenganishwa na koma)
+            elif record.pos_session_ref:
+                session_names = [name.strip() for name in record.pos_session_ref.split(",") if name.strip()]
+                if session_names:
+                    sessions = self.env['pos.session'].search([('name', 'in', session_names)])
+            
+            if sessions:
+                orders = self.env['pos.order'].search([
+                    ('session_id', 'in', sessions.ids),
+                    ('state', 'in', ('paid', 'done', 'invoiced'))
+                ])
+                
+                if orders:
                     payments = self.env['pos.payment'].search([('pos_order_id', 'in', orders.ids)])
                     
                     payment_totals = {}
@@ -243,11 +257,17 @@ class VanRetirementRoute(models.Model):
                         method_name = pay.payment_method_id.name or _("Unknown")
                         payment_totals[method_name] = payment_totals.get(method_name, 0.0) + pay.amount
                     
+                    currency = sessions[0].currency_id.symbol or ""
                     lines = []
                     for method, amount in payment_totals.items():
-                        lines.append(f"{method}: {amount:,.2f}")
+                        lines.append(f"{method}: {currency} {amount:,.2f}")
                     
                     summary_text = "\n".join(lines) if lines else _("No payments recorded.")
+                else:
+                    summary_text = _("Selected POS Sessions have no completed orders yet.")
+            else:
+                summary_text = _("No POS Sessions linked.")
+                
             record.payment_method_summary = summary_text
 
     @api.depends("stock_picking_id")
@@ -375,7 +395,6 @@ class VanRetirementRoute(models.Model):
                 if not product:
                     continue
 
-                # Inasoma remaining_quantity kama ipo kwa ajili ya partial sales, au inachukua approved_quantity
                 expected_quantity = 0.0
                 if hasattr(route_line, 'remaining_quantity') and route_line.remaining_quantity > 0:
                     expected_quantity = route_line.remaining_quantity
