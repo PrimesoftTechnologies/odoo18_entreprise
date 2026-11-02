@@ -26,7 +26,11 @@ class VanRoute(models.Model):
     
     # POS Config iliyounganishwa na gari hili
     pos_config_id = fields.Many2one("pos.config", related="van_id.van_pos_config_id", string="POS Config", store=True, readonly=True)
-    pos_session_id = fields.Many2one("pos.session", string="POS Session", readonly=True, copy=False)
+    
+    # Imewashwa ku-support Many2many pos_session_ids
+    pos_session_ids = fields.Many2many("pos.session", string="POS Sessions", readonly=True, copy=False)
+    # Kwa ajili ya backward compatibility kama kuna sehemu inahitaji session ya kwanza
+    pos_session_id = fields.Many2one("pos.session", string="Primary POS Session", compute="_compute_primary_pos_session", store=True, readonly=True, copy=False)
 
     start_location = fields.Char(string="Start Location", required=True, tracking=True)
     end_location = fields.Char(string="End Location", tracking=True)
@@ -53,6 +57,11 @@ class VanRoute(models.Model):
     ], string="Status", default="draft", required=True, tracking=True)
 
     note = fields.Text(string="Notes")
+
+    @api.depends("pos_session_ids")
+    def _compute_primary_pos_session(self):
+        for route in self:
+            route.pos_session_id = route.pos_session_ids[:1] if route.pos_session_ids else False
 
     @api.depends("product_line_ids")
     def _compute_product_count(self):
@@ -97,7 +106,9 @@ class VanRoute(models.Model):
                 'user_id': self.salesman_id.id if self.salesman_id else self.env.user.id,
             })
             
-        self.pos_session_id = session.id
+        # Ongeza kwenye session IDs zilizopo (Many2many) kama haipo bago
+        if session.id not in self.pos_session_ids.ids:
+            self.pos_session_ids = [(4, session.id)]
 
         # Peleka mtumiaji moja kwa moja kwenye skrini ya POS (POS UI) pamoja na session_id na config_id
         return {
@@ -139,7 +150,7 @@ class VanRouteProduct(models.Model):
     quantity = fields.Float(string="Quantity", readonly=True, digits="Product Unit of Measure")
     approved_quantity = fields.Float(string="Approved Quantity", readonly=True, digits="Product Unit of Measure")
     
-    # Sehemu mpya ya kufuatilia mauzo ya sehemu (Partial Sales) na kilichobaki
+    # Sehemu mpya ya kufuatilia mauzo ya sehemu (Partial Sales) na kilichobaki kutoka session zote
     sold_quantity = fields.Float(string="Sold Quantity", compute="_compute_sold_quantity", store=True, digits="Product Unit of Measure", help="Total quantity sold via POS for this route.")
     remaining_quantity = fields.Float(string="Remaining Quantity", compute="_compute_sold_quantity", store=True, digits="Product Unit of Measure", help="Remaining stock in van to be sold in next sessions.")
 
@@ -152,14 +163,14 @@ class VanRouteProduct(models.Model):
         for line in self:
             line.expected_revenue = line.approved_quantity * line.sales_price
 
-    @api.depends("route_id.pos_session_id", "route_id.pos_session_id.state", "approved_quantity")
+    @api.depends("route_id.pos_session_ids", "route_id.pos_session_ids.state", "approved_quantity")
     def _compute_sold_quantity(self):
         for line in self:
             sold = 0.0
-            if line.route_id.pos_session_id:
-                # Kukusanya mauzo yote kutoka kwenye POS orders za session husika
+            if line.route_id.pos_session_ids:
+                # Kukusanya mauzo yote kutoka kwenye POS orders za sessions zote zilizounganishwa
                 orders = self.env["pos.order"].search([
-                    ("session_id", "=", line.route_id.pos_session_id.id),
+                    ("session_id", "in", line.route_id.pos_session_ids.ids),
                     ("state", "in", ("paid", "done", "invoiced"))
                 ])
                 for order in orders:
@@ -168,12 +179,11 @@ class VanRouteProduct(models.Model):
                             sold += order_line.qty
             
             line.sold_quantity = sold
-            # Kiasi kilichobaki gari = approved_quantity - kilichouzwa
             line.remaining_quantity = max(0.0, line.approved_quantity - sold)
 
 
 # ============================================================================
-# COMPLETE ROUTE WIZARD (Inachota POS maalum kwa Salesman na Kujaza Actual Sales)
+# COMPLETE ROUTE WIZARD (Inachota Multiple POS Sessions za Salesman na Kujaza Actual Sales)
 # ============================================================================
 
 class VanRouteCompleteWizard(models.TransientModel):
@@ -184,9 +194,10 @@ class VanRouteCompleteWizard(models.TransientModel):
     salesman_id = fields.Many2one("res.users", related="route_id.salesman_id", readonly=True)
     end_location = fields.Char(string="End Location", required=True)
     
-    pos_session_id = fields.Many2one(
+    # Imebadilishwa kuwa Many2many (pos_session_ids) ili kuchagua session nyingi
+    pos_session_ids = fields.Many2many(
         "pos.session", 
-        string="POS Session / ID", 
+        string="POS Sessions", 
         required=True, 
         tracking=True,
         domain="[('user_id', '=', salesman_id)]"
@@ -197,29 +208,35 @@ class VanRouteCompleteWizard(models.TransientModel):
     def action_confirm_complete_route(self):
         self.ensure_one()
         
-        if self.pos_session_id:
-            pos_name = self.pos_session_id.name.strip()
+        if self.pos_session_ids:
+            session_names = []
+            for session in self.pos_session_ids:
+                pos_name = session.name.strip()
+                session_names.append(pos_name)
+                
+                existing = self.env["van.retirement.route"].search([
+                    ("pos_session_ref", "ilike", pos_name),
+                    ("state", "in", ("submitted", "approved", "done")),
+                    ("route_id", "!=", self.route_id.id)
+                ], limit=1)
+                
+                if existing:
+                    raise ValidationError(_(
+                        f"POS ID / Session '{pos_name}' Sorry! This POS ID is already used in another "
+                        f"Retirement record (Ref: {existing.name}). Not allowed to complete!"
+                    ))
             
-            existing = self.env["van.retirement.route"].search([
-                ("pos_session_ref", "=", pos_name),
-                ("state", "in", ("submitted", "approved", "done")),
-                ("route_id", "!=", self.route_id.id)
-            ], limit=1)
-            
-            if existing:
-                raise ValidationError(_(
-                    f"POS ID / Session '{pos_name}' Sorry! This POS ID is already used in another "
-                    f"Retirement record (Ref: {existing.name}). Not allowed to complete!"
-                ))
+            combined_session_ref = ", ".join(session_names)
+        else:
+            combined_session_ref = ""
 
         route = self.route_id
         
         route.write({
             "end_location": self.end_location,
             "state": "completed",
+            "pos_session_ids": [(6, 0, self.pos_session_ids.ids)],
         })
-
-        pos_name = self.pos_session_id.name if self.pos_session_id else ""
 
         retirement = self.env["van.retirement.route"].search([("route_id", "=", route.id)], limit=1)
         if not retirement:
@@ -227,14 +244,14 @@ class VanRouteCompleteWizard(models.TransientModel):
                 "route_id": route.id,
                 "route_date": route.route_date,
                 "company_id": route.company_id.id,
-                "pos_session_ref": pos_name,
+                "pos_session_ref": combined_session_ref,
             })
         else:
-            retirement.write({"pos_session_ref": pos_name})
+            retirement.write({"pos_session_ref": combined_session_ref})
 
-        if self.pos_session_id and retirement.product_line_ids:
+        if self.pos_session_ids and retirement.product_line_ids:
             sold_quantities = {}
-            pos_orders = self.env["pos.order"].search([("session_id", "=", self.pos_session_id.id)])
+            pos_orders = self.env["pos.order"].search([("session_id", "in", self.pos_session_ids.ids)])
             
             for order in pos_orders:
                 for line in order.lines:

@@ -15,8 +15,8 @@
                         <field name="route_reference" readonly="1"/>
                         <field name="end_location" placeholder="Enter End Location here..."/>
                         
-                        <!-- Drop-down Menu sasa italeta POS Sessions za huyo Salesman pekee -->
-                        <field name="pos_session_id" options="{'no_create': True, 'no_open': True}" placeholder="Select POS Session (e.g. POS/00010)..."/>
+                        <!-- Imesasishwa kutoka pos_session_id kwenda pos_session_ids (Many2many) yenye widget ya many2many_tags -->
+                        <field name="pos_session_ids" widget="many2many_tags" options="{'no_create': True, 'no_open': True}" placeholder="Select POS Sessions (e.g. POS/00010, ...)..."/>
                     </group>
                 </sheet>
                 <footer>
