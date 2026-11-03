@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_lds_upload_wizard_form" model="ir.ui.view">
+        <field name="name">lds.loan.upload.wizard.form</field>
+        <field name="model">lds.loan.upload.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Upload Bank Schedule">
+                <group>
+                    <field name="loan_id"/>
+                    <field name="file" filename="filename"/>
+                    <field name="filename" invisible="1"/>
+                    <field name="replace"/>
+                </group>
+                <div class="text-muted">
+                    Columns accepted (first row = headers): <b>Date, Principal, Interest, Payment, Balance</b>.
+                    Payment and Balance are optional.
+                </div>
+                <footer>
+                    <button name="action_import" type="object" string="Import" class="btn-primary"/>
+                    <button name="action_download_template" type="object" string="Download Template"/>
+                    <button string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

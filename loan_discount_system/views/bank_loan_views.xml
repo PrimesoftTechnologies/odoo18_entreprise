@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_lds_bank_loan_list" model="ir.ui.view">
+        <field name="name">lds.bank.loan.list</field>
+        <field name="model">lds.bank.loan</field>
+        <field name="arch" type="xml">
+            <list decoration-success="state == 'closed'" decoration-info="state == 'draft'">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="bank_id"/>
+                <field name="loan_date"/>
+                <field name="duration"/>
+                <field name="principal" sum="Total"/>
+                <field name="total_distributed" sum="Total"/>
+                <field name="outstanding_balance" sum="Total"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_lds_bank_loan_form" model="ir.ui.view">
+        <field name="name">lds.bank.loan.form</field>
+        <field name="model">lds.bank.loan</field>
+        <field name="arch" type="xml">
+            <form string="Bank Loan">
+                <header>
+                    <button name="action_confirm" type="object" string="Confirm" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_upload" type="object" string="Upload" class="btn-primary"
+                            invisible="state == 'closed'"/>
+                    <button name="action_compute" type="object" string="Compute" invisible="state != 'draft'"/>
+                    <button name="action_generate_allocations" type="object" string="Generate Allocations"
+                            invisible="state != 'running'"/>
+                    <button name="action_accrue_all" type="object" string="Accrue Interest (All)"
+                            invisible="state != 'running'"
+                            confirm="Post accrual entries for all draft allocations?"/>
+                    <button name="action_sync_odoo_loan" type="object" string="Sync Odoo Loan"
+                            invisible="not odoo_loan_ref"/>
+                    <button name="action_close" type="object" string="Close Loan" invisible="state != 'running'"/>
+                    <button name="action_draft" type="object" string="Reset to Draft" invisible="state != 'running'"
+                            confirm="Reset this loan to draft?"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,running,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Loan name" readonly="state != 'draft'"/></h1>
+                        <field name="code" class="text-muted"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="bank_id" readonly="state != 'draft'"/>
+                            <field name="bank_reference"/>
+                            <field name="principal" readonly="state != 'draft'"/>
+                            <field name="interest_rate" readonly="state != 'draft'"/>
+                            <field name="interest_method" readonly="state != 'draft'"/>
+                            <field name="total_interest"/>
+                        </group>
+                        <group>
+                            <field name="loan_date" readonly="state != 'draft'"/>
+                            <field name="duration" readonly="state != 'draft'"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state != 'draft'"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="outstanding_balance" decoration-danger="outstanding_balance > 0"/>
+                            <field name="paid_principal"/>
+                            <field name="paid_interest"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Amortization schedule" name="schedule">
+                            <field name="line_ids" readonly="state == 'closed'">
+                                <list editable="bottom" decoration-success="status == 'paid'"
+                                      decoration-warning="status == 'partial'">
+                                    <field name="number"/>
+                                    <field name="date"/>
+                                    <field name="principal" sum="Principals"/>
+                                    <field name="interest" sum="Interests"/>
+                                    <field name="payment" sum="Payments"/>
+                                    <field name="balance"/>
+                                    <field name="paid_amount"/>
+                                    <field name="status" widget="badge"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <button name="action_register_payment" type="object" string="Pay"
+                                            icon="fa-money" invisible="status == 'paid' or parent.state != 'running'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Repayments" name="repayments">
+                            <field name="repayment_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="principal_amount" sum="Principal"/>
+                                    <field name="interest_amount" sum="Interest"/>
+                                    <field name="total_amount" sum="Total"/>
+                                    <field name="balance_after"/>
+                                    <field name="state" widget="badge"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Distribution to Companies" name="distribution">
+                            <group>
+                                <group>
+                                    <field name="total_distributed"/>
+                                    <field name="undistributed"/>
+                                </group>
+                            </group>
+                            <field name="distribution_ids">
+                                <list editable="bottom">
+                                    <field name="target_company_id" readonly="state == 'confirmed'"/>
+                                    <field name="date" readonly="state == 'confirmed'"/>
+                                    <field name="amount" readonly="state == 'confirmed'" sum="Total"/>
+                                    <field name="markup_rate" readonly="state == 'confirmed'"/>
+                                    <field name="outstanding" sum="Outstanding"/>
+                                    <field name="interest_charged" sum="Interest"/>
+                                    <field name="amount_due" sum="Due"/>
+                                    <field name="state" widget="badge"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="company_id" column_invisible="1"/>
+                                    <button name="action_confirm" type="object" string="Confirm"
+                                            icon="fa-check" invisible="state == 'confirmed'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Company Interest Allocation" name="allocation">
+                            <field name="allocation_ids" readonly="1">
+                                <list decoration-success="state == 'paid'" decoration-info="state == 'accrued'">
+                                    <field name="date"/>
+                                    <field name="target_company_id"/>
+                                    <field name="principal_share" sum="Principal"/>
+                                    <field name="interest_share" sum="Interest"/>
+                                    <field name="markup_share" sum="Markup"/>
+                                    <field name="total_share" sum="Total"/>
+                                    <field name="state" widget="badge"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <button name="action_accrue" type="object" string="Accrue" icon="fa-calculator"
+                                            invisible="state != 'draft'"/>
+                                    <button name="action_settle" type="object" string="Settle" icon="fa-money"
+                                            invisible="state != 'accrued'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Loan Settings" name="settings">
+                            <group>
+                                <group string="Link with Odoo Loan (Accounting > Loans)">
+                                    <field name="odoo_loan_ref"/>
+                                    <field name="odoo_amount"/>
+                                    <field name="odoo_interest"/>
+                                    <field name="odoo_outstanding"/>
+                                    <field name="outstanding_difference"
+                                           decoration-danger="outstanding_difference != 0"/>
+                                    <field name="last_sync"/>
+                                </group>
+                                <group string="Accounting">
+                                    <field name="post_entries"/>
+                                    <field name="receipt_move_id"/>
+                                </group>
+                            </group>
+                            <field name="notes" placeholder="Notes..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_lds_bank_loan_search" model="ir.ui.view">
+        <field name="name">lds.bank.loan.search</field>
+        <field name="model">lds.bank.loan</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="bank_id"/>
+                <filter name="running" string="Running" domain="[('state', '=', 'running')]"/>
+                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="closed" string="Closed" domain="[('state', '=', 'closed')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_bank" string="Bank" context="{'group_by': 'bank_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_lds_bank_loan" model="ir.actions.act_window">
+        <field name="name">Bank Loans</field>
+        <field name="res_model">lds.bank.loan</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_running': 1}</field>
+    </record>
+</odoo>

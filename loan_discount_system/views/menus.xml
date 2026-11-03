@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Standalone app (top-level menu in the app switcher) -->
+    <menuitem id="menu_lds_root" name="Loan Discount System"
+              web_icon="loan_discount_system,static/description/icon.png"
+              sequence="55" groups="group_lds_user,account.group_account_manager"/>
+
+    <menuitem id="menu_lds_operations" name="Loans" parent="menu_lds_root" sequence="10"/>
+    <menuitem id="menu_lds_bank_loan" name="Bank Loans" parent="menu_lds_operations"
+              action="action_lds_bank_loan" sequence="10"/>
+    <menuitem id="menu_lds_repayment" name="Repayments" parent="menu_lds_operations"
+              action="action_lds_repayment" sequence="20"/>
+
+    <menuitem id="menu_lds_group" name="Group Companies" parent="menu_lds_root" sequence="20"/>
+    <menuitem id="menu_lds_distribution" name="Distributions" parent="menu_lds_group"
+              action="action_lds_distribution" sequence="10"/>
+    <menuitem id="menu_lds_allocation" name="Interest Allocations" parent="menu_lds_group"
+              action="action_lds_allocation" sequence="20"/>
+
+    <menuitem id="menu_lds_config" name="Configuration" parent="menu_lds_root" sequence="90"
+              groups="group_lds_treasurer,account.group_account_manager"/>
+    <menuitem id="menu_lds_companies" name="Company Settings" parent="menu_lds_config"
+              action="action_lds_companies" sequence="10"/>
+</odoo>

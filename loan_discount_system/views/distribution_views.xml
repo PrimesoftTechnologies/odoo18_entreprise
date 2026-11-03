@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_lds_distribution_list" model="ir.ui.view">
+        <field name="name">lds.loan.distribution.list</field>
+        <field name="model">lds.loan.distribution</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="loan_id"/>
+                <field name="target_company_id"/>
+                <field name="date"/>
+                <field name="amount" sum="Total"/>
+                <field name="markup_rate"/>
+                <field name="outstanding" sum="Outstanding"/>
+                <field name="interest_charged" sum="Interest"/>
+                <field name="amount_due" sum="Due"/>
+                <field name="state" widget="badge"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_lds_distribution_form" model="ir.ui.view">
+        <field name="name">lds.loan.distribution.form</field>
+        <field name="model">lds.loan.distribution</field>
+        <field name="arch" type="xml">
+            <form string="Distribution">
+                <header>
+                    <button name="action_confirm" type="object" string="Confirm" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="loan_id" readonly="state == 'confirmed'"/>
+                            <field name="target_company_id" readonly="state == 'confirmed'"/>
+                            <field name="date" readonly="state == 'confirmed'"/>
+                        </group>
+                        <group>
+                            <field name="amount" readonly="state == 'confirmed'"/>
+                            <field name="markup_rate" readonly="state == 'confirmed'"/>
+                            <field name="outstanding"/>
+                            <field name="interest_charged"/>
+                            <field name="amount_due"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="move_id"/>
+                        <field name="target_move_id"/>
+                    </group>
+                    <field name="allocation_ids" readonly="1">
+                        <list>
+                            <field name="date"/>
+                            <field name="principal_share"/>
+                            <field name="interest_share"/>
+                            <field name="markup_share"/>
+                            <field name="total_share"/>
+                            <field name="state" widget="badge"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_lds_distribution" model="ir.actions.act_window">
+        <field name="name">Distributions</field>
+        <field name="res_model">lds.loan.distribution</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>
