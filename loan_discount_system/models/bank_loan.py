@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
+import json
+import logging
+
 from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
+
+_logger = logging.getLogger(__name__)
 
 
 class LdsBankLoan(models.Model):
@@ -30,6 +35,12 @@ class LdsBankLoan(models.Model):
     state = fields.Selection([
         ('draft', 'Draft'), ('running', 'Running'), ('closed', 'Closed'),
     ], default='draft', tracking=True, copy=False)
+    journal_id = fields.Many2one(
+        'account.journal', string='Journal', tracking=True,
+        domain="[('company_id', '=', company_id), ('type', 'in', ('bank', 'cash'))]",
+        default=lambda self: self.env.company.lds_journal_id,
+        help="Single bank/cash journal used for ALL entries of this loan (loan, distributions, "
+             "repayments, settlements).")
     post_entries = fields.Boolean(
         string='Post Accounting Entries', default=True,
         help="Untick if the linked Odoo Loan already posts the accounting entries (avoid double posting).")
@@ -41,7 +52,7 @@ class LdsBankLoan(models.Model):
     distribution_ids = fields.One2many('lds.loan.distribution', 'loan_id', string='Distributions', copy=False)
     allocation_ids = fields.One2many('lds.allocation', 'loan_id', string='Interest Allocations')
 
-    total_interest = fields.Monetary(compute='_compute_amounts', string='Total Interest')
+    total_interest = fields.Monetary(compute='_compute_amounts', string='Interest')
     paid_principal = fields.Monetary(compute='_compute_amounts', string='Principal Paid')
     paid_interest = fields.Monetary(compute='_compute_amounts', string='Interest Paid')
     outstanding_balance = fields.Monetary(compute='_compute_amounts', string='Outstanding Balance')
@@ -79,6 +90,77 @@ class LdsBankLoan(models.Model):
             loan.undistributed = loan.principal - loan.total_distributed
             loan.outstanding_difference = (
                 loan.outstanding_balance - loan.odoo_outstanding if loan.odoo_loan_ref else 0.0)
+
+    @api.model
+    def _lds_redirect_loans_menu(self):
+        """Make Accounting > Loans (URL /odoo/loans) open this module's Loan form.
+
+        1. Preferred: the existing action with path 'loans' is switched to the model of this module
+           (the original values are backed up and restored on uninstall).
+        2. Fallback: any Accounting menu named 'Loans' is re-pointed to this module's action.
+        """
+        icp = self.env['ir.config_parameter'].sudo()
+        ours = self.env.ref('loan_discount_system.action_lds_bank_loan')
+        old = self.env['ir.actions.act_window'].sudo().search(
+            [('path', '=', 'loans'), ('id', '!=', ours.id)], limit=1)
+        if old:
+            if old.res_model != 'lds.bank.loan':
+                key = 'lds.legacy_action_backup.%s' % old.id
+                if not icp.get_param(key):
+                    icp.set_param(key, json.dumps({
+                        'res_model': old.res_model,
+                        'view_mode': old.view_mode,
+                        'view_id': old.view_id.id or False,
+                        'search_view_id': old.search_view_id.id or False,
+                        'domain': old.domain or False,
+                        'context': old.context or False,
+                        'res_id': old.res_id or 0,
+                        'views': [[v.sequence, v.view_mode, v.view_id.id or False] for v in old.view_ids],
+                    }))
+                old.view_ids.unlink()
+                old.write({
+                    'res_model': 'lds.bank.loan',
+                    'view_mode': 'list,form',
+                    'view_id': False,
+                    'search_view_id': False,
+                    'domain': False,
+                    'context': '{}',
+                    'res_id': 0,
+                })
+                _logger.info("Loan Discount System: action %s ('loans') now opens lds.bank.loan.", old.id)
+            return True
+
+        root = self.env.ref('account.menu_finance', raise_if_not_found=False)
+        menus = self.env['ir.ui.menu'].with_context(lang='en_US', **{'ir.ui.menu.full_list': True}).sudo().search(
+            [('name', '=', 'Loans'), ('action', '!=', False)])
+        done = 0
+        for menu in menus:
+            if root and str(root.id) not in (menu.parent_path or '').split('/'):
+                continue
+            if menu.action._name == ours._name and menu.action.id == ours.id:
+                done += 1
+                continue
+            key = 'lds.legacy_menu_action.%s' % menu.id
+            if not icp.get_param(key):
+                icp.set_param(key, '%s,%s' % (menu.action._name, menu.action.id))
+            menu.action = '%s,%s' % (ours._name, ours.id)
+            done += 1
+        if not done:
+            _logger.warning("Loan Discount System: could not find the Accounting 'Loans' menu/action to redirect.")
+        return True
+
+    @api.onchange('company_id')
+    def _onchange_company_id(self):
+        self.journal_id = self.company_id.lds_journal_id
+
+    def _lds_journal(self):
+        self.ensure_one()
+        journal = self.journal_id or self.company_id.sudo().lds_journal_id
+        if not journal:
+            raise UserError(_("Select the Journal in the Loan Settings tab of loan '%s'.", self.name))
+        if not journal.default_account_id:
+            raise UserError(_("Journal '%s' has no default account.", journal.name))
+        return journal
 
     @api.constrains('interest_rate', 'principal', 'duration')
     def _check_values(self):
@@ -158,12 +240,13 @@ class LdsBankLoan(models.Model):
                 loan.action_compute()
             if loan.post_entries:
                 company = loan.company_id
-                cash = company._lds_cash_account()
+                journal = loan._lds_journal()
                 loan_acc = company._lds_cfg(['lds_loan_account_id'])['lds_loan_account_id']
                 label = _("Bank loan %s", loan.name)
+                # Dr Bank / Cr Bank Loan Payable
                 loan.receipt_move_id = company._lds_post_move(
-                    loan.loan_date, label, [
-                        (cash, loan.principal, 0.0, label, loan.bank_id),
+                    journal, loan.loan_date, label, [
+                        (journal.default_account_id, loan.principal, 0.0, label, loan.bank_id),
                         (loan_acc, 0.0, loan.principal, label, loan.bank_id),
                     ])
             loan.state = 'running'
@@ -189,25 +272,9 @@ class LdsBankLoan(models.Model):
         return True
 
     def action_generate_allocations(self):
-        """Create one interest allocation per (confirmed distribution x schedule line)."""
-        Allocation = self.env['lds.allocation']
+        """Create the missing months for every confirmed Discount Center."""
         for loan in self:
-            if loan.principal <= 0:
-                continue
-            for dist in loan.distribution_ids.filtered(lambda d: d.state == 'confirmed'):
-                pct = dist.amount / loan.principal
-                cur = loan.currency_id
-                existing = dist.allocation_ids.mapped('line_id')
-                for line in loan.line_ids - existing:
-                    balance_before = line.balance + line.principal
-                    Allocation.create({
-                        'distribution_id': dist.id,
-                        'line_id': line.id,
-                        'date': line.date,
-                        'principal_share': cur.round(line.principal * pct),
-                        'interest_share': cur.round(line.interest * pct),
-                        'markup_share': cur.round(balance_before * pct * dist.markup_rate / 100.0 / 12.0),
-                    })
+            loan.distribution_ids.filtered(lambda d: d.state == 'confirmed')._generate_allocations()
         return True
 
     def action_accrue_all(self):

@@ -124,6 +124,10 @@ class LoanUploadWizard(models.TransientModel):
             if loan.repayment_ids:
                 raise UserError(_("This loan already has repayments. Untick 'Replace existing schedule' "
                                   "or delete the repayments first."))
+            if loan.allocation_ids.filtered(lambda a: a.state != 'draft'):
+                raise UserError(_("Some Discount Center interest was already accrued. "
+                                  "Untick 'Replace existing schedule' to only add lines."))
+            loan.allocation_ids.unlink()
             loan.line_ids.unlink()
 
         base = loan.principal or sum(r['principal'] for r in parsed)
@@ -147,6 +151,7 @@ class LoanUploadWizard(models.TransientModel):
             updates['duration'] = len(parsed)
         if updates:
             loan.write(updates)
+        loan.distribution_ids.filtered(lambda d: d.state == 'confirmed')._generate_allocations()
         loan.message_post(body=_("%s schedule lines uploaded from Excel.", len(parsed)))
         return {'type': 'ir.actions.client', 'tag': 'display_notification', 'params': {
             'title': _('Upload complete'), 'message': _('%s lines imported.', len(parsed)),

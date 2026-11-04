@@ -63,13 +63,14 @@ class LdsBankLoanRepayment(models.Model):
                 raise UserError(_("Principal exceeds the outstanding balance (%s).", loan.outstanding_balance))
             if loan.post_entries:
                 company = loan.company_id
-                cash = company._lds_cash_account()
+                journal = loan._lds_journal()
                 cfg = company._lds_cfg(['lds_loan_account_id', 'lds_interest_expense_account_id'])
                 label = _("Repayment %(ref)s - %(loan)s", ref=rec.name, loan=loan.name)
-                rec.move_id = company._lds_post_move(rec.date, label, [
+                # Dr Loan payable + Dr Interest expense / Cr Bank
+                rec.move_id = company._lds_post_move(journal, rec.date, label, [
                     (cfg['lds_loan_account_id'], rec.principal_amount, 0.0, label, loan.bank_id),
                     (cfg['lds_interest_expense_account_id'], rec.interest_amount, 0.0, label, loan.bank_id),
-                    (cash, 0.0, rec.total_amount, label, loan.bank_id),
+                    (journal.default_account_id, 0.0, rec.total_amount, label, loan.bank_id),
                 ])
             rec.state = 'posted'
             rec.balance_after = loan.outstanding_balance

@@ -6,14 +6,14 @@ from odoo.exceptions import UserError
 class LdsAllocation(models.Model):
     _name = 'lds.allocation'
     _inherit = ['mail.thread']
-    _description = 'Interest & Principal Allocation per Company'
+    _description = 'Interest & Principal Allocation per Discount Center'
     _order = 'date, id'
 
     distribution_id = fields.Many2one('lds.loan.distribution', required=True, ondelete='cascade', index=True)
     loan_id = fields.Many2one(related='distribution_id.loan_id', store=True)
     company_id = fields.Many2one(related='distribution_id.company_id', store=True, string='Treasury Company')
-    target_company_id = fields.Many2one(related='distribution_id.target_company_id', store=True,
-                                        string='Company')
+    partner_id = fields.Many2one(related='distribution_id.partner_id', store=True,
+                                 string='Discount Center')
     currency_id = fields.Many2one(related='distribution_id.currency_id')
     line_id = fields.Many2one('lds.bank.loan.line', string='Schedule Line', ondelete='cascade')
     date = fields.Date(required=True)
@@ -23,62 +23,67 @@ class LdsAllocation(models.Model):
     total_share = fields.Monetary(compute='_compute_total', store=True, string='Total')
     state = fields.Selection([('draft', 'Draft'), ('accrued', 'Interest Accrued'), ('paid', 'Settled')],
                              default='draft', tracking=True)
+    balance_after = fields.Monetary(compute='_compute_balance_after', string='Principal Balance After')
     settle_date = fields.Date(readonly=True)
-    hq_move_id = fields.Many2one('account.move', readonly=True, copy=False, string='Treasury Accrual')
-    target_move_id = fields.Many2one('account.move', readonly=True, copy=False, string='Company Accrual')
-    settle_hq_move_id = fields.Many2one('account.move', readonly=True, copy=False, string='Treasury Settlement')
-    settle_target_move_id = fields.Many2one('account.move', readonly=True, copy=False,
-                                            string='Company Settlement')
+    accrue_move_id = fields.Many2one('account.move', readonly=True, copy=False, string='Accrual Entry')
+    settle_move_id = fields.Many2one('account.move', readonly=True, copy=False, string='Settlement Entry')
 
     @api.depends('principal_share', 'interest_share', 'markup_share')
     def _compute_total(self):
         for a in self:
             a.total_share = a.principal_share + a.interest_share + a.markup_share
 
+    @api.depends('distribution_id.amount', 'distribution_id.allocation_ids.principal_share')
+    def _compute_balance_after(self):
+        for a in self:
+            siblings = a.distribution_id.allocation_ids.filtered(
+                lambda x: (x.date, x.id) <= (a.date, a.id))
+            a.balance_after = a.distribution_id.amount - sum(siblings.mapped('principal_share'))
+
+    @api.depends('loan_id.name', 'partner_id.name', 'date')
+    def _compute_display_name(self):
+        for a in self:
+            a.display_name = "%s - %s - %s" % (a.loan_id.name or '', a.partner_id.name or '', a.date or '')
+
     def action_accrue(self):
-        """Charge the interest (bank interest + markup) to the receiving company."""
+        """Charge the interest (bank interest + markup) to the Discount Center (customer)."""
         for a in self:
             if a.state != 'draft':
                 continue
             d = a.distribution_id
-            hq, tgt = d.company_id, d.target_company_id
+            loan = d.loan_id
             interest_total = a.interest_share + a.markup_share
-            if d.loan_id.post_entries and interest_total:
-                hqc = hq._lds_cfg(['lds_receivable_account_id', 'lds_interest_income_account_id'])
-                tc = tgt._lds_cfg(['lds_payable_account_id', 'lds_interest_expense_account_id'])
-                label = _("Interest %(loan)s %(date)s - %(c)s", loan=d.loan_id.name, date=a.date, c=tgt.name)
-                a.hq_move_id = hq._lds_post_move(a.date, label, [
-                    (hqc['lds_receivable_account_id'], interest_total, 0.0, label, tgt.partner_id),
-                    (hqc['lds_interest_income_account_id'], 0.0, interest_total, label, tgt.partner_id),
-                ])
-                a.target_move_id = tgt._lds_post_move(a.date, label, [
-                    (tc['lds_interest_expense_account_id'], interest_total, 0.0, label, hq.partner_id),
-                    (tc['lds_payable_account_id'], 0.0, interest_total, label, hq.partner_id),
+            if loan.post_entries and interest_total:
+                company = loan.company_id
+                journal = loan._lds_journal()
+                receivable = company._lds_receivable(d.partner_id)
+                income = company._lds_cfg(['lds_interest_income_account_id'])['lds_interest_income_account_id']
+                label = _("Interest %(loan)s %(date)s - %(c)s", loan=loan.name, date=a.date, c=d.partner_id.name)
+                # Dr Customer receivable / Cr Interest income
+                a.accrue_move_id = company._lds_post_move(journal, a.date, label, [
+                    (receivable, interest_total, 0.0, label, d.partner_id),
+                    (income, 0.0, interest_total, label, d.partner_id),
                 ])
             a.state = 'accrued'
         return True
 
     def action_settle(self):
-        """The receiving company pays principal + interest back to the treasury."""
+        """The Discount Center pays principal + interest to the treasury."""
         for a in self:
             if a.state != 'accrued':
                 raise UserError(_("Accrue the interest before settling."))
             d = a.distribution_id
-            hq, tgt = d.company_id, d.target_company_id
-            if d.loan_id.post_entries and a.total_share:
-                hq_cash = hq._lds_cash_account()
-                hq_rec = hq._lds_cfg(['lds_receivable_account_id'])['lds_receivable_account_id']
-                tgt_cash = tgt._lds_cash_account()
-                tgt_pay = tgt._lds_cfg(['lds_payable_account_id'])['lds_payable_account_id']
-                today = fields.Date.context_today(self)
-                label = _("Repayment from %(c)s - %(loan)s", c=tgt.name, loan=d.loan_id.name)
-                a.settle_hq_move_id = hq._lds_post_move(today, label, [
-                    (hq_cash, a.total_share, 0.0, label, tgt.partner_id),
-                    (hq_rec, 0.0, a.total_share, label, tgt.partner_id),
+            loan = d.loan_id
+            today = fields.Date.context_today(self)
+            if loan.post_entries and a.total_share:
+                company = loan.company_id
+                journal = loan._lds_journal()
+                receivable = company._lds_receivable(d.partner_id)
+                label = _("Repayment from %(c)s - %(loan)s", c=d.partner_id.name, loan=loan.name)
+                # Dr Bank / Cr Customer receivable
+                a.settle_move_id = company._lds_post_move(journal, today, label, [
+                    (journal.default_account_id, a.total_share, 0.0, label, d.partner_id),
+                    (receivable, 0.0, a.total_share, label, d.partner_id),
                 ])
-                a.settle_target_move_id = tgt._lds_post_move(today, label, [
-                    (tgt_pay, a.total_share, 0.0, label, hq.partner_id),
-                    (tgt_cash, 0.0, a.total_share, label, hq.partner_id),
-                ])
-            a.write({'state': 'paid', 'settle_date': fields.Date.context_today(self)})
+            a.write({'state': 'paid', 'settle_date': today})
         return True

@@ -33,13 +33,13 @@
         <field name="domain_force">[('company_id', 'in', company_ids)]</field>
     </record>
     <record id="rule_lds_distribution_company" model="ir.rule">
-        <field name="name">Distribution: HQ or receiving company</field>
+        <field name="name">Distribution: multi-company</field>
         <field name="model_id" ref="model_lds_loan_distribution"/>
-        <field name="domain_force">['|', ('company_id', 'in', company_ids), ('target_company_id', 'in', company_ids)]</field>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
     </record>
     <record id="rule_lds_allocation_company" model="ir.rule">
-        <field name="name">Allocation: HQ or receiving company</field>
+        <field name="name">Allocation: multi-company</field>
         <field name="model_id" ref="model_lds_allocation"/>
-        <field name="domain_force">['|', ('company_id', 'in', company_ids), ('target_company_id', 'in', company_ids)]</field>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
     </record>
 </odoo>

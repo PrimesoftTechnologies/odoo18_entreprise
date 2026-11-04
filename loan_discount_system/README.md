@@ -1,22 +1,27 @@
 # Loan Discount System (Odoo 18)
 
-## Install
-1. Copy folder `loan_discount_system` into your addons path.
-2. `pip install openpyxl` (needed for Excel upload).
-3. Restart Odoo, Apps > Update Apps List, install **Loan Discount System**.
-4. Give users the group *Loan Discount System / Treasurer*.
+Discount Centers are handled as CUSTOMERS of the treasury company. Everything is posted in ONE company
+with ONE journal. Each Discount Center's debt sits in its own Receivable account (customer statement / aging).
 
-## Setup (per company)
-Loan Discount System > Configuration > Company Settings > open company > tab **Loan Discount**.
-- Treasury company: Loan Journal, Bank Loan Payable, Interest Expense, Due from Group Companies, Interest Recovery.
-- Each Discount Center: Loan Journal, Interest Expense, Due to HQ.
+## Install
+1. Copy `loan_discount_system` into your addons path, `pip install openpyxl`, restart Odoo.
+2. Update Apps List, install (or upgrade) *Loan Discount System*.
+3. Give users the group *Loan Discount System / Treasurer*.
+
+## Setup (treasury company only)
+Loan Discount System > Configuration > Company Settings > treasury company > tab *Loan Discount*:
+Default Journal, Bank Loan Payable, Interest Expense, Interest Recovery/Income.
+Each Discount Center must exist as a Contact (partner) with a Receivable account.
+
+## Where things are
+- Accounting > Accounting > **Loans**: Bank Loan form (schedule, repayments, distribution, allocations, Odoo link).
+  The existing Loans menu is re-pointed to this form on install/upgrade. Uninstalling restores it.
+- App **Loan Discount System** > Treasure Distribution > Distributions / Customer Repayment Schedule
+- App **Loan Discount System** > Configuration > Company Settings
 
 ## Flow
-1. Loan Discount System app > Loans > Bank Loans > New (name, bank e.g. KCB, amount, rate, months).
-2. Compute, or Upload the bank's Excel schedule (Date, Principal, Interest, Payment, Balance).
-3. Settings tab: pick the Odoo Loan record and press **Sync Odoo Loan** to compare outstanding.
-4. Confirm. Posts: Dr Bank / Cr Bank Loan Payable.
-5. Distribution tab: add each company, amount, markup. Confirm each. Posts inter-company entries in both companies.
-6. Generate Allocations > Accrue Interest (all). Each company is charged its share of bank interest + markup.
-7. Repayments: press Pay on a schedule line > Post. Outstanding updates. Dr Loan Payable, Dr Interest, Cr Bank.
-8. Company pays treasury: Settle on the allocation. Posts both sides.
+1. Bank Loans > New > Compute or Upload Excel > Confirm   (Dr Bank / Cr Loan Payable)
+2. Distribution tab: Discount Center + amount + markup > Confirm   (Dr Customer receivable / Cr Bank)
+3. Generate Allocations > Accrue   (Dr Customer receivable / Cr Interest income)
+4. Pay on schedule line > Post   (Dr Loan payable + Interest expense / Cr Bank)
+5. Settle on allocation when the Discount Center pays   (Dr Bank / Cr Customer receivable)

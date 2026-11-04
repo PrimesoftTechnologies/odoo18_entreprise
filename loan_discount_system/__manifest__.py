@@ -10,8 +10,8 @@ Loan Discount System
 * Treasurer registers loans taken from banks (e.g. KCB) and links them to the Odoo Loan record
 * Amortization schedule: computed (annuity / flat / equal principal) or uploaded from Excel (bank schedule)
 * Repayments with running outstanding balance and accounting entries
-* Distribution of the loan to group companies (Discount Center 1, 2, ...)
-* Interest allocation per company (bank interest + optional markup), accrual and settlement
+* Distribution of the loan to Discount Centers (handled as customers, one journal)
+* Interest allocation per Discount Center (bank interest + optional markup), accrual and settlement
 * Reconciliation against the outstanding balance of the Odoo Loan record
     """,
     'author': 'Primesoft',
@@ -28,8 +28,10 @@ Loan Discount System
         'views/allocation_views.xml',
         'views/res_company_views.xml',
         'views/menus.xml',
+        'data/redirect.xml',
     ],
     'installable': True,
     'application': True,
+    'uninstall_hook': 'uninstall_hook',
     'license': 'LGPL-3',
 }

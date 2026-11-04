@@ -7,11 +7,12 @@
             <list decoration-success="state == 'paid'" decoration-info="state == 'accrued'">
                 <field name="date"/>
                 <field name="loan_id"/>
-                <field name="target_company_id"/>
+                <field name="partner_id"/>
                 <field name="principal_share" sum="Principal"/>
                 <field name="interest_share" sum="Interest"/>
                 <field name="markup_share" sum="Markup"/>
                 <field name="total_share" sum="Total"/>
+                <field name="balance_after"/>
                 <field name="state" widget="badge"/>
                 <field name="currency_id" column_invisible="1"/>
                 <button name="action_accrue" type="object" string="Accrue" icon="fa-calculator"
@@ -38,7 +39,7 @@
                     <group>
                         <group>
                             <field name="distribution_id"/>
-                            <field name="target_company_id"/>
+                            <field name="partner_id"/>
                             <field name="date"/>
                             <field name="settle_date"/>
                         </group>
@@ -47,14 +48,13 @@
                             <field name="interest_share"/>
                             <field name="markup_share"/>
                             <field name="total_share"/>
+                            <field name="balance_after"/>
                             <field name="currency_id" invisible="1"/>
                         </group>
                     </group>
                     <group string="Journal Entries">
-                        <field name="hq_move_id"/>
-                        <field name="target_move_id"/>
-                        <field name="settle_hq_move_id"/>
-                        <field name="settle_target_move_id"/>
+                        <field name="accrue_move_id"/>
+                        <field name="settle_move_id"/>
                     </group>
                 </sheet>
             </form>
@@ -67,11 +67,11 @@
         <field name="arch" type="xml">
             <search>
                 <field name="loan_id"/>
-                <field name="target_company_id"/>
+                <field name="partner_id"/>
                 <filter name="draft" string="To Accrue" domain="[('state', '=', 'draft')]"/>
                 <filter name="accrued" string="Unpaid" domain="[('state', '=', 'accrued')]"/>
                 <group expand="0" string="Group By">
-                    <filter name="group_company" string="Company" context="{'group_by': 'target_company_id'}"/>
+                    <filter name="group_company" string="Discount Center" context="{'group_by': 'partner_id'}"/>
                     <filter name="group_loan" string="Loan" context="{'group_by': 'loan_id'}"/>
                 </group>
             </search>
