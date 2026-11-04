@@ -6,3 +6,5 @@
    -> inakuwa "Pending Validation"; owner wa destination anapata activity + message, anaweza Validate au Reject.
    Baada ya hapo process za kawaida za Odoo zinaendelea.
 Hariri 'depends' kwenye __manifest__.py uweke technical name ya module ya Purchase Request.
+4. Product: ukihariri na kuhifadhi product, chatter inapata log note inayoonyesha kila field iliyobadilika (zamani -> mpya).
+   (Field ambazo Odoo tayari inazi-track zinaachwa ili zisijirudie.)
