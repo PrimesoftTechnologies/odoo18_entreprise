@@ -46,14 +46,13 @@ def _to_date(v):
     raise UserError(_("Cannot read the date '%s'. Use the format YYYY-MM-DD.", s))
 
 
-class LoanUploadWizard(models.TransientModel):
-    _name = 'lds.loan.upload.wizard'
-    _description = 'Upload Bank Loan Schedule'
+class LdsCustomerLoanUpload(models.TransientModel):
+    _name = 'lds.customer.loan.upload'
+    _description = 'Upload Customer Loan Schedule'
 
-    loan_id = fields.Many2one('lds.bank.loan', required=True, readonly=True)
+    loan_id = fields.Many2one('lds.customer.loan', required=True, readonly=True)
     file = fields.Binary(string='Excel File (.xlsx)', required=True)
     filename = fields.Char()
-    replace = fields.Boolean(string='Replace existing schedule', default=True)
 
     def action_download_template(self):
         import openpyxl
@@ -66,8 +65,7 @@ class LoanUploadWizard(models.TransientModel):
         buf = io.BytesIO()
         wb.save(buf)
         att = self.env['ir.attachment'].create({
-            'name': 'loan_schedule_template.xlsx',
-            'type': 'binary',
+            'name': 'loan_schedule_template.xlsx', 'type': 'binary',
             'datas': base64.b64encode(buf.getvalue()),
             'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         })
@@ -80,17 +78,15 @@ class LoanUploadWizard(models.TransientModel):
         except ImportError:
             raise UserError(_("Python package 'openpyxl' is not installed on the server (pip install openpyxl)."))
         loan = self.loan_id
-        if loan.state == 'closed':
-            raise UserError(_("Cannot change the schedule of a closed loan."))
+        if loan.state != 'draft':
+            raise UserError(_("The schedule can only be uploaded while the loan is in Draft."))
         try:
             wb = openpyxl.load_workbook(io.BytesIO(base64.b64decode(self.file)), data_only=True)
         except Exception as e:
             raise UserError(_("Cannot read the file. Upload a valid .xlsx file.\n%s", e))
         rows = list(wb.active.iter_rows(values_only=True))
 
-        # locate header row
-        col = {}
-        start = None
+        col, start = {}, None
         for idx, row in enumerate(rows):
             found = {}
             for ci, cell in enumerate(row):
@@ -120,38 +116,22 @@ class LoanUploadWizard(models.TransientModel):
             raise UserError(_("No data rows found in the file."))
         parsed.sort(key=lambda r: r['date'])
 
-        if self.replace:
-            if loan.repayment_ids:
-                raise UserError(_("This loan already has repayments. Untick 'Replace existing schedule' "
-                                  "or delete the repayments first."))
-            if loan.allocation_ids.filtered(lambda a: a.state != 'draft'):
-                raise UserError(_("Some Discount Center interest was already accrued. "
-                                  "Untick 'Replace existing schedule' to only add lines."))
-            loan.allocation_ids.unlink()
-            loan.line_ids.unlink()
-
-        base = loan.principal or sum(r['principal'] for r in parsed)
-        running = base - sum(loan.line_ids.mapped('principal'))
-        start_no = len(loan.line_ids)
+        base = loan.amount or sum(r['principal'] for r in parsed)
+        running = base
         vals = []
         for i, r in enumerate(parsed, start=1):
             running -= r['principal']
             vals.append((0, 0, {
-                'number': start_no + i,
-                'date': r['date'],
-                'principal': r['principal'],
-                'interest': r['interest'],
+                'number': i, 'date': r['date'], 'principal': r['principal'], 'interest': r['interest'],
                 'balance': r['balance'] if r['balance'] is not None else running,
             }))
-        loan.write({'line_ids': vals})
-        updates = {}
-        if not loan.principal:
-            updates['principal'] = base
+        loan.line_ids.unlink()
+        updates = {'line_ids': vals, 'interest': sum(r['interest'] for r in parsed)}
+        if not loan.amount:
+            updates['amount'] = base
         if not loan.duration:
             updates['duration'] = len(parsed)
-        if updates:
-            loan.write(updates)
-        loan.distribution_ids.filtered(lambda d: d.state == 'confirmed')._generate_allocations()
+        loan.write(updates)
         loan.message_post(body=_("%s schedule lines uploaded from Excel.", len(parsed)))
         return {'type': 'ir.actions.client', 'tag': 'display_notification', 'params': {
             'title': _('Upload complete'), 'message': _('%s lines imported.', len(parsed)),

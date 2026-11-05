@@ -1,27 +1,23 @@
 # Loan Discount System (Odoo 18)
 
-Discount Centers are handled as CUSTOMERS of the treasury company. Everything is posted in ONE company
-with ONE journal. Each Discount Center's debt sits in its own Receivable account (customer statement / aging).
+Accounting > Loans is NOT modified: the treasurer registers the bank loan there as before.
+This app records the money given to customers (Discount Centers), with the same layout as the Loan form.
 
 ## Install
-1. Copy `loan_discount_system` into your addons path, `pip install openpyxl`, restart Odoo.
-2. Update Apps List, install (or upgrade) *Loan Discount System*.
-3. Give users the group *Loan Discount System / Treasurer*.
+1. Copy `loan_discount_system` into addons, `pip install openpyxl`, restart Odoo, Upgrade/Install the app.
+2. Give users the group *Loan Discount System / Treasurer*.
 
-## Setup (treasury company only)
-Loan Discount System > Configuration > Company Settings > treasury company > tab *Loan Discount*:
-Default Journal, Bank Loan Payable, Interest Expense, Interest Recovery/Income.
-Each Discount Center must exist as a Contact (partner) with a Receivable account.
-
-## Where things are
-- Accounting > Accounting > **Loans**: Bank Loan form (schedule, repayments, distribution, allocations, Odoo link).
-  The existing Loans menu is re-pointed to this form on install/upgrade. Uninstalling restores it.
-- App **Loan Discount System** > Treasure Distribution > Distributions / Customer Repayment Schedule
-- App **Loan Discount System** > Configuration > Company Settings
+## Setup
+Loan Discount System > Configuration > Company Settings > your company > tab *Loan Discount*:
+Default Journal and Interest Income Account.
 
 ## Flow
-1. Bank Loans > New > Compute or Upload Excel > Confirm   (Dr Bank / Cr Loan Payable)
-2. Distribution tab: Discount Center + amount + markup > Confirm   (Dr Customer receivable / Cr Bank)
-3. Generate Allocations > Accrue   (Dr Customer receivable / Cr Interest income)
-4. Pay on schedule line > Post   (Dr Loan payable + Interest expense / Cr Bank)
-5. Settle on allocation when the Discount Center pays   (Dr Bank / Cr Customer receivable)
+1. Loan Discount System > Treasure Distribution > Distributions > New
+   Name, Customer, Amount Borrowed, Interest, Loan Date, Duration.
+2. Compute (equal installments) or Upload (Excel: Date, Principal, Interest, Payment, Balance).
+3. Pick the **Bank Loan** (from Accounting > Loans) at the top of the form: it shows the loan amount, what was
+   already distributed and what is still available. Journal is in Loan Settings.
+   The Loans model is auto-detected (field 'Amount Borrowed'); override with system parameter `lds.loan_model`.
+4. Confirm  ->  Dr Customer receivable / Cr Bank.
+5. Each month press Pay on the line  ->  Dr Bank / Cr Receivable (principal) / Cr Interest income.
+   Outstanding Balance decreases; the loan closes when all lines are paid.

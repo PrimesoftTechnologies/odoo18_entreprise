@@ -2,11 +2,10 @@
 import json
 
 
-def uninstall_hook(env):
-    """Give the Accounting > Loans menu/action back to what it was before."""
+def restore_legacy(env):
+    """Give Accounting > Loans back exactly as it was (undo any earlier redirect of this module)."""
     ICP = env['ir.config_parameter'].sudo()
 
-    # menu fallback
     prefix = 'lds.legacy_menu_action.'
     for param in ICP.search([('key', 'like', prefix + '%')]):
         menu = env['ir.ui.menu'].browse(int(param.key[len(prefix):])).exists()
@@ -14,7 +13,6 @@ def uninstall_hook(env):
             menu.action = param.value
         param.unlink()
 
-    # action (path 'loans')
     prefix = 'lds.legacy_action_backup.'
     for param in ICP.search([('key', 'like', prefix + '%')]):
         action = env['ir.actions.act_window'].sudo().browse(int(param.key[len(prefix):])).exists()
@@ -36,3 +34,7 @@ def uninstall_hook(env):
                     'view_mode': mode, 'view_id': view_id,
                 })
         param.unlink()
+
+
+def uninstall_hook(env):
+    restore_legacy(env)

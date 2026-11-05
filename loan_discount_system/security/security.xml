@@ -16,30 +16,14 @@
         <field name="implied_ids" eval="[(4, ref('group_lds_user'))]"/>
     </record>
 
-    <!-- Multi-company rules -->
-    <record id="rule_lds_bank_loan_company" model="ir.rule">
-        <field name="name">Bank Loan: multi-company</field>
-        <field name="model_id" ref="model_lds_bank_loan"/>
+    <record id="rule_lds_customer_loan_company" model="ir.rule">
+        <field name="name">Customer Loan: multi-company</field>
+        <field name="model_id" ref="model_lds_customer_loan"/>
         <field name="domain_force">[('company_id', 'in', company_ids)]</field>
     </record>
-    <record id="rule_lds_bank_loan_line_company" model="ir.rule">
-        <field name="name">Bank Loan Line: multi-company</field>
-        <field name="model_id" ref="model_lds_bank_loan_line"/>
-        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
-    </record>
-    <record id="rule_lds_repayment_company" model="ir.rule">
-        <field name="name">Repayment: multi-company</field>
-        <field name="model_id" ref="model_lds_bank_loan_repayment"/>
-        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
-    </record>
-    <record id="rule_lds_distribution_company" model="ir.rule">
-        <field name="name">Distribution: multi-company</field>
-        <field name="model_id" ref="model_lds_loan_distribution"/>
-        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
-    </record>
-    <record id="rule_lds_allocation_company" model="ir.rule">
-        <field name="name">Allocation: multi-company</field>
-        <field name="model_id" ref="model_lds_allocation"/>
+    <record id="rule_lds_customer_loan_line_company" model="ir.rule">
+        <field name="name">Customer Loan Line: multi-company</field>
+        <field name="model_id" ref="model_lds_customer_loan_line"/>
         <field name="domain_force">[('company_id', 'in', company_ids)]</field>
     </record>
 </odoo>

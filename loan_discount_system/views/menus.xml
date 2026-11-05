@@ -1,23 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- ============================================================
-         1. Accounting > Loans  -> opens the Bank Loan form of this module
-            (re-pointed by data/redirect.xml, no new menu there)
-         ============================================================ -->
-
-    <!-- ============================================================
-         2. Separate app: Loan Discount System
-            (distribution records of the customers who receive the money)
-         ============================================================ -->
+    <!-- Accounting > Loans is left untouched. -->
     <menuitem id="menu_lds_root" name="Loan Distribution"
               web_icon="loan_discount_system,static/description/icon.png"
               sequence="55" groups="group_lds_user,account.group_account_manager"/>
 
     <menuitem id="menu_lds_treasure" name="Treasure Distribution" parent="menu_lds_root" sequence="10"/>
     <menuitem id="menu_lds_distribution" name="Distributions" parent="menu_lds_treasure"
-              action="action_lds_distribution" sequence="10"/>
-    <menuitem id="menu_lds_allocation" name="Customer Repayment Schedule" parent="menu_lds_treasure"
-              action="action_lds_allocation" sequence="20"/>
+              action="action_lds_customer_loan" sequence="10"/>
 
     <menuitem id="menu_lds_config" name="Configuration" parent="menu_lds_root" sequence="90"
               groups="group_lds_treasurer,account.group_account_manager"/>

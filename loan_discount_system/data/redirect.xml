@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<odoo>
-    <!-- Re-points the existing Accounting > Loans menu to this module's Loan form.
-         Runs on install and on every upgrade. -->
-    <function model="lds.bank.loan" name="_lds_redirect_loans_menu"/>
-</odoo>

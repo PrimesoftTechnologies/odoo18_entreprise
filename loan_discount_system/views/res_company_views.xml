@@ -8,16 +8,13 @@
             <xpath expr="//notebook" position="inside">
                 <page string="Loan Discount" name="lds">
                     <group>
-                        <group string="Treasury company (the one that borrows from the bank)">
+                        <group string="Distribution to customers (Discount Centers)">
                             <field name="lds_journal_id"/>
-                            <field name="lds_loan_account_id"/>
-                            <field name="lds_interest_expense_account_id"/>
                             <field name="lds_interest_income_account_id"/>
                         </group>
                     </group>
                     <div class="text-muted">
-                        Discount Centers are handled as customers: they use their own Receivable account.
-                        Nothing needs to be configured for them.
+                        Discount Centers are customers: their debt is posted on their own Receivable account.
                     </div>
                 </page>
             </xpath>
@@ -25,7 +22,7 @@
     </record>
 
     <record id="action_lds_companies" model="ir.actions.act_window">
-        <field name="name">Loan Discount Companies</field>
+        <field name="name">Company Settings</field>
         <field name="res_model">res.company</field>
         <field name="view_mode">list,form</field>
     </record>

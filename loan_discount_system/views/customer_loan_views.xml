@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_lds_customer_loan_list" model="ir.ui.view">
+        <field name="name">lds.customer.loan.list</field>
+        <field name="model">lds.customer.loan</field>
+        <field name="arch" type="xml">
+            <list decoration-success="state == 'closed'" decoration-info="state == 'draft'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="odoo_loan_id"/>
+                <field name="odoo_loan_model" column_invisible="1"/>
+                <field name="date"/>
+                <field name="duration"/>
+                <field name="amount" sum="Total"/>
+                <field name="interest" sum="Total"/>
+                <field name="outstanding_balance" sum="Total"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_lds_customer_loan_form" model="ir.ui.view">
+        <field name="name">lds.customer.loan.form</field>
+        <field name="model">lds.customer.loan</field>
+        <field name="arch" type="xml">
+            <form string="Loan">
+                <header>
+                    <button name="action_confirm" type="object" string="Confirm" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_upload" type="object" string="Upload" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_compute" type="object" string="Compute" invisible="state != 'draft'"/>
+                    <button name="action_draft" type="object" string="Reset to Draft" invisible="state != 'running'"
+                            confirm="Reset this loan to draft?"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,running,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Loan name" readonly="state != 'draft'"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="amount" readonly="state != 'draft'"/>
+                            <field name="interest" readonly="state != 'draft'"/>
+                            <field name="outstanding_balance"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="date" readonly="state != 'draft'"/>
+                            <label for="duration"/>
+                            <div class="o_row">
+                                <field name="duration" readonly="state != 'draft'"/>
+                                <span>months</span>
+                            </div>
+                            <field name="partner_id" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <group string="Bank loan that gives this money (Accounting > Loans)">
+                        <group>
+                            <field name="odoo_loan_model" invisible="1"/>
+                            <field name="odoo_loan_id" readonly="state != 'draft'"
+                                   required="state == 'draft' and odoo_loan_model"/>
+                        </group>
+                        <group>
+                            <field name="odoo_loan_amount" invisible="not odoo_loan_id"/>
+                            <field name="loan_distributed" invisible="not odoo_loan_id"/>
+                            <field name="loan_available" invisible="not odoo_loan_id"
+                                   decoration-danger="loan_available &lt; amount and state == 'draft'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Amortization schedule" name="schedule">
+                            <field name="line_ids" readonly="state != 'draft'">
+                                <list editable="bottom" decoration-success="status == 'paid'">
+                                    <field name="number" column_invisible="1"/>
+                                    <field name="date"/>
+                                    <field name="principal" sum="Principals"/>
+                                    <field name="interest" sum="Interests"/>
+                                    <field name="payment" sum="Payments"/>
+                                    <field name="balance"/>
+                                    <field name="status" widget="badge" readonly="1"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <button name="action_pay" type="object" string="Pay" icon="fa-money"
+                                            invisible="status == 'paid' or parent.state != 'running'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Loan Settings" name="settings">
+                            <group>
+                                <group string="Bank loan source">
+                                    <field name="odoo_loan_model" readonly="1"/>
+                                </group>
+                                <group string="Accounting">
+                                    <field name="journal_id" readonly="state != 'draft'"/>
+                                    <field name="post_entries" readonly="state != 'draft'"/>
+                                    <field name="move_id"/>
+                                    <field name="paid_principal"/>
+                                    <field name="paid_interest"/>
+                                </group>
+                            </group>
+                            <field name="notes" placeholder="Notes..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_lds_customer_loan_search" model="ir.ui.view">
+        <field name="name">lds.customer.loan.search</field>
+        <field name="model">lds.customer.loan</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <filter name="running" string="Running" domain="[('state', '=', 'running')]"/>
+                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="closed" string="Closed" domain="[('state', '=', 'closed')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_partner" string="Customer" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_lds_customer_loan" model="ir.actions.act_window">
+        <field name="name">Distributions</field>
+        <field name="res_model">lds.customer.loan</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>
