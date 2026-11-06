@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_oscon_boss" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.oscon.boss</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="documents.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='documents']" position="inside">
+                <block title="Bosses / CEOs Access" name="oscon_boss_block">
+                    <setting id="oscon_boss_setting"
+                             string="Bosses / CEOs"
+                             help="These users can see ALL folders and documents automatically, without sharing.">
+                        <field name="oscon_boss_ids" widget="many2many_tags"
+                               options="{'no_create': True}"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>
