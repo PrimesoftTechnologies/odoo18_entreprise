@@ -1,13 +1,537 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <template id="custom_invoice_proforma_invoice" inherit_id="account.report_invoice_document">
-        <!-- <xpath expr="//th[@name='th_taxes']" position="replace">
+    <!-- ============================================================
+         1. INVOICE FORM: Delivery Note ID chini ya Customer
+         ============================================================ -->
+    <record id="view_move_form_inherit_delivery_note_id"
+            model="ir.ui.view">
+
+        <field name="name">account.move.form.inherit.delivery.note.id</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='partner_shipping_id']"
+                   position="after">
+
+                <field name="delivery_note_id"
+                       readonly="state != 'draft'"/>
+
+            </xpath>
+
+        </field>
+    </record>
+
+
+    <!-- ============================================================
+         2. INVOICE FOOTER
+            TRA QR + TERMS &amp; CONDITIONS + THANK YOU + PAGE NUMBER
+         ============================================================ -->
+    <template id="report_invoice_footer">
+
+        <div class="footer apex-invoice-footer"
+             style="font-family: Arial, sans-serif !important;">
+
+            <style>
+
+                .apex-invoice-footer,
+                .apex-invoice-footer * {
+                    font-family: Arial, sans-serif !important;
+                    font-size: 9pt !important;
+                    box-sizing: border-box !important;
+                }
+
+                .apex-invoice-footer {
+                    color: #222 !important;
+                    line-height: 1.5 !important;
+                    padding-top: 3mm !important;
+                }
+
+                /* TRA QR BLOCK */
+                .apex-tra-table,
+                .apex-tra-table tr,
+                .apex-tra-table td {
+                    border: 0 none transparent !important;
+                    background: transparent !important;
+                }
+
+                .apex-tra-table {
+                    margin-bottom: 4mm !important;
+                    border-collapse: collapse !important;
+                }
+
+                .apex-tra-table td {
+                    vertical-align: middle !important;
+                    padding: 0 10px 0 0 !important;
+                }
+
+                .apex-tra-table .apex-tra-text div {
+                    margin-bottom: 2px !important;
+                    font-size: 9pt !important;
+                }
+
+                /* OUTER BOX */
+                .apex-invoice-box {
+                    width: 100% !important;
+                    border: 1px solid #999 !important;
+                    border-radius: 3px !important;
+                    padding: 10px 12px !important;
+                    margin: 0 !important;
+                    background: #fafafa !important;
+                    page-break-inside: avoid !important;
+                    break-inside: avoid !important;
+                }
+
+                .apex-invoice-heading {
+                    font-weight: 700 !important;
+                    color: #111 !important;
+                    text-transform: uppercase !important;
+                    margin-bottom: 7px !important;
+                }
+
+                .apex-invoice-terms div {
+                    margin-bottom: 3px !important;
+                    line-height: 1.45 !important;
+                    color: #333 !important;
+                }
+
+                .apex-invoice-thanks {
+                    width: 100% !important;
+                    text-align: center !important;
+                    font-weight: 700 !important;
+                    margin-top: 9px !important;
+                    padding-top: 7px !important;
+                    border-top: 1px solid #ddd !important;
+                    color: #111 !important;
+                }
+
+                .apex-invoice-page {
+                    width: 100% !important;
+                    text-align: center !important;
+                    border-top: 1px solid #7CAF41 !important;
+                    padding-top: 3px !important;
+                    margin-top: 3px !important;
+                    font-size: 9pt !important;
+                    color: #555 !important;
+                }
+
+            </style>
+
+            <div class="oe_structure"/>
+
+            <!-- TRA QR BLOCK (inaonekana tu kama kuna verification link) -->
+            <!-- BADILISHA majina ya fields hapa kama yako ni tofauti -->
+            <t t-set="tra_receipt"
+               t-value="o._fields.get('tra_receipt_no') and o.tra_receipt_no or ''"/>
+            <t t-set="tra_code"
+               t-value="o._fields.get('tra_verification_code') and o.tra_verification_code or ''"/>
+            <t t-set="tra_link"
+               t-value="o._fields.get('tra_verification_link') and o.tra_verification_link or ''"/>
+
+            <t t-if="tra_link">
+                <table class="apex-tra-table">
+                    <tr>
+                        <td>
+                            <img t-att-src="'/report/barcode/?barcode_type=QR&amp;value=%s&amp;width=140&amp;height=140' % tra_link"
+                                 style="width: 22mm; height: 22mm;"/>
+                        </td>
+                        <td class="apex-tra-text">
+                            <div><strong>TRA Receipt No:</strong> <span t-esc="tra_receipt"/></div>
+                            <div><strong>Verification Code:</strong> <span t-esc="tra_code"/></div>
+                            <div><strong>Verification Link:</strong> <span t-esc="tra_link"/></div>
+                        </td>
+                    </tr>
+                </table>
+            </t>
+
+            <!-- TERMS BOX -->
+            <div class="apex-invoice-box">
+
+                <div class="apex-invoice-heading">
+                    TERMS &amp; CONDITIONS:
+                </div>
+
+                <div class="apex-invoice-terms">
+                    <div>a) Any query on this invoice must be lodged in writing within 48hrs of receipt</div>
+                    <div>b) No responsibility can be accepted for shortage or damage in transit</div>
+                    <div>c) Payment terms: nett 30 days unless otherwise agreed.</div>
+                    <div>d) Payments delayed beyond agreed credit terms will attract interest @15% per annum</div>
+                </div>
+
+                <div class="apex-invoice-thanks">
+                    Thank you for your business
+                </div>
+
+            </div>
+
+            <!-- PAGE NUMBER -->
+            <div class="apex-invoice-page">
+                Page <span class="page"/> / <span class="topage"/>
+            </div>
+
+        </div>
+
+    </template>
+
+
+    <!-- ============================================================
+         3. INVOICE PDF REPORT (format ya Tax Invoice)
+         ============================================================ -->
+    <template id="custom_invoice_proforma_invoice"
+              inherit_id="account.report_invoice_document">
+
+        <xpath expr="//t[@t-set='address']" position="replace">
+            <t t-set="address" t-value="None"/>
         </xpath>
 
-        <xpath expr="//td[@name='td_taxes']" position="replace">
-        </xpath> -->
+        <xpath expr="//div[hasclass('page')]" position="replace">
 
+            <!-- Ondoa title ya juu kwenye header band -->
+            <t t-set="layout_document_title" t-value="''"/>
+
+            <div class="page">
+
+                <style>
+
+                    .apex-table {
+                        width: 100%;
+                        border-collapse: collapse !important;
+                        border-spacing: 0 !important;
+                        table-layout: fixed;
+                        border: 1px solid #444 !important;
+                    }
+
+                    .apex-table thead {
+                        display: table-header-group;
+                    }
+
+                    .apex-table tr {
+                        page-break-inside: avoid !important;
+                    }
+
+                    .apex-table th,
+                    .apex-table td {
+                        border: 1px solid #666 !important;
+                        padding: 7px 8px;
+                        vertical-align: middle;
+                    }
+
+                    .apex-table thead th {
+                        background-color: #e8e8e8 !important;
+                        font-weight: 700 !important;
+                        font-size: 12px !important;
+                        text-align: center !important;
+                        color: #000 !important;
+                    }
+
+                    .apex-table tbody td {
+                        font-size: 11px;
+                        font-weight: 500;
+                    }
+
+                    .apex-table .text-center {
+                        text-align: center !important;
+                    }
+
+                    .apex-table .text-end {
+                        text-align: right !important;
+                    }
+
+                    /* TOTALS BOX */
+                    .apex-totals {
+                        width: 32%;
+                        margin-left: 68%;
+                        border-collapse: collapse !important;
+                        table-layout: fixed;
+                        border: 0 !important;
+                        border-bottom: 1px solid #444 !important;
+                    }
+
+                    .apex-totals td {
+                        border: 0 !important;
+                        padding: 8px 8px;
+                        font-size: 11px;
+                        text-align: right !important;
+                    }
+
+                    .apex-totals td.apex-totals-label {
+                        width: 42%;
+                        background-color: #f0f0f0 !important;
+                        border-right: 1px solid #666 !important;
+                    }
+
+                    .apex-totals tr.apex-totals-row-bordered td {
+                        border-top: 1px solid #ccc !important;
+                    }
+
+                    .apex-totals td.apex-totals-grand {
+                        font-weight: 700 !important;
+                        color: #00007f !important;
+                    }
+
+                </style>
+
+                <!-- TITLE -->
+                <div class="text-center mb-3">
+
+                    <h2 style="
+                        margin: 0;
+                        font-weight: 700;
+                        letter-spacing: 1px;
+                    ">
+                        <t t-if="o.state == 'draft'">PROFORMA INVOICE</t>
+                        <t t-else="">INVOICE</t>
+                    </h2>
+
+                </div>
+
+                <t t-set="inv_label"
+                   t-value="'Tax Invoice' if o.state != 'draft' else 'Invoice'"/>
+
+                <!-- CUSTOMER INFORMATION TABLE -->
+                <table class="apex-table mb-4">
+
+                    <thead>
+                        <tr>
+
+                            <th style="
+                                width: 52%;
+                                text-align: left !important;
+                                font-size: 13px !important;
+                            ">
+                                Customer Details
+                            </th>
+
+                            <th style="width: 16%;">
+                                Purchase Order No.
+                            </th>
+
+                            <th style="width: 16%;">
+                                <span t-esc="inv_label"/> Date
+                            </th>
+
+                            <th style="width: 16%;">
+                                <span t-esc="inv_label"/> No.
+                            </th>
+
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+
+                            <td rowspan="3"
+                                style="
+                                    vertical-align: top;
+                                    font-size: 12px;
+                                    font-weight: 500;
+                                    padding: 10px 12px;
+                                ">
+
+                                <div t-field="o.partner_id"
+                                     t-options='{
+                                         "widget": "contact",
+                                         "fields": ["name", "address", "vat"],
+                                         "no_marker": true
+                                     }'/>
+
+                            </td>
+
+                            <!-- PURCHASE ORDER NO: inatoka kwenye Sales Order (client_order_ref), kama Delivery Note -->
+                            <td class="text-center">
+                                <t t-set="so_orders"
+                                   t-value="o.invoice_line_ids.mapped('sale_line_ids.order_id')"/>
+                                <span t-esc="', '.join([r for r in so_orders.mapped('client_order_ref') if r])"/>
+                            </td>
+
+                            <td class="text-center">
+                                <span t-field="o.invoice_date"
+                                      t-options="{'widget': 'date'}"/>
+                            </td>
+
+                            <td class="text-center">
+                                <span t-field="o.name"/>
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <th style="
+                                background-color: #e8e8e8 !important;
+                                font-weight: 700 !important;
+                                font-size: 12px !important;
+                                text-align: center !important;
+                            ">
+                                Delivery Details
+                            </th>
+
+                            <th style="
+                                background-color: #e8e8e8 !important;
+                                font-weight: 700 !important;
+                                font-size: 12px !important;
+                                text-align: center !important;
+                            ">
+                                Currency
+                            </th>
+
+                            <th style="
+                                background-color: #e8e8e8 !important;
+                                font-weight: 700 !important;
+                                font-size: 12px !important;
+                                text-align: center !important;
+                            ">
+                                Delivery Note No.
+                            </th>
+
+                        </tr>
+
+                        <tr>
+
+                            <!-- BADILISHA 'delivery_details' kama field yako ina jina tofauti -->
+                            <td class="text-center"
+                                style="min-height: 28px;">
+                                <span t-esc="o._fields.get('delivery_details') and o.delivery_details or ''"/>
+                            </td>
+
+                            <td class="text-center">
+                                <span t-esc="o.currency_id.name"/>
+                            </td>
+
+                            <td class="text-center">
+                                <t t-if="o.delivery_note_id">
+                                    <span t-field="o.delivery_note_id"/>
+                                </t>
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+
+                <!-- PRODUCTS TABLE -->
+                <table class="apex-table">
+
+                    <thead>
+                        <tr>
+
+                            <th style="width: 12%;">
+                                Item Code
+                            </th>
+
+                            <th style="width: 40%;">
+                                Description of Goods &amp; Services
+                            </th>
+
+                            <th style="width: 7%;">
+                                Qty
+                            </th>
+
+                            <th style="width: 8%;">
+                                UOM
+                            </th>
+
+                            <th style="width: 16%;">
+                                Unit Rate
+                            </th>
+
+                            <th style="width: 17%;">
+                                Total Amount
+                            </th>
+
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        <t t-foreach="o.invoice_line_ids.filtered(lambda l: l.display_type == 'product')"
+                           t-as="line">
+
+                            <tr style="page-break-inside: avoid !important;">
+
+                                <td class="text-center">
+                                    <span t-esc="line.product_id.default_code or ''"/>
+                                </td>
+
+                                <td style="vertical-align: middle;">
+                                    <span t-esc="line.product_id.name or line.name"/>
+                                </td>
+
+                                <td class="text-center">
+                                    <span t-esc="'%g' % line.quantity"/>
+                                </td>
+
+                                <td class="text-center">
+                                    <span t-esc="line.product_uom_id.name or ''"/>
+                                </td>
+
+                                <td class="text-end">
+                                    <span t-esc="'{:,.2f}'.format(line.price_unit)"/>
+                                </td>
+
+                                <td class="text-end">
+                                    <span t-esc="'{:,.2f}'.format(line.price_subtotal)"/>
+                                </td>
+
+                            </tr>
+
+                        </t>
+
+                    </tbody>
+
+                </table>
+
+
+                <!-- TOTALS BOX -->
+                <t t-set="tax_recs"
+                   t-value="o.invoice_line_ids.mapped('tax_ids')"/>
+                <t t-set="tax_pct"
+                   t-value="('%g' % tax_recs[0].amount) if tax_recs else '0'"/>
+
+                <table class="apex-totals">
+
+                    <tbody>
+
+                        <tr>
+                            <td class="apex-totals-label">Subtotal</td>
+                            <td>
+                                <span t-esc="o.currency_id.name"/>
+                                <span t-esc="'{:,.2f}'.format(o.amount_untaxed)"/>
+                            </td>
+                        </tr>
+
+                        <tr class="apex-totals-row-bordered">
+                            <td class="apex-totals-label">
+                                Tax <span t-esc="tax_pct"/>%
+                            </td>
+                            <td>
+                                <span t-esc="o.currency_id.name"/>
+                                <span t-esc="'{:,.2f}'.format(o.amount_tax)"/>
+                            </td>
+                        </tr>
+
+                        <tr class="apex-totals-row-bordered">
+                            <td class="apex-totals-label">Total</td>
+                            <td class="apex-totals-grand">
+                                <span t-esc="o.currency_id.name"/>
+                                <span t-esc="'{:,.2f}'.format(o.amount_total)"/>
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <!-- FOOTER -->
+            <t t-call="apexholding.report_invoice_footer"/>
+
+        </xpath>
 
     </template>
 
