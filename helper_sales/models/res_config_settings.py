@@ -40,8 +40,8 @@ class ResConfigSettings(models.TransientModel):
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'title': _('Mafanikio!'),
-                'message': _('Bidhaa %s zimetengenezwa codes zao za Internal Reference kwa mafanikio.') % count,
+                'title': _('Success!'),
+                'message': _('Internal Reference codes for %s products have been generated successfully.') % count,
                 'sticky': False,
                 'type': 'success',
             }

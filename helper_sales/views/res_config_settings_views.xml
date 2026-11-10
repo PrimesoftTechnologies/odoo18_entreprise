@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             <xpath expr="//block[@name='product_setting_container']" position="inside">
                 <setting id="generate_product_references_setting" 
-                         help="Tengeneza Internal Reference kwa bidhaa zote za zamani kulingana na Short Code na Prefix ya kategoria.">
+                         help="Generate Internal Reference for all existing products based on the category's Short Code and Prefix.">
                     <div class="content-group">
                         <div class="mt16">
                             <button name="action_generate_product_references" 
