@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Transfers: Car Number + Analytic Distribution (Internal Transfer lines) -->
+    <record id="view_picking_form_helper_sales" model="ir.ui.view">
+        <field name="name">stock.picking.form.helper.sales</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='origin']" position="after">
+                <field name="car_id" options="{'no_create': True, 'no_quick_create': True, 'no_create_edit': True}"
+                       readonly="state in ('done', 'cancel')"/>
+            </xpath>
+            <xpath expr="//field[@name='move_ids_without_package']/list/field[@name='product_id']" position="after">
+                <field name="analytic_distribution" widget="analytic_distribution"
+                       groups="analytic.group_analytic_accounting"
+                       column_invisible="parent.picking_type_code != 'internal'"
+                       options="{'product_field': 'product_id'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Physical Inventory: approval -->
+    <record id="view_stock_quant_tree_inventory_count_approval" model="ir.ui.view">
+        <field name="name">stock.quant.inventory.count.approval</field>
+        <field name="model">stock.quant</field>
+        <field name="inherit_id" ref="stock.view_stock_quant_tree_inventory_editable"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='inventory_quantity']" position="after">
+                <field name="inventory_quantity_set" column_invisible="True"/>
+                <field name="count_approval_state" widget="badge" optional="show"
+                       decoration-warning="count_approval_state == 'waiting'"
+                       decoration-success="count_approval_state == 'approved'"/>
+                <button name="action_request_count_approval" type="object" string="Request Approval"
+                        icon="fa-paper-plane" class="btn btn-link"
+                        invisible="not inventory_quantity_set or count_approval_state != 'draft'"/>
+                <button name="action_approve_count" type="object" string="Approve"
+                        icon="fa-check" class="btn btn-link text-success"
+                        groups="helper_sales.group_stock_count_approver"
+                        invisible="count_approval_state != 'waiting'"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="quant_search_view_count_approval" model="ir.ui.view">
+        <field name="name">stock.quant.search.count.approval</field>
+        <field name="model">stock.quant</field>
+        <field name="inherit_id" ref="stock.quant_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter string="Waiting Count Approval" name="waiting_count_approval"
+                        domain="[('count_approval_state', '=', 'waiting')]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

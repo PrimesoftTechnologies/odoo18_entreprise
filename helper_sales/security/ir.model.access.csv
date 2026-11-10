@@ -1,3 +1,8 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_sale_region_all,sale.region.all,model_sale_region,,1,1,1,1
-access_sale_car_all,sale.car.all,model_sale_car,,1,1,1,1
+access_sale_car_all,sale.car.user,model_sale_car,base.group_user,1,0,0,0
+access_sale_car_manager,sale.car.manager,model_sale_car,group_logistics_manager,1,1,1,1
+access_sale_driver_user,sale.driver.user,model_sale_driver,base.group_user,1,1,1,0
+access_sale_driver_manager,sale.driver.manager,model_sale_driver,group_logistics_manager,1,1,1,1
+access_sale_helper_user,sale.helper.user,model_sale_helper,base.group_user,1,1,1,0
+access_sale_helper_manager,sale.helper.manager,model_sale_helper,group_logistics_manager,1,1,1,1

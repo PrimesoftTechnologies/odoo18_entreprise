@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- TIN Number mandatory for companies / customers / vendors (not for child contacts) -->
+    <record id="view_partner_form_tin_required" model="ir.ui.view">
+        <field name="name">res.partner.form.tin.required</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='vat']" position="attributes">
+                <attribute name="string">TIN Number</attribute>
+                <attribute name="required">not parent_id</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,42 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- 1. Form View ya Sale Order: Kuweka fields na kufanya ziwe read-only baada ya Confirm -->
+    <!-- 1. Sale Order form -->
     <record id="view_sale_order_form_helper" model="ir.ui.view">
         <field name="name">sale.order.form.helper</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <!-- Kuongeza fields za Driver, Helpers, Car ID na Region baada ya partner_id zikiwa na masharti ya readonly -->
             <xpath expr="//field[@name='partner_id']" position="after">
-                <field name="driver_id" widget="many2one_avatar_employee" readonly="state not in ['draft', 'sent']"/>
-                <field name="helper_ids" widget="many2many_tags" options="{'color_field': 'color'}" readonly="state not in ['draft', 'sent']"/>
-                <field name="car_id" readonly="state not in ['draft', 'sent']"/>
+                <!-- Drivers / Helpers: pick several from the list OR type a new name -->
+                <field name="driver_ids" widget="many2many_tags" readonly="state not in ['draft', 'sent']"/>
+                <field name="sale_helper_ids" widget="many2many_tags" readonly="state not in ['draft', 'sent']"/>
+                <!-- Car: selection only, no creating from the order -->
+                <field name="car_id" options="{'no_create': True, 'no_quick_create': True, 'no_create_edit': True}" readonly="state not in ['draft', 'sent']"/>
                 <field name="region_id" readonly="state not in ['draft', 'sent']"/>
             </xpath>
 
-            <!-- Kufanya Unit Price iwe Read-Only kwenye Order Lines -->
             <xpath expr="//field[@name='order_line']/list//field[@name='price_unit']" position="attributes">
                 <attribute name="readonly">1</attribute>
             </xpath>
         </field>
     </record>
 
-    <!-- Orodha ya Quotation/Order Tree View -->
     <record id="view_quotation_tree_inherit_driver_helper" model="ir.ui.view">
         <field name="name">sale.order.tree.inherit.driver.helper</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_quotation_tree"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='user_id']" position="after">
-                <field name="driver_id" optional="show" widget="many2one_avatar_employee"/>
-                <field name="helper_ids" optional="show" widget="many2many_tags"/>
+                <field name="driver_ids" optional="show" widget="many2many_tags"/>
+                <field name="sale_helper_ids" optional="show" widget="many2many_tags"/>
                 <field name="car_id" optional="show"/>
                 <field name="region_id" optional="show"/>
             </xpath>
         </field>
     </record>
 
-    <!-- 2. Orodha na Menu ya Sale Cars (Magari chini ya Configuration) -->
+    <!-- 2. Cars -->
     <record id="view_sale_car_tree" model="ir.ui.view">
         <field name="name">sale.car.tree</field>
         <field name="model">sale.car</field>
@@ -54,13 +53,10 @@
         <field name="view_mode">list,form</field>
     </record>
 
-    <menuitem id="menu_sale_car"
-              name="Register Vehicles"
-              parent="sale.menu_sale_config"
-              action="action_sale_car"
-              sequence="19"/>
+    <menuitem id="menu_sale_car" name="Register Vehicles" parent="sale.menu_sale_config"
+              action="action_sale_car" sequence="19"/>
 
-    <!-- 3. Orodha na Menu ya Sale Regions -->
+    <!-- 3. Regions -->
     <record id="view_sale_region_tree" model="ir.ui.view">
         <field name="name">sale.region.tree</field>
         <field name="model">sale.region</field>
@@ -78,9 +74,50 @@
         <field name="view_mode">list,form</field>
     </record>
 
-    <menuitem id="menu_sale_region"
-              name="Regions"
-              parent="sale.menu_sale_config"
-              action="action_sale_region"
-              sequence="20"/>
+    <menuitem id="menu_sale_region" name="Regions" parent="sale.menu_sale_config"
+              action="action_sale_region" sequence="20"/>
+
+    <!-- 4. Drivers -->
+    <record id="view_sale_driver_tree" model="ir.ui.view">
+        <field name="name">sale.driver.tree</field>
+        <field name="model">sale.driver</field>
+        <field name="arch" type="xml">
+            <list string="Drivers" editable="bottom">
+                <field name="name"/>
+                <field name="phone"/>
+                <field name="employee_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_sale_driver" model="ir.actions.act_window">
+        <field name="name">Drivers</field>
+        <field name="res_model">sale.driver</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_sale_driver" name="Drivers" parent="sale.menu_sale_config"
+              action="action_sale_driver" sequence="21"/>
+
+    <!-- 5. Helpers -->
+    <record id="view_sale_helper_tree" model="ir.ui.view">
+        <field name="name">sale.helper.tree</field>
+        <field name="model">sale.helper</field>
+        <field name="arch" type="xml">
+            <list string="Helpers" editable="bottom">
+                <field name="name"/>
+                <field name="phone"/>
+                <field name="employee_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_sale_helper" model="ir.actions.act_window">
+        <field name="name">Helpers</field>
+        <field name="res_model">sale.helper</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_sale_helper" name="Helpers" parent="sale.menu_sale_config"
+              action="action_sale_helper" sequence="22"/>
 </odoo>
