@@ -2,19 +2,19 @@
 
 {
     "name": "Helper Sales",
-    "version": "18.0.2.0.0",
+    "version": "18.0.3.0.0",
     "category": "Sales",
     "sequence": -28,
     "summary": "Logistics, approvals and controls for Sales, Inventory and Accounting",
     "description": """
-        - Drivers, Helpers (typed or selected), Car Number and Region on Sales Orders / Invoices
-        - Car Number and Analytic Distribution on Internal Transfers
-        - Mandatory attachments for Return (delivery) and Credit Note
-        - Approval for Physical Inventory counting
-        - TIN mandatory for customers and vendors
-        - Receipts only from Purchase Orders
-        - Update Quantity restricted to one authorised group
-        - Automatic Product Internal Reference
+- Drivers, Helpers (typed or selected), Car Number and Region on Sales Orders / Invoices
+- Car Number and Analytic Distribution on Internal Transfers
+- Mandatory attachments for Return (delivery) and Credit Note
+- Approval for Physical Inventory counting
+- TIN mandatory for customers and vendors
+- Receipts only from Purchase Orders
+- Update Quantity restricted to one authorised group
+- Automatic Product Internal Reference based on Reference Categories
     """,
     "author": "PrimeSoft Technologies",
     "depends": [
@@ -36,6 +36,7 @@
         "views/account_payment_views.xml",
         "views/stock_views.xml",
         "views/partner_views.xml",
+        "views/product_views.xml",
         "reports/invoice_report.xml",
     ],
     "installable": True,
