@@ -6,4 +6,3 @@ access_sale_driver_user,sale.driver.user,model_sale_driver,base.group_user,1,1,1
 access_sale_driver_manager,sale.driver.manager,model_sale_driver,group_logistics_manager,1,1,1,1
 access_sale_helper_user,sale.helper.user,model_sale_helper,base.group_user,1,1,1,0
 access_sale_helper_manager,sale.helper.manager,model_sale_helper,group_logistics_manager,1,1,1,1
-access_product_ref_category_all,product.ref.category.all,model_product_ref_category,,1,1,1,1
