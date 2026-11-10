@@ -14,7 +14,7 @@
                                     type="object" 
                                     string="Generate Product References" 
                                     class="btn-primary" 
-                                    confirm="Je, una hakika unataka kuzalisha codes kwa bidhaa zote zisizo na Internal Reference?"/>
+                                    confirm="Are you sure you want to generate codes for all products without an Internal Reference?"/>
                         </div>
                     </div>
                 </setting>
