@@ -2,7 +2,7 @@
 
 {
     "name": "Helper Sales",
-    "version": "18.0.3.0.0",
+    "version": "18.0.4.0.0",
     "category": "Sales",
     "sequence": -28,
     "summary": "Logistics, approvals and controls for Sales, Inventory and Accounting",
@@ -14,7 +14,8 @@
 - TIN mandatory for customers and vendors
 - Receipts only from Purchase Orders
 - Update Quantity restricted to one authorised group
-- Automatic Product Internal Reference based on Reference Categories
+- Automatic Product Internal Reference based on Product Categories (Short Code & Prefix)
+- Configuration tool to bulk generate product references
     """,
     "author": "PrimeSoft Technologies",
     "depends": [
@@ -37,6 +38,7 @@
         "views/stock_views.xml",
         "views/partner_views.xml",
         "views/product_views.xml",
+        "views/res_config_settings_views.xml",
         "reports/invoice_report.xml",
     ],
     "installable": True,
