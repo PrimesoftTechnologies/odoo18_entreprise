@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from odoo import _, fields, models
 from odoo.exceptions import UserError
 
@@ -45,29 +47,33 @@ class SaleHelper(models.Model):
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    # Legacy fields (kept only so old data is not lost; migrated to the new fields)
+    # Legacy fields
     driver_id = fields.Many2one("hr.employee", string="Driver (Old)")
     helper_ids = fields.Many2many(
         "hr.employee", "sale_order_helper_rel", "order_id", "employee_id",
         string="Helpers (Old)",
     )
 
-    driver_ids = fields.Many2many(
-        "sale.driver", "sale_order_sale_driver_rel", "order_id", "driver_id",
-        string="Drivers", required=True, tracking=True,
+    # Driver na Helper zimebadilishwa kuwa Char ili kuruhusu kuandika majina huru bila kujisave kwenye mfumo
+    driver_name = fields.Char(
+        string="Driver(s)", 
+        tracking=True, 
+        help="Type the driver's name here if they are not in the list."
     )
-    sale_helper_ids = fields.Many2many(
-        "sale.helper", "sale_order_sale_helper_rel", "order_id", "helper_id",
-        string="Helpers", required=True, tracking=True,
+    helper_name = fields.Char(
+        string="Helper(s)", 
+        tracking=True, 
+        help="Type the helper's name here if they are not in the list."
     )
+
     car_id = fields.Many2one("sale.car", string="Car Number", required=True, tracking=True)
     region_id = fields.Many2one("sale.region", string="Region", required=True, tracking=True)
 
     def _prepare_invoice(self):
         invoice_vals = super()._prepare_invoice()
         invoice_vals.update({
-            'driver_ids': [(6, 0, self.driver_ids.ids)],
-            'sale_helper_ids': [(6, 0, self.sale_helper_ids.ids)],
+            'driver_name': self.driver_name,
+            'helper_name': self.helper_name,
             'car_id': self.car_id.id,
             'region_id': self.region_id.id,
         })
