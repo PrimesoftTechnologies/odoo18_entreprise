@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- Kuongeza Short Code na Prefix kwenye Fomu ya Product Category -->
+    <!-- Kuongeza Short Code, Prefix, na Auto Generate Toggle kwenye Fomu ya Product Category -->
     <record id="view_product_category_form_inherit_helper" model="ir.ui.view">
         <field name="name">product.category.form.inherit.helper</field>
         <field name="model">product.category</field>
         <field name="inherit_id" ref="product.product_category_form_view"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='parent_id']" position="after">
-                <field name="short_code"/>
-                <field name="prefix"/>
+                <field name="auto_generate_ref" widget="boolean_toggle"/>
+                <field name="short_code" attrs="{'invisible': [('auto_generate_ref', '=', False)]}"/>
+                <field name="prefix" attrs="{'invisible': [('auto_generate_ref', '=', False)]}"/>
             </xpath>
         </field>
     </record>
