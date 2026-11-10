@@ -24,10 +24,14 @@ class ProductTemplate(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
-            # Kama hakuna default_code na kategoria imechaguliwa
-            if not vals.get('default_code') and vals.get('categ_id'):
+            # Tunapata sequence namba ya kawaida kwanza
+            sequence_code = False
+            if not self.env.context.get('install_mode'):
+                sequence_code = self.env['ir.sequence'].next_by_code('helper_sales.product.reference') or ''
+
+            # Kama kategoria imechaguliwa, tunatafuta short_code au prefix yake
+            if vals.get('categ_id'):
                 category = self.env['product.category'].browse(vals['categ_id'])
-                # Inatafuta prefix au short_code kutoka kwenye kategoria au wazazi wake
                 prefix_val = False
                 curr_cat = category
                 while curr_cat and not prefix_val:
@@ -35,14 +39,12 @@ class ProductTemplate(models.Model):
                     curr_cat = curr_cat.parent_id
                 
                 if prefix_val:
-                    # Inatengeneza au kuchukua namba inayofuata ya sequence ya kategoria hiyo
-                    seq = self.env['ir.sequence'].next_by_code('product.code.sequence') or '001'
-                    vals['default_code'] = f"{prefix_val}{seq}"
-            
-            # Fallback ya mwisho kama hakuna kategoria yenye prefix
-            elif not vals.get('default_code') and not self.env.context.get('install_mode'):
-                sequence = self.env['ir.sequence']
-                vals['default_code'] = sequence.next_by_code('helper_sales.product.reference')
+                    # Tunaiunganisha prefix na namba ya sequence (Mfano: TC + 8001 = TC8001)
+                    vals['default_code'] = f"{prefix_val}{sequence_code}"
+                else:
+                    vals['default_code'] = sequence_code
+            elif not vals.get('default_code'):
+                vals['default_code'] = sequence_code
 
         return super().create(vals_list)
 
