@@ -8,8 +8,8 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='parent_id']" position="after">
                 <field name="auto_generate_ref" widget="boolean_toggle"/>
-                <field name="short_code" attrs="{'invisible': [('auto_generate_ref', '=', False)]}"/>
-                <field name="prefix" attrs="{'invisible': [('auto_generate_ref', '=', False)]}"/>
+                <field name="short_code" invisible="not auto_generate_ref"/>
+                <field name="prefix" invisible="not auto_generate_ref"/>
             </xpath>
         </field>
     </record>
