@@ -12,7 +12,7 @@
     'data': [],
     'assets': {
         'point_of_sale._assets_pos': [
-            'pos_restriction/static/src/js/product_card_restriction.js',
+            'pos_restriction/static/src/js/product_restriction.js',
         ],
     },
     'installable': True,
