@@ -21,4 +21,29 @@
             </xpath>
         </field>
     </record>
+
+    <record id="res_config_settings_view_form_helper_sales_payment" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.helper.sales.payment</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app string="Helper Sales" name="helper_sales">
+                    <block title="Payment Rules">
+                        <setting string="Days allowed for an unfinished payment"
+                                 help="A customer with a Draft / In Process payment older than this number of days cannot get a new payment until the old one is completed.">
+                            <div class="content-group">
+                                <div class="row mt8">
+                                    <div class="col-3">
+                                        <field name="payment_pending_days"/>
+                                    </div>
+                                    <div class="col-auto pt-1">days</div>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
 </odoo>

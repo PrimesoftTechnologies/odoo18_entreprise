@@ -19,4 +19,15 @@
     <record id="base.group_system" model="res.groups">
         <field name="implied_ids" eval="[(4, ref('helper_sales.group_logistics_manager'))]"/>
     </record>
+
+    <!-- Manufacturing approvals -->
+    <record id="group_mo_production_manager" model="res.groups">
+        <field name="name">Helper Sales: MO Approval - Production Manager</field>
+        <field name="implied_ids" eval="[(4, ref('mrp.group_mrp_user'))]"/>
+    </record>
+
+    <record id="group_mo_cost_share_manager" model="res.groups">
+        <field name="name">Helper Sales: MO Approval - Cost Shared Manager</field>
+        <field name="implied_ids" eval="[(4, ref('mrp.group_mrp_user'))]"/>
+    </record>
 </odoo>

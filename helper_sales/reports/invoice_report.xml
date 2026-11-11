@@ -60,8 +60,8 @@
                                 <tr style="background-color: #f8f9fa;">
                                     <td style="width: 50%; padding: 10px; border-right: 1px solid #dee2e6;">
                                         <strong>Driver name &amp; Signature:</strong>
-                                        <div style="margin-top: 8px; font-size: 15px; font-weight: bold;"><t t-out="', '.join(o.driver_ids.mapped('name')) or ''"/></div>
-                                        <div style="font-size: 11px; color: #555;">Helpers: <t t-out="', '.join(o.sale_helper_ids.mapped('name')) or '-'"/></div>
+                                        <div style="margin-top: 8px; font-size: 15px; font-weight: bold;"><t t-out="o.driver_name or ''"/></div>
+                                        <div style="font-size: 11px; color: #555;">Helpers: <t t-out="o.helper_name or '-'"/></div>
                                         <div style="margin-top: 20px; border-bottom: 1px solid black; width: 90%;"></div>
                                     </td>
                                     <td style="width: 50%; padding: 10px;">

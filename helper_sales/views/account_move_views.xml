@@ -6,8 +6,8 @@
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='partner_id']" position="after">
-                <field name="driver_ids" widget="many2many_tags" readonly="state != 'draft'"/>
-                <field name="sale_helper_ids" widget="many2many_tags" readonly="state != 'draft'"/>
+                <field name="driver_name" readonly="state != 'draft'"/>
+                <field name="helper_name" readonly="state != 'draft'"/>
                 <field name="car_id" options="{'no_create': True, 'no_quick_create': True, 'no_create_edit': True}" readonly="state != 'draft'"/>
                 <field name="region_id" readonly="state != 'draft'"/>
             </xpath>

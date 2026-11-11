@@ -17,11 +17,13 @@ class AccountPaymentInherit(models.Model):
                 ], limit=1)
                 
                 if unfinished_payment and unfinished_payment.create_date:
-                    # Tumia dakika 1 kwa ajili ya testing kama ulivyoomba (badilisha iwe hours=24 baadaye)
-                    if (fields.Datetime.now() - unfinished_payment.create_date) > timedelta(minutes=1):
+                    # Number of days is set in Settings > Helper Sales > Payment Rules
+                    days = self.env['res.config.settings']._get_payment_pending_days()
+                    if (fields.Datetime.now() - unfinished_payment.create_date) > timedelta(days=days):
                         raise UserError(
-                            "This customer has a previous payment that is still incomplete, and more than 1 minute has passed! "
-                            "Please complete the previous payment before creating a new one."
+                            "This customer has a previous payment that is still incomplete, "
+                            "and more than %s day(s) have passed! "
+                            "Please complete the previous payment before creating a new one." % days
                         )
                         
         return super().create(vals_list)

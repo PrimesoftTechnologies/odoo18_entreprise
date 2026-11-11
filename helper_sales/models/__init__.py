@@ -12,3 +12,5 @@ from . import stock_move
 from . import stock_picking
 from . import stock_return_picking
 from . import stock_quant
+from . import mrp_production
+from . import mrp_production_reject_wizard

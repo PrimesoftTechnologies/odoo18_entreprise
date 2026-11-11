@@ -2,7 +2,7 @@
 
 {
     "name": "Helper Sales",
-    "version": "18.0.4.0.0",
+    "version": "18.0.4.1.0",
     "category": "Sales",
     "sequence": -28,
     "summary": "Logistics, approvals and controls for Sales, Inventory and Accounting",
@@ -16,6 +16,7 @@
 - Update Quantity restricted to one authorised group
 - Automatic Product Internal Reference based on Product Categories (Short Code & Prefix)
 - Configuration tool to bulk generate product references
+- Manufacturing: 2-level approval (Production Manager, Cost Shared Manager)
     """,
     "author": "PrimeSoft Technologies",
     "depends": [
@@ -24,6 +25,7 @@
         "purchase",
         "purchase_stock",
         "stock",
+        "mrp",
         "hr",
         "account",
         "analytic",
@@ -39,6 +41,7 @@
         "views/partner_views.xml",
         "views/product_views.xml",
         "views/res_config_settings_views.xml",
+        "views/mrp_views.xml",
         "reports/invoice_report.xml",
     ],
     "installable": True,

@@ -1,11 +1,27 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, _
+from odoo import api, models, fields, _
 from odoo.exceptions import UserError
 
 
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
+
+    payment_pending_days = fields.Integer(
+        string='Days allowed for an unfinished payment',
+        config_parameter='helper_sales.payment_pending_days',
+        default=1,
+        help="A customer with a Draft / In Process payment older than this number of days "
+             "cannot get a new payment until the old one is completed.",
+    )
+
+    @api.model
+    def _get_payment_pending_days(self):
+        value = self.env['ir.config_parameter'].sudo().get_param('helper_sales.payment_pending_days', '1')
+        try:
+            return max(int(value), 0)
+        except (TypeError, ValueError):
+            return 1
 
     def action_generate_product_references(self):
         """Inapitia bidhaa zote ambazo hazina Internal Reference na kategoria zake zimewezeshwa Auto Generate."""
