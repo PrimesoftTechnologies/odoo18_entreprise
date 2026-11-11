@@ -54,16 +54,18 @@ class SaleOrder(models.Model):
         string="Helpers (Old)",
     )
 
-    # Driver na Helper zimebadilishwa kuwa Char ili kuruhusu kuandika majina huru bila kujisave kwenye mfumo
-    driver_name = fields.Char(
-        string="Driver(s)", 
-        tracking=True, 
-        help="Type the driver's name here if they are not in the list."
+    # Old free-text fields (kept so existing data is not lost; migrated to the lists below)
+    driver_name = fields.Char(string="Driver (Old Text)")
+    helper_name = fields.Char(string="Helper (Old Text)")
+
+    # Pick one or more names from the list, or type a new name and create it
+    driver_ids = fields.Many2many(
+        "sale.driver", "sale_order_sale_driver_rel", "order_id", "driver_id",
+        string="Drivers", tracking=True,
     )
-    helper_name = fields.Char(
-        string="Helper(s)", 
-        tracking=True, 
-        help="Type the helper's name here if they are not in the list."
+    sale_helper_ids = fields.Many2many(
+        "sale.helper", "sale_order_sale_helper_rel", "order_id", "helper_id",
+        string="Helpers", tracking=True,
     )
 
     car_id = fields.Many2one("sale.car", string="Car Number", required=True, tracking=True)
@@ -72,8 +74,8 @@ class SaleOrder(models.Model):
     def _prepare_invoice(self):
         invoice_vals = super()._prepare_invoice()
         invoice_vals.update({
-            'driver_name': self.driver_name,
-            'helper_name': self.helper_name,
+            'driver_ids': [(6, 0, self.driver_ids.ids)],
+            'sale_helper_ids': [(6, 0, self.sale_helper_ids.ids)],
             'car_id': self.car_id.id,
             'region_id': self.region_id.id,
         })
