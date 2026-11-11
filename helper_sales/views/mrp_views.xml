@@ -30,6 +30,13 @@
                         class="btn-warning"
                         groups="!helper_sales.group_mo_cost_share_manager"
                         invisible="approval_state != 'cost_pending'"/>
+
+                <!-- Partial production: only the Production Manager decides Backorder / No Backorder -->
+                <button name="action_wait_backorder_decision" type="object"
+                        string="Wait for Production Manager (Backorder)"
+                        class="btn-warning"
+                        groups="!helper_sales.group_mo_production_manager"
+                        invisible="approval_state != 'backorder_pending'"/>
             </xpath>
 
             <xpath expr="//header" position="after">
@@ -50,11 +57,20 @@
                     Please check the Cost Share (%) in the By-Products tab, then click <strong>Produce All</strong>
                     to approve, or <strong>Reject</strong>.
                 </div>
+                <div class="alert alert-warning mb-0" role="alert" invisible="approval_state != 'backorder_pending'"
+                     groups="!helper_sales.group_mo_production_manager">
+                    Cost Shared is approved. Waiting for the Production Manager to decide Backorder / No Backorder.
+                </div>
+                <div class="alert alert-info mb-0" role="alert" invisible="approval_state != 'backorder_pending'"
+                     groups="helper_sales.group_mo_production_manager">
+                    Cost Shared is approved. Click <strong>Produce All / Mark as Done</strong> and choose
+                    <strong>Create Backorder</strong> or <strong>No Backorder</strong> to finish.
+                </div>
             </xpath>
 
             <xpath expr="//field[@name='bom_id']" position="after">
                 <field name="approval_state" widget="badge"
-                       decoration-info="approval_state in ('prod_pending', 'cost_pending')"
+                       decoration-info="approval_state in ('prod_pending', 'cost_pending', 'backorder_pending')"
                        decoration-success="approval_state in ('prod_approved', 'cost_approved')"
                        decoration-danger="approval_state == 'rejected'"/>
             </xpath>

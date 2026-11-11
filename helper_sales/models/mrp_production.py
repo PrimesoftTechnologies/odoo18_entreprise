@@ -2,6 +2,7 @@
 
 from odoo import _, fields, models
 from odoo.exceptions import UserError
+from odoo.tools import float_compare
 
 PROD_GROUP = 'helper_sales.group_mo_production_manager'
 COST_GROUP = 'helper_sales.group_mo_cost_share_manager'
@@ -19,6 +20,7 @@ class MrpProduction(models.Model):
             ('prod_approved', 'Production Approved'),
             ('cost_pending', 'Waiting Cost Shared Manager'),
             ('cost_approved', 'Cost Shared Approved'),
+            ('backorder_pending', 'Waiting Production Manager (Backorder)'),
         ],
         string='Approval Status', default='draft', copy=False, tracking=True,
     )
@@ -172,6 +174,37 @@ class MrpProduction(models.Model):
             production.message_post(body=_("Cost Shared approved by %s.", self.env.user.name))
 
     # ------------------------------------------------------------------
+    # Backorder decision belongs to the Production Manager
+    # ------------------------------------------------------------------
+    def action_wait_backorder_decision(self):
+        return self._notification(
+            _("Waiting for Production Manager"),
+            _("The Production Manager must decide 'Create Backorder' or 'No Backorder' to finish this order."),
+            'warning',
+        )
+
+    def _is_partial_production(self):
+        """ True when only part of the quantity is produced (Odoo would ask for a Backorder). """
+        self.ensure_one()
+        rounding = self.product_uom_id.rounding
+        return (float_compare(self.qty_producing, 0, precision_rounding=rounding) > 0
+                and float_compare(self.qty_producing, self.product_qty, precision_rounding=rounding) < 0)
+
+    def _hand_over_to_production_manager(self):
+        self._ensure_approvers_exist(PROD_GROUP, _("Production Manager"))
+        to_hand_over = self.filtered(lambda p: p.approval_state != 'backorder_pending')
+        if to_hand_over:
+            to_hand_over.write({'approval_state': 'backorder_pending'})
+            to_hand_over._close_approval_activities()
+            for production in to_hand_over:
+                production.message_post(body=_(
+                    "Cost Shared approved. Only part of the quantity is produced, so the Production Manager "
+                    "must decide Backorder / No Backorder."))
+            to_hand_over._schedule_approval_activity(
+                PROD_GROUP, _("Cost Shared approved. Please click Produce All / Mark as Done and decide "
+                              "Create Backorder or No Backorder."))
+
+    # ------------------------------------------------------------------
     # Checks used by Produce All / Mark as Done
     # ------------------------------------------------------------------
     def _get_approval_stage(self):
@@ -240,7 +273,7 @@ class MrpProduction(models.Model):
         to_cost_approval = self.env['mrp.production']
         for production in self:
             stage = production._get_approval_stage()
-            if stage == 'cost_approved':
+            if stage in ('cost_approved', 'backorder_pending'):
                 continue
             if production.state == 'draft':
                 if stage == 'prod_pending':
@@ -248,7 +281,7 @@ class MrpProduction(models.Model):
                 raise UserError(_("%s must be approved first. Please click 'Submit for Approval'.", production.name))
             if stage == 'cost_pending':
                 if self.env.user.has_group(COST_GROUP):
-                    production._approve_cost_share()  # final approval, then the normal Odoo flow continues
+                    production._approve_cost_share()  # final approval, the flow continues below
                     continue
                 raise UserError(_("%s is waiting for the Cost Shared Manager's approval.", production.name))
             # stage == 'prod_approved': the creator continues
@@ -266,4 +299,22 @@ class MrpProduction(models.Model):
                     'success',
                 )
             self = remaining
+
+        # Partial production => the Production Manager decides Backorder / No Backorder
+        if not self.env.user.has_group(PROD_GROUP):
+            partial = self.filtered(lambda p: p._is_partial_production())
+            if partial:
+                partial._hand_over_to_production_manager()
+                remaining = self - partial
+                if not remaining:
+                    return self._notification(
+                        _("Sent to Production Manager"),
+                        _("Cost Shared is approved. The Production Manager will decide Backorder / No Backorder "
+                          "and finish this order."),
+                        'success',
+                    )
+                self = remaining
+        else:
+            self.filtered(lambda p: p.approval_state == 'backorder_pending')._close_approval_activities()
+
         return super(MrpProduction, self).button_mark_done()
