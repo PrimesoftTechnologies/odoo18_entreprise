@@ -148,7 +148,7 @@ class MrpProduction(models.Model):
     # ------------------------------------------------------------------
     def action_wait_cost_approval(self):
         return self._notification(
-            _("Waiting for Cost Shared Approval"),
+            _("Waiting for Cost Manager Approval"),
             _("This Manufacturing Order is waiting for the Cost Manager. "
               "You will be notified once it is approved."),
             'warning',
@@ -283,7 +283,7 @@ class MrpProduction(models.Model):
                 if self.env.user.has_group(COST_GROUP):
                     production._approve_cost_share()  # final approval, the flow continues below
                     continue
-                raise UserError(_("%s is waiting for the Cost Shared Manager's approval.", production.name))
+                raise UserError(_("%s is waiting for the Cost Manager's approval.", production.name))
             # stage == 'prod_approved': the creator continues
             production._check_is_creator()
             production._check_ready_to_produce()
@@ -294,8 +294,8 @@ class MrpProduction(models.Model):
             remaining = self - to_cost_approval
             if not remaining:
                 return self._notification(
-                    _("Sent for Cost Shared Approval"),
-                    _("Everything is ready. The Cost Shared Manager must approve before you can Produce All."),
+                    _("Sent for Cost Manager Approval"),
+                    _("Everything is ready. The Cost Manager must approve before you can Produce All."),
                     'success',
                 )
             self = remaining
@@ -309,7 +309,7 @@ class MrpProduction(models.Model):
                 if not remaining:
                     return self._notification(
                         _("Sent to Production Manager"),
-                        _("Cost Shared is approved. The Production Manager will decide Backorder / No Backorder "
+                        _("Cost Manager is approved. The Production Manager will decide Backorder / No Backorder "
                           "and finish this order."),
                         'success',
                     )

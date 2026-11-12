@@ -26,7 +26,7 @@
                 <button name="action_open_reject_wizard" type="object" string="Reject"
                         groups="helper_sales.group_mo_cost_share_manager"
                         invisible="approval_state != 'cost_pending'"/>
-                <button name="action_wait_cost_approval" type="object" string="Wait for Cost Manager Approval"
+                <button name="action_wait_cost_approval" type="object" string="Wait for Cost Shared Approval"
                         class="btn-warning"
                         groups="!helper_sales.group_mo_cost_share_manager"
                         invisible="approval_state != 'cost_pending'"/>
@@ -50,7 +50,7 @@
                 </div>
                 <div class="alert alert-warning mb-0" role="alert" invisible="approval_state != 'cost_pending'"
                      groups="!helper_sales.group_mo_cost_share_manager">
-                    Waiting for the Cost Manager's approval.
+                    Waiting for the Cost Shared Manager's approval.
                 </div>
                 <div class="alert alert-info mb-0" role="alert" invisible="approval_state != 'cost_pending'"
                      groups="helper_sales.group_mo_cost_share_manager">
