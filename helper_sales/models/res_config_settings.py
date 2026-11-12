@@ -1,7 +1,6 @@
-from datetime import timedelta
-
 # -*- coding: utf-8 -*-
 
+from datetime import timedelta
 from odoo import api, models, fields, _
 from odoo.exceptions import UserError
 
@@ -9,7 +8,7 @@ from odoo.exceptions import UserError
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
-    payment_pending_value = fields.Integer(
+    payment_pending_days = fields.Integer(
         string='Time allowed for an unfinished payment',
         config_parameter='helper_sales.payment_pending_days',  # same key as before, so the saved value is kept
         default=1,

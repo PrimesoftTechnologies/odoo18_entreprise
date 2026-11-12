@@ -35,7 +35,7 @@
                             <div class="content-group">
                                 <div class="row mt8">
                                     <div class="col-3">
-                                        <field name="payment_pending_value"/>
+                                        <field name="payment_pending_days"/>
                                     </div>
                                     <div class="col-4">
                                         <field name="payment_pending_unit"/>
