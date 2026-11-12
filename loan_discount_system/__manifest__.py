@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 {
     'name': 'Loan Discount System',
     'version': '18.0.2.0.0',
