@@ -35,6 +35,19 @@
         </field>
     </record>
 
+    <!-- Sales Orders list (the Quotations list is handled above) -->
+    <record id="view_order_tree_inherit_driver_helper" model="ir.ui.view">
+        <field name="name">sale.order.order.tree.inherit.driver.helper</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="driver_ids" optional="show" widget="many2many_tags"/>
+                <field name="sale_helper_ids" optional="show" widget="many2many_tags"/>
+            </xpath>
+        </field>
+    </record>
+
     <!-- 2. Cars -->
     <record id="view_sale_car_tree" model="ir.ui.view">
         <field name="name">sale.car.tree</field>

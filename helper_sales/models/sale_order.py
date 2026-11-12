@@ -80,10 +80,12 @@ class SaleOrder(models.Model):
     driver_ids = fields.Many2many(
         "sale.driver", "sale_order_sale_driver_rel", "order_id", "driver_id",
         string="Drivers", tracking=True, domain=[('is_external', '=', False)],
+        required=True,
     )
     sale_helper_ids = fields.Many2many(
         "sale.helper", "sale_order_sale_helper_rel", "order_id", "helper_id",
         string="Helpers", tracking=True, domain=[('is_external', '=', False)],
+        required=True,
     )
 
     car_id = fields.Many2one("sale.car", string="Car Number", required=True, tracking=True)
@@ -101,6 +103,8 @@ class SaleOrder(models.Model):
 
     def action_confirm(self):
         for order in self:
+            if not order.driver_ids or not order.sale_helper_ids:
+                raise UserError(_("Driver and Helper are required on %s.", order.name))
             order.partner_id.commercial_partner_id._check_tin_required()
         return super().action_confirm()
 

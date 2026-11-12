@@ -25,7 +25,7 @@ class StockQuant(models.Model):
     def action_request_count_approval(self):
         quants = self.filtered('inventory_quantity_set')
         if not quants:
-            raise UserError(_("Please enter the Counted Quantity first."))
+            raise UserError(_("Please select the rows where the Counted Quantity is filled."))
         quants.sudo().write({'count_approval_state': 'waiting', 'count_approved_by': False})
         return True
 
@@ -33,6 +33,8 @@ class StockQuant(models.Model):
         if not self.env.user.has_group('helper_sales.group_stock_count_approver'):
             raise UserError(_("Only a Physical Count Approver can approve stock counts."))
         quants = self.filtered(lambda q: q.count_approval_state == 'waiting')
+        if not quants:
+            raise UserError(_("Please select the counts that are 'Waiting Approval'."))
         quants.sudo().write({'count_approval_state': 'approved', 'count_approved_by': self.env.user.id})
         return True
 
