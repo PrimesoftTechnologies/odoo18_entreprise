@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <menuitem id="menu_lds_root" name="Loan Distribution"
+    <!-- Accounting > Loans is left untouched. -->
+    <menuitem id="menu_lds_root" name="Loan Discount System"
               web_icon="loan_discount_system,static/description/icon.png"
               sequence="55" groups="group_lds_user,account.group_account_manager"/>
 

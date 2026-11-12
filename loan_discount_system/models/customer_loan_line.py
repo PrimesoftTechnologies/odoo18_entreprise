@@ -27,7 +27,7 @@ class LdsCustomerLoanLine(models.Model):
             line.payment = line.principal + line.interest
 
     def action_pay(self):
-        """The customer pays this installment: Dr Bank / Cr Receivable (principal) / Cr Interest income."""
+        """The customer pays this installment: Dr Ledger (Bank) / Cr Receivable (principal) / Cr Interest income."""
         for line in self:
             loan = line.loan_id
             if loan.state != 'running':
@@ -38,10 +38,11 @@ class LdsCustomerLoanLine(models.Model):
             if loan.post_entries and line.payment:
                 company = loan.company_id
                 journal = loan._lds_journal()
+                ledger = loan._lds_ledger()
                 receivable = company._lds_receivable(loan.partner_id)
                 label = _("Payment %(n)s - %(loan)s (%(c)s)", n=line.number, loan=loan.name, c=loan.partner_id.name)
                 move_lines = [
-                    (journal.default_account_id, line.payment, 0.0, label, loan.partner_id),
+                    (ledger, line.payment, 0.0, label, loan.partner_id),
                     (receivable, 0.0, line.principal, label, loan.partner_id),
                 ]
                 if line.interest:

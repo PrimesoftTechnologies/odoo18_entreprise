@@ -36,8 +36,13 @@ class LdsCustomerLoan(models.Model):
     loan_available = fields.Monetary(compute='_compute_odoo_loan', string='Still Available')
     journal_id = fields.Many2one(
         'account.journal', string='Journal',
-        domain="[('company_id', '=', company_id), ('type', 'in', ('bank', 'cash'))]",
+        domain="[('company_id', '=', company_id), ('type', '=', 'general')]",
         default=lambda self: self.env.company.lds_journal_id)
+    ledger_account_id = fields.Many2one(
+        'account.account', string='Ledger',
+        domain="[('company_ids', 'in', company_id)]",
+        default=lambda self: self.env.company.lds_ledger_account_id,
+        help="Ledger account on the money side (Bank / Cash).")
     post_entries = fields.Boolean(string='Post Accounting Entries', default=True)
     move_id = fields.Many2one('account.move', string='Disbursement Entry', readonly=True, copy=False)
     notes = fields.Text()
@@ -115,15 +120,21 @@ class LdsCustomerLoan(models.Model):
     @api.onchange('company_id')
     def _onchange_company_id(self):
         self.journal_id = self.company_id.lds_journal_id
+        self.ledger_account_id = self.company_id.lds_ledger_account_id
 
     def _lds_journal(self):
         self.ensure_one()
         journal = self.journal_id or self.company_id.sudo().lds_journal_id
         if not journal:
-            raise UserError(_("Select the Journal in the Loan Settings tab."))
-        if not journal.default_account_id:
-            raise UserError(_("Journal '%s' has no default account.", journal.name))
+            raise UserError(_("Select the Journal (Miscellaneous) in the Loan Settings tab."))
         return journal
+
+    def _lds_ledger(self):
+        self.ensure_one()
+        account = self.ledger_account_id or self.company_id.sudo().lds_ledger_account_id
+        if not account:
+            raise UserError(_("Select the Ledger (Bank / Cash account) in the Loan Settings tab."))
+        return account
 
     # ------------------------------------------------------------------
     # Buttons
@@ -184,12 +195,13 @@ class LdsCustomerLoan(models.Model):
             if loan.post_entries:
                 company = loan.company_id
                 journal = loan._lds_journal()
+                ledger = loan._lds_ledger()
                 receivable = company._lds_receivable(loan.partner_id)
                 label = _("Loan %(n)s given to %(c)s", n=loan.name, c=loan.partner_id.name)
-                # Dr Customer receivable / Cr Bank
+                # Dr Customer receivable / Cr Ledger (Bank)
                 loan.move_id = company._lds_post_move(journal, loan.date, label, [
                     (receivable, loan.amount, 0.0, label, loan.partner_id),
-                    (journal.default_account_id, 0.0, loan.amount, label, loan.partner_id),
+                    (ledger, 0.0, loan.amount, label, loan.partner_id),
                 ])
             loan.state = 'running'
         return True

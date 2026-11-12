@@ -8,8 +8,13 @@ class ResCompany(models.Model):
 
     lds_journal_id = fields.Many2one(
         'account.journal', string='Default Loan Journal',
-        domain="[('company_id', '=', id), ('type', 'in', ('bank', 'cash'))]",
-        help="One bank/cash journal used for all entries (can be changed on each loan).")
+        domain="[('company_id', '=', id), ('type', '=', 'general')]",
+        help="Miscellaneous journal used for all entries (can be changed on each loan).")
+    lds_ledger_account_id = fields.Many2one(
+        'account.account', string='Default Ledger',
+        domain="[('company_ids', 'in', id)]",
+        help="Ledger account on the money side (e.g. Bank / Cash): credited when the loan is given to the "
+             "customer, debited when the customer pays.")
     lds_interest_income_account_id = fields.Many2one(
         'account.account', string='Interest Income Account',
         domain="[('company_ids', 'in', id)]",
@@ -17,6 +22,7 @@ class ResCompany(models.Model):
 
     _LDS_LABELS = {
         'lds_interest_income_account_id': 'Interest Income Account',
+        'lds_ledger_account_id': 'Default Ledger',
     }
 
     def _lds_cfg(self, keys):

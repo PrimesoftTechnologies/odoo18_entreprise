@@ -94,7 +94,10 @@
                                     <field name="odoo_loan_model" readonly="1"/>
                                 </group>
                                 <group string="Accounting">
-                                    <field name="journal_id" readonly="state != 'draft'"/>
+                                    <field name="journal_id" readonly="state != 'draft'"
+                                           required="state == 'draft' and post_entries"/>
+                                    <field name="ledger_account_id" readonly="state != 'draft'"
+                                           required="state == 'draft' and post_entries"/>
                                     <field name="post_entries" readonly="state != 'draft'"/>
                                     <field name="move_id"/>
                                     <field name="paid_principal"/>

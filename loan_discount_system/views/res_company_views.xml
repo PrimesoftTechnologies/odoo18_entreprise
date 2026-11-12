@@ -10,6 +10,7 @@
                     <group>
                         <group string="Distribution to customers (Discount Centers)">
                             <field name="lds_journal_id"/>
+                            <field name="lds_ledger_account_id"/>
                             <field name="lds_interest_income_account_id"/>
                         </group>
                     </group>
