@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import _, fields, models
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 
@@ -31,6 +31,15 @@ class SaleDriver(models.Model):
     phone = fields.Char(string='Phone')
     employee_id = fields.Many2one('hr.employee', string='Employee (optional)')
     active = fields.Boolean(default=True)
+    is_external = fields.Boolean(
+        string='External', default=False, copy=False,
+        help="Typed on an order for someone who is not in the list. External names are not shown in the list.")
+
+    @api.model
+    def name_create(self, name):
+        # A name typed on an order is kept for that order only, it is NOT added to the selectable list
+        record = self.create({'name': name, 'is_external': True})
+        return record.id, record.display_name
 
 
 class SaleHelper(models.Model):
@@ -42,6 +51,15 @@ class SaleHelper(models.Model):
     phone = fields.Char(string='Phone')
     employee_id = fields.Many2one('hr.employee', string='Employee (optional)')
     active = fields.Boolean(default=True)
+    is_external = fields.Boolean(
+        string='External', default=False, copy=False,
+        help="Typed on an order for someone who is not in the list. External names are not shown in the list.")
+
+    @api.model
+    def name_create(self, name):
+        # A name typed on an order is kept for that order only, it is NOT added to the selectable list
+        record = self.create({'name': name, 'is_external': True})
+        return record.id, record.display_name
 
 
 class SaleOrder(models.Model):
@@ -54,18 +72,18 @@ class SaleOrder(models.Model):
         string="Helpers (Old)",
     )
 
-    # Old free-text fields (kept so existing data is not lost; migrated to the lists below)
+    # Old free-text fields (kept only so old data is not lost; not shown on the forms)
     driver_name = fields.Char(string="Driver (Old Text)")
     helper_name = fields.Char(string="Helper (Old Text)")
 
-    # Pick one or more names from the list, or type a new name and create it
+    # Pick people from the list, or type an outside name (kept on this order only, not added to the list)
     driver_ids = fields.Many2many(
         "sale.driver", "sale_order_sale_driver_rel", "order_id", "driver_id",
-        string="Drivers", tracking=True,
+        string="Drivers", tracking=True, domain=[('is_external', '=', False)],
     )
     sale_helper_ids = fields.Many2many(
         "sale.helper", "sale_order_sale_helper_rel", "order_id", "helper_id",
-        string="Helpers", tracking=True,
+        string="Helpers", tracking=True, domain=[('is_external', '=', False)],
     )
 
     car_id = fields.Many2one("sale.car", string="Car Number", required=True, tracking=True)

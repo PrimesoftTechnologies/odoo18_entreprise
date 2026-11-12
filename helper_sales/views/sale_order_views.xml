@@ -8,8 +8,8 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='partner_id']" position="after">
                 <!-- Drivers / Helpers: sasa ni sehemu ya kuandika jina huru (Char) bila kujisave kwenye database -->
-                <field name="driver_ids" widget="many2many_tags" readonly="state not in ['draft', 'sent']"/>
-                <field name="sale_helper_ids" widget="many2many_tags" readonly="state not in ['draft', 'sent']"/>
+                <field name="driver_ids" widget="many2many_tags" options="{'no_create_edit': True}" readonly="state not in ['draft', 'sent']"/>
+                <field name="sale_helper_ids" widget="many2many_tags" options="{'no_create_edit': True}" readonly="state not in ['draft', 'sent']"/>
                 <!-- Car: selection only, no creating from the order -->
                 <field name="car_id" options="{'no_create': True, 'no_quick_create': True, 'no_create_edit': True}" readonly="state not in ['draft', 'sent']"/>
                 <field name="region_id" readonly="state not in ['draft', 'sent']"/>
@@ -91,6 +91,7 @@
     </record>
 
     <record id="action_sale_driver" model="ir.actions.act_window">
+        <field name="domain">[('is_external', '=', False)]</field>
         <field name="name">Drivers</field>
         <field name="res_model">sale.driver</field>
         <field name="view_mode">list,form</field>
@@ -113,6 +114,7 @@
     </record>
 
     <record id="action_sale_helper" model="ir.actions.act_window">
+        <field name="domain">[('is_external', '=', False)]</field>
         <field name="name">Helpers</field>
         <field name="res_model">sale.helper</field>
         <field name="view_mode">list,form</field>

@@ -18,11 +18,11 @@ class AccountMove(models.Model):
 
     driver_ids = fields.Many2many(
         "sale.driver", "account_move_sale_driver_rel", "move_id", "driver_id",
-        string="Drivers", tracking=True,
+        string="Drivers", tracking=True, domain=[('is_external', '=', False)],
     )
     sale_helper_ids = fields.Many2many(
         "sale.helper", "account_move_sale_helper_rel", "move_id", "helper_id",
-        string="Helpers", tracking=True,
+        string="Helpers", tracking=True, domain=[('is_external', '=', False)],
     )
     car_id = fields.Many2one("sale.car", string="Car Number", tracking=True)
     region_id = fields.Many2one("sale.region", string="Region", tracking=True)
