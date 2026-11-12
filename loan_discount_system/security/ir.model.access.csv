@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_lds_customer_loan_user,lds.customer.loan user,model_lds_customer_loan,group_lds_user,1,0,0,0
+access_lds_customer_loan_treasurer,lds.customer.loan treasurer,model_lds_customer_loan,group_lds_treasurer,1,1,1,1
+access_lds_customer_loan_acc,lds.customer.loan accountant,model_lds_customer_loan,account.group_account_manager,1,1,1,1
+access_lds_customer_loan_line_user,lds.customer.loan.line user,model_lds_customer_loan_line,group_lds_user,1,0,0,0
+access_lds_customer_loan_line_treasurer,lds.customer.loan.line treasurer,model_lds_customer_loan_line,group_lds_treasurer,1,1,1,1
+access_lds_customer_loan_line_acc,lds.customer.loan.line accountant,model_lds_customer_loan_line,account.group_account_manager,1,1,1,1
+access_lds_customer_loan_upload_treasurer,lds.customer.loan.upload treasurer,model_lds_customer_loan_upload,group_lds_treasurer,1,1,1,1
+access_lds_customer_loan_upload_acc,lds.customer.loan.upload accountant,model_lds_customer_loan_upload,account.group_account_manager,1,1,1,1

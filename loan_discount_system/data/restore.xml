@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Accounting > Loans is NOT modified by this module. If an older version of the module had
+         redirected it, this puts it back (runs on install/upgrade, does nothing otherwise). -->
+    <function model="lds.customer.loan" name="_lds_restore_legacy_loans"/>
+</odoo>
