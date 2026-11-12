@@ -79,12 +79,12 @@ class SaleOrder(models.Model):
     # Pick people from the list, or type an outside name (kept on this order only, not added to the list)
     driver_ids = fields.Many2many(
         "sale.driver", "sale_order_sale_driver_rel", "order_id", "driver_id",
-        string="Drivers", tracking=True, domain=[('is_external', '=', False)],
+        string="Drivers", tracking=True,
         required=True,
     )
     sale_helper_ids = fields.Many2many(
         "sale.helper", "sale_order_sale_helper_rel", "order_id", "helper_id",
-        string="Helpers", tracking=True, domain=[('is_external', '=', False)],
+        string="Helpers", tracking=True,
         required=True,
     )
 

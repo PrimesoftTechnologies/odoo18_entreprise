@@ -8,7 +8,7 @@ class MrpProductionRejectWizard(models.TransientModel):
     _description = 'Reject Manufacturing Order'
 
     production_id = fields.Many2one('mrp.production', string='Manufacturing Order', required=True, ondelete='cascade')
-    level = fields.Selection([('production', 'Production Manager'), ('cost', 'Cost Manager')], required=True)
+    level = fields.Selection([('production', 'Production Manager'), ('cost', 'Cost Shared Manager')], required=True)
     reason = fields.Text(string='Reason for Rejection', required=True)
 
     def action_confirm_reject(self):

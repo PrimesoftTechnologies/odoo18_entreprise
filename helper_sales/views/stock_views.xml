@@ -33,9 +33,17 @@
                         groups="helper_sales.group_stock_count_approver"/>
             </xpath>
             <xpath expr="//field[@name='inventory_quantity']" position="after">
+                <field name="inventory_quantity_set" column_invisible="True"/>
                 <field name="count_approval_state" widget="badge" optional="show"
                        decoration-warning="count_approval_state == 'waiting'"
                        decoration-success="count_approval_state == 'approved'"/>
+                <button name="action_request_count_approval" type="object" string="Request Approval"
+                        icon="fa-paper-plane" class="btn btn-link"
+                        invisible="not inventory_quantity_set or count_approval_state != 'draft'"/>
+                <button name="action_approve_count" type="object" string="Approve"
+                        icon="fa-check" class="btn btn-link text-success"
+                        groups="helper_sales.group_stock_count_approver"
+                        invisible="count_approval_state != 'waiting'"/>
             </xpath>
         </field>
     </record>

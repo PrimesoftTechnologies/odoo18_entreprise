@@ -18,8 +18,8 @@ class MrpProduction(models.Model):
             ('prod_pending', 'Waiting Production Manager'),
             ('rejected', 'Rejected'),
             ('prod_approved', 'Production Approved'),
-            ('cost_pending', 'Waiting Cost Manager'),
-            ('cost_approved', 'Cost Manager Approved'),
+            ('cost_pending', 'Waiting Cost Shared Manager'),
+            ('cost_approved', 'Cost Shared Approved'),
             ('backorder_pending', 'Waiting Production Manager (Backorder)'),
         ],
         string='Approval Status', default='draft', copy=False, tracking=True,
@@ -128,7 +128,7 @@ class MrpProduction(models.Model):
 
     def _do_reject(self, level, reason):
         group = PROD_GROUP if level == 'production' else COST_GROUP
-        label = _("Production Manager") if level == 'production' else _("Cost Manager")
+        label = _("Production Manager") if level == 'production' else _("Cost Shared Manager")
         expected = 'prod_pending' if level == 'production' else 'cost_pending'
         if not self.env.user.has_group(group):
             raise UserError(_("Only the %s can reject this Manufacturing Order.", label))
@@ -148,17 +148,17 @@ class MrpProduction(models.Model):
     # ------------------------------------------------------------------
     def action_wait_cost_approval(self):
         return self._notification(
-            _("Waiting for Cost Manager Approval"),
-            _("This Manufacturing Order is waiting for the Cost Manager. "
+            _("Waiting for Cost Shared Approval"),
+            _("This Manufacturing Order is waiting for the Cost Shared Manager. "
               "You will be notified once it is approved."),
             'warning',
         )
 
     def _send_for_cost_approval(self):
-        self._ensure_approvers_exist(COST_GROUP, _("Cost Manager"))
+        self._ensure_approvers_exist(COST_GROUP, _("Cost Shared Manager"))
         self.write({'approval_state': 'cost_pending', 'reject_reason': False})
         for production in self:
-            production.message_post(body=_("Sent for Cost Manager approval by %s.", self.env.user.name))
+            production.message_post(body=_("Sent for Cost Shared Manager approval by %s.", self.env.user.name))
         self._schedule_approval_activity(
             COST_GROUP, _("Please review the Cost Share (%) and click Produce All to approve, or Reject."))
 
@@ -283,7 +283,7 @@ class MrpProduction(models.Model):
                 if self.env.user.has_group(COST_GROUP):
                     production._approve_cost_share()  # final approval, the flow continues below
                     continue
-                raise UserError(_("%s is waiting for the Cost Manager's approval.", production.name))
+                raise UserError(_("%s is waiting for the Cost Shared Manager's approval.", production.name))
             # stage == 'prod_approved': the creator continues
             production._check_is_creator()
             production._check_ready_to_produce()
@@ -294,8 +294,8 @@ class MrpProduction(models.Model):
             remaining = self - to_cost_approval
             if not remaining:
                 return self._notification(
-                    _("Sent for Cost Manager Approval"),
-                    _("Everything is ready. The Cost Manager must approve before you can Produce All."),
+                    _("Sent for Cost Shared Approval"),
+                    _("Everything is ready. The Cost Shared Manager must approve before you can Produce All."),
                     'success',
                 )
             self = remaining
@@ -309,7 +309,7 @@ class MrpProduction(models.Model):
                 if not remaining:
                     return self._notification(
                         _("Sent to Production Manager"),
-                        _("Cost Manager is approved. The Production Manager will decide Backorder / No Backorder "
+                        _("Cost Shared is approved. The Production Manager will decide Backorder / No Backorder "
                           "and finish this order."),
                         'success',
                     )
