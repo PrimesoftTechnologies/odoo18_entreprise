@@ -9,8 +9,12 @@ import { getPosStore } from "@pos_restriction_quantity/app/utils";
 const EPSILON = 0.005;
 
 function toNumber(value) {
-    const n = parseFloat(value);
+    const n = parseFloat(String(value ?? "").replace(",", "."));
     return isNaN(n) ? 0 : n;
+}
+
+function intDigits(value) {
+    return String(Math.floor(Math.abs(toNumber(value)))).length;
 }
 
 function formatMoney(pos, amount) {
@@ -21,12 +25,34 @@ function formatMoney(pos, amount) {
     }
 }
 
+function getNumberBuffer(pos) {
+    return pos.numberBuffer || (pos.env && pos.env.services && pos.env.services.number_buffer);
+}
+
 /**
- * When the cashier uses the discount button of the numpad, the typed number is the
- * ACTUAL SELLING PRICE per unit (e.g. 70000), not a percentage.
- * Convert it to the percentage Odoo stores internally, so the original price and the
- * discount are both still visible on the line / receipt.
- * Empty or 0 resets the discount.
+ * True when the value comes from the cashier typing on the numpad in the given mode
+ * ("price" or "discount"), as opposed to code setting the line programmatically.
+ */
+function isNumpadInput(pos, mode, typed) {
+    if (!pos || pos.numpadMode !== mode) {
+        return false;
+    }
+    try {
+        const nb = getNumberBuffer(pos);
+        const buffer = nb && typeof nb.get === "function" ? nb.get() : null;
+        if (buffer !== null && buffer !== undefined && String(buffer) !== "") {
+            return toNumber(buffer) === toNumber(typed);
+        }
+    } catch {
+        // ignore, assume numpad
+    }
+    return true;
+}
+
+/**
+ * The numpad discount button takes the ACTUAL SELLING PRICE per unit (e.g. 70000).
+ * Odoo stores discounts as a percentage, so convert it. The original price and the
+ * discount both stay visible on the line / receipt. Empty or 0 resets the discount.
  */
 function priceToPercent(line, typedPrice) {
     const original = toNumber(line.price_unit);
@@ -37,19 +63,16 @@ function priceToPercent(line, typedPrice) {
     return Math.min(((original - typed) / original) * 100, 100);
 }
 
-function resolveDiscount(line, discount) {
-    const pos = getPosStore();
-    if (pos && pos._discountAmountMode) {
-        return priceToPercent(line, discount);
-    }
-    return toNumber(discount);
-}
-
 /**
- * Returns true when selling `line` at `price` with `discount` % is below the
- * product's Limit Discount. Shows a dialog in that case.
+ * Returns true when the line would be sold below the product's Limit Discount
+ * (the change must then be refused).
+ *
+ * `typedPrice` is only given for numpad input. The numpad applies the number after
+ * EVERY key press, so while the cashier is still typing "7", "70", "700"... the value is
+ * obviously incomplete: it is refused silently (nothing changes) until the typed number
+ * has as many digits as the limit. Only then the "Price below limit" dialog is shown.
  */
-function violatesLimit(line, price, discount) {
+function violatesLimit(line, price, discount, typedPrice = null) {
     const product = line.product_id;
     const limit = product && product.pos_discount_limit;
     if (!limit || limit <= 0) {
@@ -67,6 +90,10 @@ function violatesLimit(line, price, discount) {
     if (effective >= limit - EPSILON) {
         return false;
     }
+    // Still typing (fewer digits than the limit): refuse silently, no popup yet.
+    if (typedPrice !== null && intDigits(typedPrice) < intDigits(limit)) {
+        return true;
+    }
     const pos = getPosStore();
     if (pos) {
         const dialog = pos.dialog || pos.env.services.dialog;
@@ -82,12 +109,35 @@ function violatesLimit(line, price, discount) {
             ),
         });
         try {
-            pos.numberBuffer?.reset?.();
+            const nb = getNumberBuffer(pos);
+            nb && nb.reset && nb.reset();
         } catch {
             // ignore
         }
     }
     return true;
+}
+
+function guardedUnitPrice(line, price) {
+    const fromNumpad = isNumpadInput(getPosStore(), "price", price);
+    return violatesLimit(
+        line,
+        toNumber(price),
+        toNumber(line.discount),
+        fromNumpad ? toNumber(price) : null
+    );
+}
+
+function guardedDiscount(line, discount) {
+    const fromNumpad = isNumpadInput(getPosStore(), "discount", discount);
+    const percent = fromNumpad ? priceToPercent(line, discount) : toNumber(discount);
+    const blocked = violatesLimit(
+        line,
+        toNumber(line.price_unit),
+        percent,
+        fromNumpad ? toNumber(discount) : null
+    );
+    return { blocked, percent };
 }
 
 const proto = PosOrderline.prototype;
@@ -96,7 +146,7 @@ const proto = PosOrderline.prototype;
 if (typeof proto.set_unit_price === "function") {
     patch(proto, {
         set_unit_price(price) {
-            if (violatesLimit(this, toNumber(price), toNumber(this.discount))) {
+            if (guardedUnitPrice(this, price)) {
                 return;
             }
             return super.set_unit_price(...arguments);
@@ -106,7 +156,7 @@ if (typeof proto.set_unit_price === "function") {
 if (typeof proto.setUnitPrice === "function") {
     patch(proto, {
         setUnitPrice(price) {
-            if (violatesLimit(this, toNumber(price), toNumber(this.discount))) {
+            if (guardedUnitPrice(this, price)) {
                 return;
             }
             return super.setUnitPrice(...arguments);
@@ -116,8 +166,8 @@ if (typeof proto.setUnitPrice === "function") {
 if (typeof proto.set_discount === "function") {
     patch(proto, {
         set_discount(discount) {
-            const percent = resolveDiscount(this, discount);
-            if (violatesLimit(this, toNumber(this.price_unit), percent)) {
+            const { blocked, percent } = guardedDiscount(this, discount);
+            if (blocked) {
                 return;
             }
             return super.set_discount(percent);
@@ -127,8 +177,8 @@ if (typeof proto.set_discount === "function") {
 if (typeof proto.setDiscount === "function") {
     patch(proto, {
         setDiscount(discount) {
-            const percent = resolveDiscount(this, discount);
-            if (violatesLimit(this, toNumber(this.price_unit), percent)) {
+            const { blocked, percent } = guardedDiscount(this, discount);
+            if (blocked) {
                 return;
             }
             return super.setDiscount(percent);

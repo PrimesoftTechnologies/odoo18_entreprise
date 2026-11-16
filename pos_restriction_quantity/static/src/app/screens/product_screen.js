@@ -6,25 +6,8 @@ import { _t } from "@web/core/l10n/translation";
 
 const proto = ProductScreen.prototype;
 
-// While the cashier types in the numpad's discount mode, the value is the ACTUAL
-// SELLING PRICE (not a %). The flag is read by the order line patch, which converts it to a %.
-if (typeof proto.updateSelectedOrderline === "function") {
-    patch(proto, {
-        async updateSelectedOrderline() {
-            const isDiscount = this.pos.numpadMode === "discount";
-            if (isDiscount) {
-                this.pos._discountAmountMode = true;
-            }
-            try {
-                return await super.updateSelectedOrderline(...arguments);
-            } finally {
-                this.pos._discountAmountMode = false;
-            }
-        },
-    });
-}
-
-// Rename the "%" numpad button so the cashier knows it takes a price.
+// Rename the "%" numpad button: it now takes the actual selling price, not a percentage.
+// (The conversion to Odoo's internal discount % is done in models/pos_order_line.js)
 if (typeof proto.getNumpadButtons === "function") {
     patch(proto, {
         getNumpadButtons() {
