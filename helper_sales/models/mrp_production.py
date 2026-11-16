@@ -143,9 +143,7 @@ class MrpProduction(models.Model):
         self._close_approval_activities()
         self._notify_creator(_("Rejected by %s (%s). Reason: %s", self.env.user.name, label, reason))
 
-    # ------------------------------------------------------------------
-    # Level 2: Cost Shared Manager
-    # ------------------------------------------------------------------
+    
     def action_wait_cost_approval(self):
         return self._notification(
             _("Waiting for Cost Shared Approval"),
