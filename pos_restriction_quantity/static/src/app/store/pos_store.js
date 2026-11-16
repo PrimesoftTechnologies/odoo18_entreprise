@@ -4,10 +4,16 @@ import { PosStore } from "@point_of_sale/app/store/pos_store";
 import { patch } from "@web/core/utils/patch";
 import { AlertDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { _t } from "@web/core/l10n/translation";
+import { setPosStore } from "@pos_restriction_quantity/app/utils";
 
 const EPSILON = 0.000001;
 
 patch(PosStore.prototype, {
+    setup() {
+        super.setup(...arguments);
+        setPosStore(this);
+    },
+
     /**
      * Quantity of a product already present in not-yet-finalized orders.
      */

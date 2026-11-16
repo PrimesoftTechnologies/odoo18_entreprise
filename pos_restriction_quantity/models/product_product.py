@@ -9,6 +9,11 @@ class ProductProduct(models.Model):
         compute='_compute_pos_qty_available',
         digits='Product Unit of Measure',
     )
+    pos_discount_limit = fields.Float(
+        related='product_tmpl_id.pos_discount_limit',
+        string='Limit Discount',
+        readonly=True,
+    )
 
     def _compute_pos_qty_available(self):
         for product in self:
@@ -17,7 +22,7 @@ class ProductProduct(models.Model):
     @api.model
     def _load_pos_data_fields(self, config_id):
         fields_list = super()._load_pos_data_fields(config_id)
-        for name in ('pos_qty_available', 'is_storable'):
+        for name in ('pos_qty_available', 'is_storable', 'pos_discount_limit'):
             if name not in fields_list:
                 fields_list.append(name)
         return fields_list

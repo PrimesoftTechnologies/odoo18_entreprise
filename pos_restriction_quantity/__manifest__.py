@@ -1,17 +1,21 @@
 {
-    'name': 'POS Restriction Quantity',
-    'version': '18.0.1.0.0',
+    'name': 'POS Restriction Quantity & Discount Limit',
+    'version': '18.0.1.1.0',
     'category': 'Point of Sale',
-    'summary': 'Block selling storable products with zero (or insufficient) on-hand quantity in POS',
+    'summary': 'Block zero-stock sales and enforce a minimum selling price (discount limit) in POS',
     'description': """
-POS Restriction Quantity
-========================
-While a POS session is open, a storable product whose on-hand quantity
-(in the POS operation type's source location) is 0 can not be added to the order.
-Also blocks adding more than the available quantity.
+POS Restriction Quantity & Discount Limit
+=========================================
+1. Storable products with On Hand = 0 (or not enough stock) can not be added to the POS order.
+2. New field "Limit Discount" on the Product form (next to Sales Price). It is the lowest
+   price the cashier may sell the product for. Example: Sales Price 80,000 and Limit Discount
+   75,000 -> the cashier can sell at 75,000 or above, anything lower (74,999 and below) is refused.
+   Applies to manual price changes and discount % changes in POS. 0 = no limit.
     """,
     'depends': ['point_of_sale', 'stock'],
-    'data': [],
+    'data': [
+        'views/product_template_views.xml',
+    ],
     'assets': {
         'point_of_sale._assets_pos': [
             'pos_restriction_quantity/static/src/**/*',
