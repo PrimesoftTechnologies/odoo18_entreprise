@@ -11,8 +11,9 @@ POS Restriction Quantity & Discount Limit
    price the cashier may sell the product for. Example: Sales Price 80,000 and Limit Discount
    75,000 -> the cashier can sell at 75,000 or above, anything lower (74,999 and below) is refused.
    Applies to manual price changes and discounts in POS. 0 = no limit.
-3. The numpad discount button (%) becomes "Disc.": the cashier types a discount AMOUNT
-   (e.g. 5,000 off the line) instead of a percentage.
+3. The numpad discount button (%) becomes "Disc. Price": the cashier types the ACTUAL selling
+   price per unit (e.g. 70,000 or 60,000) instead of a percentage. The original price and the
+   discount stay visible on the line.
     """,
     'depends': ['point_of_sale', 'stock'],
     'data': [

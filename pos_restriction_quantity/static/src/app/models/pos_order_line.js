@@ -22,23 +22,25 @@ function formatMoney(pos, amount) {
 }
 
 /**
- * When the cashier uses the discount button of the numpad, the typed number is an
- * AMOUNT (e.g. 5000) of discount on the whole line, not a percentage.
- * Convert it to the percentage Odoo stores internally.
+ * When the cashier uses the discount button of the numpad, the typed number is the
+ * ACTUAL SELLING PRICE per unit (e.g. 70000), not a percentage.
+ * Convert it to the percentage Odoo stores internally, so the original price and the
+ * discount are both still visible on the line / receipt.
+ * Empty or 0 resets the discount.
  */
-function amountToPercent(line, amount) {
-    const base = toNumber(line.price_unit) * toNumber(line.qty);
-    if (!base) {
+function priceToPercent(line, typedPrice) {
+    const original = toNumber(line.price_unit);
+    const typed = toNumber(typedPrice);
+    if (!original || !typed || typed >= original) {
         return 0;
     }
-    const percent = (Math.abs(toNumber(amount)) / Math.abs(base)) * 100;
-    return Math.min(percent, 100);
+    return Math.min(((original - typed) / original) * 100, 100);
 }
 
 function resolveDiscount(line, discount) {
     const pos = getPosStore();
     if (pos && pos._discountAmountMode) {
-        return amountToPercent(line, discount);
+        return priceToPercent(line, discount);
     }
     return toNumber(discount);
 }

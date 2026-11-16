@@ -6,8 +6,8 @@ import { _t } from "@web/core/l10n/translation";
 
 const proto = ProductScreen.prototype;
 
-// While the cashier types in the numpad's discount mode, the value is an AMOUNT
-// (not a %). The flag is read by the order line patch, which converts it to a %.
+// While the cashier types in the numpad's discount mode, the value is the ACTUAL
+// SELLING PRICE (not a %). The flag is read by the order line patch, which converts it to a %.
 if (typeof proto.updateSelectedOrderline === "function") {
     patch(proto, {
         async updateSelectedOrderline() {
@@ -24,13 +24,13 @@ if (typeof proto.updateSelectedOrderline === "function") {
     });
 }
 
-// Rename the "%" numpad button so the cashier knows it takes an amount.
+// Rename the "%" numpad button so the cashier knows it takes a price.
 if (typeof proto.getNumpadButtons === "function") {
     patch(proto, {
         getNumpadButtons() {
             const buttons = super.getNumpadButtons(...arguments);
             return buttons.map((button) =>
-                button.value === "discount" ? { ...button, text: _t("Disc.") } : button
+                button.value === "discount" ? { ...button, text: _t("Disc. Price") } : button
             );
         },
     });
