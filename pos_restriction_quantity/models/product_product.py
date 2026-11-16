@@ -11,7 +11,7 @@ class ProductProduct(models.Model):
     )
     pos_discount_limit = fields.Float(
         related='product_tmpl_id.pos_discount_limit',
-        string='Limit Discount',
+        string='Limit Sales Price',
         readonly=True,
     )
 
