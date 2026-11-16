@@ -46,7 +46,7 @@ if (typeof proto.getNumpadButtons === "function") {
         getNumpadButtons() {
             const buttons = super.getNumpadButtons(...arguments);
             return buttons.map((button) =>
-                button.value === "discount" ? { ...button, text: _t("Disc. Price") } : button
+                button.value === "discount" ? { ...button, text: _t("Disc") } : button
             );
         },
     });
