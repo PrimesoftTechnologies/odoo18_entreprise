@@ -46,7 +46,7 @@ if (typeof proto.getNumpadButtons === "function") {
         getNumpadButtons() {
             const buttons = super.getNumpadButtons(...arguments);
             return buttons.map((button) =>
-                button.value === "discount" ? { ...button, text: _t("Disc") } : button
+                button.value === "discount" ? { ...button, text: _t("Discount") } : button
             );
         },
     });
@@ -61,29 +61,36 @@ if (typeof proto.onNumpadClick === "function") {
                 const line = selectedLine(currentOrder(this.pos));
                 if (line) {
                     const dialog = this.dialog || this.pos.dialog || this.env.services.dialog;
-                    const original = toNumber(line.price_unit);
-                    const effective = original * (1 - toNumber(line.discount) / 100);
+                    const qty = Math.abs(toNumber(line.qty)) || 1;
+                    const originalTotal = toNumber(line.price_unit) * qty;
+                    const effectiveTotal = originalTotal * (1 - toNumber(line.discount) / 100);
                     const isRefund = line.refunded_orderline_id || line.qty < 0;
-                    const limit = isRefund ? 0 : toNumber(line.product_id?.pos_discount_limit);
+                    const unitLimit = isRefund ? 0 : toNumber(line.product_id?.pos_discount_limit);
+                    const limitTotal = unitLimit * qty;
+                    const isDiscount = buttonValue === "discount";
                     dialog.add(DiscountPriceDialog, {
-                        title: buttonValue === "discount" ? _t("Disc. Price") : _t("Price"),
-                        startingValue: effective,
-                        currentLabel: money(this.pos, effective),
-                        limit,
-                        limitLabel: limit > 0 ? money(this.pos, limit) : "",
+                        title: isDiscount ? _t("Discount amount") : _t("Total price"),
+                        mode: isDiscount ? "discount" : "price",
+                        // discount: amount already given; price: current total
+                        startingValue: isDiscount ? originalTotal - effectiveTotal : effectiveTotal,
+                        qtyLabel: String(qty),
+                        originalTotal,
+                        originalLabel: money(this.pos, originalTotal),
+                        limit: limitTotal,
+                        limitLabel: limitTotal > 0 ? money(this.pos, limitTotal) : "",
+                        maxDiscountLabel:
+                            limitTotal > 0 ? money(this.pos, originalTotal - limitTotal) : "",
                         onConfirm: (typed) => {
-                            if (buttonValue === "discount") {
-                                // Keep the original price and store the difference as a discount.
-                                const percent =
-                                    original && typed < original
-                                        ? ((original - typed) / original) * 100
-                                        : 0;
+                            if (isDiscount) {
+                                // typed = amount taken off the line total. Odoo stores a %.
+                                const percent = originalTotal ? (typed / originalTotal) * 100 : 0;
                                 const setDiscount = line.setDiscount || line.set_discount;
                                 setDiscount.call(line, percent);
                             } else {
+                                // "Price" changes the unit price: total / quantity.
                                 line.price_type = "manual";
                                 const setPrice = line.setUnitPrice || line.set_unit_price;
-                                setPrice.call(line, typed);
+                                setPrice.call(line, typed / qty);
                             }
                         },
                     });

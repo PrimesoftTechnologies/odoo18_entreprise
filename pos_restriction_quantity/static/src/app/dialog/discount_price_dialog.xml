@@ -4,9 +4,13 @@
         <Dialog title="props.title" size="'md'">
             <div class="d-flex flex-column gap-2">
                 <div class="text-muted">
-                    Current price: <b t-esc="props.currentLabel"/>
+                    <t t-if="props.qtyLabel">Quantity: <b t-esc="props.qtyLabel"/><br/></t>
+                    Line total: <b t-esc="props.originalLabel"/>
                     <t t-if="props.limitLabel">
-                        <br/>Minimum allowed: <b t-esc="props.limitLabel"/>
+                        <br/>Minimum allowed total: <b t-esc="props.limitLabel"/>
+                        <t t-if="props.mode === 'discount'">
+                            <br/>Maximum discount: <b t-esc="props.maxDiscountLabel"/>
+                        </t>
                     </t>
                 </div>
                 <input t-ref="input"
@@ -14,7 +18,7 @@
                        step="any"
                        inputmode="decimal"
                        class="form-control form-control-lg text-end"
-                       placeholder="Type the selling price"
+                       t-att-placeholder="placeholder"
                        t-model="state.value"
                        t-on-keydown="onKeydown"/>
                 <div t-if="state.error" class="alert alert-danger mb-0 py-2" t-esc="state.error"/>

@@ -7,19 +7,24 @@ import { _t } from "@web/core/l10n/translation";
 const EPSILON = 0.005;
 
 /**
- * Small dialog where the cashier types the ACTUAL selling price of the selected line.
- * The Limit Discount of the product is checked once, when the cashier presses Ok.
+ * Dialog where the cashier types, for the selected line:
+ *  - mode "discount": the discount AMOUNT taken off the line total (e.g. 5000)
+ *  - mode "price":    the new TOTAL price of the line
+ * The product's Limit Discount (minimum price) is checked once, when pressing Ok.
  */
 export class DiscountPriceDialog extends Component {
     static template = "pos_restriction_quantity.DiscountPriceDialog";
     static components = { Dialog };
     static props = {
         title: String,
+        mode: String, // "discount" | "price"
         startingValue: { type: Number, optional: true },
-        currentLabel: { type: String, optional: true },
-        limit: { type: Number, optional: true },
+        qtyLabel: { type: String, optional: true },
+        originalTotal: Number,
+        originalLabel: { type: String, optional: true },
+        limit: { type: Number, optional: true }, // minimum allowed total of the line (0 = none)
         limitLabel: { type: String, optional: true },
-        // called with the typed price when it is valid
+        maxDiscountLabel: { type: String, optional: true },
         onConfirm: Function,
         close: Function,
         getPayload: { type: Function, optional: true },
@@ -40,6 +45,12 @@ export class DiscountPriceDialog extends Component {
         });
     }
 
+    get placeholder() {
+        return this.props.mode === "discount"
+            ? _t("Type the discount amount")
+            : _t("Type the total price");
+    }
+
     onKeydown(ev) {
         if (ev.key === "Enter") {
             this.onConfirm();
@@ -48,17 +59,37 @@ export class DiscountPriceDialog extends Component {
 
     onConfirm() {
         const typed = parseFloat(String(this.state.value).replace(",", "."));
-        if (isNaN(typed) || typed <= 0) {
-            this.state.error = _t("Please type a valid price.");
+        const { mode, originalTotal, limit } = this.props;
+        const minimum = limit || 0;
+
+        if (isNaN(typed) || typed < 0 || (mode === "price" && typed <= 0)) {
+            this.state.error = _t("Please type a valid amount.");
             return;
         }
-        const limit = this.props.limit || 0;
-        if (limit > 0 && typed < limit - EPSILON) {
+
+        if (mode === "discount") {
+            if (typed > originalTotal + EPSILON) {
+                this.state.error = _t("The discount can not be more than the line total.");
+                return;
+            }
+            const result = originalTotal - typed;
+            if (minimum > 0 && result < minimum - EPSILON) {
+                this.state.error = _t(
+                    "Discount too big. The most you can give is %(max)s (the total can not go below %(limit)s).",
+                    {
+                        max: this.props.maxDiscountLabel || originalTotal - minimum,
+                        limit: this.props.limitLabel || minimum,
+                    }
+                );
+                return;
+            }
+        } else if (minimum > 0 && typed < minimum - EPSILON) {
             this.state.error = _t("You can not sell below %(limit)s.", {
-                limit: this.props.limitLabel || limit,
+                limit: this.props.limitLabel || minimum,
             });
             return;
         }
+
         this.props.onConfirm(typed);
         this.props.close();
     }

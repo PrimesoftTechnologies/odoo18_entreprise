@@ -1,6 +1,6 @@
 {
     'name': 'POS Restriction Quantity & Discount Limit',
-    'version': '18.0.1.2.0',
+    'version': '18.0.1.3.0',
     'category': 'Point of Sale',
     'summary': 'Block zero-stock sales and enforce a minimum selling price (discount limit) in POS',
     'description': """
@@ -11,9 +11,9 @@ POS Restriction Quantity & Discount Limit
    price the cashier may sell the product for. Example: Sales Price 80,000 and Limit Discount
    75,000 -> the cashier can sell at 75,000 or above, anything lower (74,999 and below) is refused.
    Applies to manual price changes and discounts in POS. 0 = no limit.
-3. The numpad discount button (%) becomes "Disc. Price": the cashier types the ACTUAL selling
-   price per unit (e.g. 70,000 or 60,000) instead of a percentage. The original price and the
-   discount stay visible on the line.
+3. The numpad discount button (%) becomes "Discount": the cashier types the discount AMOUNT
+   (e.g. 5,000) taken off the line total instead of a percentage. The Limit Discount still
+   applies: the line total can not go below Limit Discount x quantity.
     """,
     'depends': ['point_of_sale', 'stock'],
     'data': [
