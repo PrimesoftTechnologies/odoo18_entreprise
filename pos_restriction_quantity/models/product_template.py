@@ -6,7 +6,7 @@ class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
     pos_discount_limit = fields.Float(
-        string='Limit Discount',
+        string='Limit Sales Price',
         digits='Product Price',
         help="Lowest price this product may be sold for in the Point of Sale. "
              "Example: Sales Price 80,000 and Limit Discount 75,000: the cashier can sell "
