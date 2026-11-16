@@ -11,6 +11,9 @@ class SaleBusinessModel(models.Model):
 
     name = fields.Char(string='Business Name', required=True)
     code = fields.Char(string='Short Code', required=True)
+    company_id = fields.Many2one(
+        'res.company', string='Company', required=True, default=lambda self: self.env.company,
+        help="Only users working in this company see this Business Model.")
     active = fields.Boolean(default=True)
 
     _sql_constraints = [
@@ -34,6 +37,15 @@ class SaleOrderBusiness(models.Model):
 
     business_model_id = fields.Many2one(
         'sale.business.model', string='Business Model', required=True, tracking=True, ondelete='restrict', copy=True)
+
+    @api.constrains('business_model_id', 'company_id')
+    def _check_business_model_company(self):
+        for order in self:
+            model = order.business_model_id
+            if model and model.company_id != order.company_id:
+                raise ValidationError(_(
+                    "The Business Model '%(model)s' belongs to %(company)s, not to the company of this order (%(order_company)s).",
+                    model=model.name, company=model.company_id.name, order_company=order.company_id.name))
 
     @api.model_create_multi
     def create(self, vals_list):
