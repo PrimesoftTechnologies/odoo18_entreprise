@@ -5,8 +5,9 @@
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
-            <!-- Put the field in the same group as the Sales Price (works across Odoo 17/18 layouts) -->
-            <xpath expr="//field[@name='list_price']/ancestor::group[1]" position="inside">
+            <!-- Directly after the Sales Price row (label + field), whatever the exact layout is -->
+            <xpath expr="//field[@name='list_price']/ancestor::group[1]/*[descendant-or-self::field[@name='list_price']]"
+                   position="after">
                 <field name="pos_discount_limit"
                        widget="monetary"
                        options="{'currency_field': 'currency_id'}"/>

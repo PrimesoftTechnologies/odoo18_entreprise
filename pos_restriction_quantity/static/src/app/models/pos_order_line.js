@@ -22,6 +22,28 @@ function formatMoney(pos, amount) {
 }
 
 /**
+ * When the cashier uses the discount button of the numpad, the typed number is an
+ * AMOUNT (e.g. 5000) of discount on the whole line, not a percentage.
+ * Convert it to the percentage Odoo stores internally.
+ */
+function amountToPercent(line, amount) {
+    const base = toNumber(line.price_unit) * toNumber(line.qty);
+    if (!base) {
+        return 0;
+    }
+    const percent = (Math.abs(toNumber(amount)) / Math.abs(base)) * 100;
+    return Math.min(percent, 100);
+}
+
+function resolveDiscount(line, discount) {
+    const pos = getPosStore();
+    if (pos && pos._discountAmountMode) {
+        return amountToPercent(line, discount);
+    }
+    return toNumber(discount);
+}
+
+/**
  * Returns true when selling `line` at `price` with `discount` % is below the
  * product's Limit Discount. Shows a dialog in that case.
  */
@@ -92,20 +114,22 @@ if (typeof proto.setUnitPrice === "function") {
 if (typeof proto.set_discount === "function") {
     patch(proto, {
         set_discount(discount) {
-            if (violatesLimit(this, toNumber(this.price_unit), toNumber(discount))) {
+            const percent = resolveDiscount(this, discount);
+            if (violatesLimit(this, toNumber(this.price_unit), percent)) {
                 return;
             }
-            return super.set_discount(...arguments);
+            return super.set_discount(percent);
         },
     });
 }
 if (typeof proto.setDiscount === "function") {
     patch(proto, {
         setDiscount(discount) {
-            if (violatesLimit(this, toNumber(this.price_unit), toNumber(discount))) {
+            const percent = resolveDiscount(this, discount);
+            if (violatesLimit(this, toNumber(this.price_unit), percent)) {
                 return;
             }
-            return super.setDiscount(...arguments);
+            return super.setDiscount(percent);
         },
     });
 }
