@@ -33,7 +33,7 @@ class SaleOrderBusiness(models.Model):
     _inherit = 'sale.order'
 
     business_model_id = fields.Many2one(
-        'sale.business.model', string='Business Model', required=True, tracking=True, ondelete='restrict', copy=True)
+        'sale.business.model', string='Business Model', tracking=True, ondelete='restrict', copy=True)
 
     @api.model_create_multi
     def create(self, vals_list):
