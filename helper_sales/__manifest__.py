@@ -2,7 +2,7 @@
 
 {
     "name": "Helper Sales",
-    "version": "18.0.4.2.6",
+    "version": "18.0.4.4.0",
     "category": "Sales",
     "sequence": -28,
     "summary": "Logistics, approvals and controls for Sales, Inventory and Accounting",
@@ -32,6 +32,8 @@
     ],
     "data": [
         "security/security.xml",
+        "security/security_extra.xml",
+        "security/security_business.xml",
         "security/ir.model.access.csv",
         "data/sequence.xml",
         "views/sale_order_views.xml",
@@ -42,6 +44,8 @@
         "views/product_views.xml",
         "views/res_config_settings_views.xml",
         "views/mrp_views.xml",
+        "views/account_extra_views.xml",
+        "views/business_model_views.xml",
         "reports/invoice_report.xml",
     ],
     "installable": True,

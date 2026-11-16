@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- 1. Ledger (chart of accounts): analytic account -->
+    <record id="view_account_form_analytic_link" model="ir.ui.view">
+        <field name="name">account.account.form.analytic.link</field>
+        <field name="model">account.account</field>
+        <field name="inherit_id" ref="account.view_account_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='account_type']" position="after">
+                <field name="analytic_account_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- 3. Journal entry: review -->
+    <record id="view_move_form_entry_review" model="ir.ui.view">
+        <field name="name">account.move.form.entry.review</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="review_required" invisible="1"/>
+                <field name="reviewed" invisible="1"/>
+                <button name="action_review_entry" type="object" string="Review" class="btn-primary"
+                        groups="helper_sales.group_entry_reviewer"
+                        invisible="not review_required or reviewed"/>
+            </xpath>
+            <xpath expr="//header" position="after">
+                <div class="alert alert-warning mb-0" role="alert" invisible="not review_required or reviewed">
+                    This entry contains a manual operation made in the bank reconciliation. It must be reviewed.
+                </div>
+                <div class="alert alert-success mb-0" role="alert" invisible="not review_required or not reviewed">
+                    Reviewed by <field name="reviewed_by" readonly="1" nolabel="1" class="d-inline"/>
+                    on <field name="reviewed_date" readonly="1" nolabel="1" class="d-inline"/>.
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_account_move_filter_entry_review" model="ir.ui.view">
+        <field name="name">account.move.select.entry.review</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_move_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter string="To Review (Manual Reconciliation)" name="to_review_entries"
+                        domain="[('review_required', '=', True), ('reviewed', '=', False)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

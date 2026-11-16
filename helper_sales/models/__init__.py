@@ -15,3 +15,9 @@ from . import stock_quant
 from . import mrp_production
 from . import mrp_production_reject_wizard
 from . import mrp_production_backorder
+from . import account_account
+from . import account_journal
+from . import account_move_intercompany
+from . import account_move_review
+from . import mrp_production_variance
+from . import sale_business_model

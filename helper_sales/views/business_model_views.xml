@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_sale_business_model_tree" model="ir.ui.view">
+        <field name="name">sale.business.model.tree</field>
+        <field name="model">sale.business.model</field>
+        <field name="arch" type="xml">
+            <list string="Business Models" editable="bottom">
+                <field name="name"/>
+                <field name="code"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_sale_business_model" model="ir.actions.act_window">
+        <field name="name">Business Models</field>
+        <field name="res_model">sale.business.model</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_sale_business_model" name="Business Models" parent="sale.menu_sale_config"
+              action="action_sale_business_model" sequence="18"/>
+
+    <!-- Sale Order form: Business Model dropdown -->
+    <record id="view_sale_order_form_business_model" model="ir.ui.view">
+        <field name="name">sale.order.form.business.model</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="business_model_id"
+                       options="{'no_create': True, 'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"
+                       readonly="state not in ['draft', 'sent']"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
