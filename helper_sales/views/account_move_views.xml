@@ -6,12 +6,12 @@
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
             
-            <!-- 1. Kitufe cha Review kionekane kikiwa posted na hakijawa reviewed -->
+            <!-- 1. Kitufe cha Review kionekane kikiwa posted -->
             <xpath expr="//header" position="inside">
                 <button name="action_review" string="Review" type="object" class="oe_highlight" invisible="state != 'posted'"/>
             </xpath>
 
-            <!-- 2. Kuruhusu vifungo vya Reverse Entry na Reset to Draft vionekane kikiwa Reviewed -->
+            <!-- 2. Kuruhusu vifungo vya Reverse Entry na Reset to Draft vionekane kikiwa Posted au Reviewed -->
             <xpath expr="//header//button[@name='action_reverse']" position="attributes">
                 <attribute name="invisible">state not in ('posted', 'reviewed')</attribute>
             </xpath>
@@ -24,11 +24,8 @@
                 <attribute name="statusbar_visible">draft,posted,reviewed</attribute>
             </xpath>
 
-            <!-- 4. Ujumbe wa chini ya Header kulingana na state -->
+            <!-- 4. Ujumbe wa onyo umeondolewa, umeacha ujumbe wa mafanikio wa Reviewed tu ukishakaguliwa -->
             <xpath expr="//sheet" position="before">
-                <div class="alert alert-warning mb-0" role="alert" invisible="state == 'reviewed'">
-                    <strong>This entry contains a manual operation made in the bank reconciliation. It must be reviewed.</strong>
-                </div>
                 <div class="alert alert-success mb-0" role="alert" invisible="state != 'reviewed'">
                     <strong>Reviewed</strong>
                 </div>

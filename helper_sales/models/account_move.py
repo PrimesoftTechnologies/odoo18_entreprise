@@ -1,4 +1,4 @@
-from odoo import _, fields, models
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 
@@ -70,3 +70,17 @@ class AccountMove(models.Model):
         for move in self.filtered(lambda m: m.move_type in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund')):
             move.partner_id.commercial_partner_id._check_tin_required()
         return super()._post(soft=soft)
+
+
+class AccountMoveLine(models.Model):
+    _inherit = "account.move.line"
+
+    @api.onchange('account_id')
+    def _onchange_account_id_analytic(self):
+        """ Inavuta Analytic Account kiotomatiki kutoka kwenye Chart of Account iliyochaguliwa """
+        for line in self:
+            if line.account_id:
+                if line.account_id.analytic_distribution:
+                    line.analytic_distribution = line.account_id.analytic_distribution
+                elif hasattr(line.account_id, 'analytic_account_id') and line.account_id.analytic_account_id:
+                    line.analytic_distribution = {str(line.account_id.analytic_account_id.id): 100}
