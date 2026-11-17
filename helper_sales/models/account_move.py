@@ -26,6 +26,19 @@ class AccountMove(models.Model):
     car_id = fields.Many2one("sale.car", string="Car Number", tracking=True)
     region_id = fields.Many2one("sale.region", string="Region", tracking=True)
 
+    # Sharti la kuangalia kama mtumiaji yuko kwenye list ya Reviewers
+    can_review = fields.Boolean(compute='_compute_can_review')
+
+    @api.depends('company_id.account_reviewer_ids')
+    def _compute_can_review(self):
+        for move in self:
+            reviewers = move.company_id.account_reviewer_ids
+            # Kama hakuna reviewer aliyeteuliwa kwenye settings, ruhusu wote; vinginevyo angalia kama yumo
+            if not reviewers:
+                move.can_review = True
+            else:
+                move.can_review = self.env.user in reviewers
+
     # Kuongeza 'reviewed' moja kwa moja kwenye state ya asili ya Odoo
     state = fields.Selection(
         selection_add=[('reviewed', 'Reviewed')],
@@ -33,8 +46,11 @@ class AccountMove(models.Model):
     )
 
     def action_review(self):
-        """ Inabadilisha state kutoka 'posted' kwenda 'reviewed' """
+        """ Inabadilisha state kutoka 'posted' kwenda 'reviewed' baada ya ukaguzi """
         for move in self:
+            reviewers = move.company_id.account_reviewer_ids
+            if reviewers and self.env.user not in reviewers:
+                raise UserError(_("You are not authorized to review this entry. Please contact your administrator."))
             move.state = 'reviewed'
         return True
 

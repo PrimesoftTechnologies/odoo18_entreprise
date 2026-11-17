@@ -44,6 +44,20 @@
                             </div>
                         </setting>
                     </block>
+                    
+                    <!-- Sehemu mpya ya kuweka Account Reviewers kwenye Settings za Helper Sales -->
+                    <block title="Bank Reconciliation Reviewers">
+                        <setting string="Authorized Reviewers"
+                                 help="Select the users who are authorized to click the Review button on journal entries.">
+                            <div class="content-group">
+                                <div class="row mt8">
+                                    <div class="col-8">
+                                        <field name="account_reviewer_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
                 </app>
             </xpath>
         </field>

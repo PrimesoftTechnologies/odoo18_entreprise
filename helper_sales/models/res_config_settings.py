@@ -5,6 +5,15 @@ from odoo import api, models, fields, _
 from odoo.exceptions import UserError
 
 
+class ResCompany(models.Model):
+    _inherit = 'res.company'
+
+    account_reviewer_ids = fields.Many2many(
+        'res.users', 'company_account_reviewer_rel',
+        'company_id', 'user_id', string="Account Reviewers"
+    )
+
+
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
@@ -20,6 +29,10 @@ class ResConfigSettings(models.TransientModel):
         string='Time unit',
         config_parameter='helper_sales.payment_pending_unit',
         default='days',
+    )
+    account_reviewer_ids = fields.Many2many(
+        'res.users', related='company_id.account_reviewer_ids',
+        readonly=False, string="Account Reviewers"
     )
 
     @api.model
