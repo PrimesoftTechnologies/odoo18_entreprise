@@ -33,7 +33,6 @@ class AccountMove(models.Model):
     def _compute_can_review(self):
         for move in self:
             reviewers = move.company_id.account_reviewer_ids
-            # Kama hakuna reviewer aliyeteuliwa kwenye settings, ruhusu wote; vinginevyo angalia kama yumo
             if not reviewers:
                 move.can_review = True
             else:
@@ -53,6 +52,20 @@ class AccountMove(models.Model):
                 raise UserError(_("You are not authorized to review this entry. Please contact your administrator."))
             move.state = 'reviewed'
         return True
+
+    def button_draft(self):
+        """ Huruhusu Reset to Draft kufanya kazi hata kama entry ipo 'reviewed' """
+        reviewed_moves = self.filtered(lambda m: m.state == 'reviewed')
+        if reviewed_moves:
+            reviewed_moves.write({'state': 'posted'})
+        return super().button_draft()
+
+    def action_reverse(self):
+        """ Huruhusu Credit Note / Reverse Entry kufanya kazi hata kama entry ipo 'reviewed' """
+        reviewed_moves = self.filtered(lambda m: m.state == 'reviewed')
+        if reviewed_moves:
+            reviewed_moves.write({'state': 'posted'})
+        return super().action_reverse()
 
     def _get_manual_attachments(self):
         """ Attachments uploaded by users (not the auto-generated invoice PDF). """
@@ -96,5 +109,4 @@ class AccountMoveLine(models.Model):
         """ Inavuta Analytic Account kutoka kwenye Chart of Account (analytic_account_id) kiotomatiki """
         for line in self:
             if line.account_id and hasattr(line.account_id, 'analytic_account_id') and line.account_id.analytic_account_id:
-                # Odoo 18 inatumia mfumo wa dictionary kwa ajili ya analytic_distribution
                 line.analytic_distribution = {str(line.account_id.analytic_account_id.id): 100}
