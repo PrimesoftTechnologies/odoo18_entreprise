@@ -26,14 +26,14 @@ class AccountMove(models.Model):
     car_id = fields.Many2one("sale.car", string="Car Number", tracking=True)
     region_id = fields.Many2one("sale.region", string="Region", tracking=True)
 
-    # Review field (Hifadhi hali ya kuwa Reviewed au to_review)
+    # Review field
     review_state = fields.Selection([
         ('to_review', 'To Review'),
         ('reviewed', 'Reviewed')
     ], string="Review Status", default='to_review', tracking=True)
 
     def action_review(self):
-        """ Inabadilisha hali kuwa Reviewed tu (bila neno Success) """
+        """ Inabadilisha hali kuwa Reviewed """
         for move in self:
             move.review_state = 'reviewed'
         return True

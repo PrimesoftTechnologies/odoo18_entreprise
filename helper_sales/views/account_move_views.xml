@@ -6,24 +6,23 @@
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
             
-            <!-- 1. Weka kitufe cha Review kwenye Header (kionekane kikiwa Posted na hakijawa reviewed) -->
+            <!-- 1. Kitufe cha Review na Statusbar ya Reviewed kwenye Header -->
             <xpath expr="//header" position="inside">
                 <button name="action_review" string="Review" type="object" class="oe_highlight" invisible="state != 'posted' or review_state == 'reviewed'"/>
+                <field name="review_state" widget="statusbar" statusbar_visible="to_review,reviewed" invisible="state != 'posted'"/>
             </xpath>
 
-            <!-- 2. Badilisha ujumbe uliopo chini ya Header (usiwe double/duplicated) -->
+            <!-- 2. Kubadilisha ujumbe wa onyo kuwa Reviewed ukishabonyeza -->
             <xpath expr="//sheet" position="before">
-                <!-- Onyo likiwa bado halijakaguliwa -->
                 <div class="alert alert-warning mb-0" role="alert" invisible="review_state == 'reviewed'">
                     <strong>This entry contains a manual operation made in the bank reconciliation. It must be reviewed.</strong>
                 </div>
-                <!-- Ujumbe ukishakaguliwa (inabadilika kuwa Reviewed tu kama ulivyotaka) -->
                 <div class="alert alert-success mb-0" role="alert" invisible="review_state != 'reviewed'">
                     <strong>Reviewed</strong>
                 </div>
             </xpath>
 
-            <!-- 3. Sehemu yako ya field za Logisitcs/Driver/Helper -->
+            <!-- 3. Sehemu ya ziada ya Logistics fields -->
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="driver_ids" widget="many2many_tags" domain="[('is_external', '=', False)]" options="{'no_create_edit': True}" readonly="state != 'draft'"/>
                 <field name="sale_helper_ids" widget="many2many_tags" domain="[('is_external', '=', False)]" options="{'no_create_edit': True}" readonly="state != 'draft'"/>
