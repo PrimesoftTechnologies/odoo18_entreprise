@@ -6,17 +6,25 @@
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
             
-            <!-- 1. Weka kitufe cha Review (kionekane ikiwa Posted tu) -->
+            <!-- 1. Kitufe cha Review kionekane kikiwa posted na hakijawa reviewed -->
             <xpath expr="//header" position="inside">
                 <button name="action_review" string="Review" type="object" class="oe_highlight" invisible="state != 'posted'"/>
             </xpath>
 
-            <!-- 2. Rekebisha statusbar ya asili ionyeshe Draft, Posted, Reviewed katika mstari mmoja -->
+            <!-- 2. Kuruhusu vifungo vya Reverse Entry na Reset to Draft vionekane hata kikiwa Reviewed -->
+            <xpath expr="//header//button[@name='action_reverse']" position="attributes">
+                <attribute name="invisible">state not in ('posted', 'reviewed')</attribute>
+            </xpath>
+            <xpath expr="//header//button[@name='button_draft']" position="attributes">
+                <attribute name="invisible">state not in ('posted', 'reviewed')</attribute>
+            </xpath>
+
+            <!-- 3. Rekebisha statusbar ya asili ionyeshe Draft, Posted, Reviewed katika mstari mmoja -->
             <xpath expr="//header/field[@name='state']" position="attributes">
                 <attribute name="statusbar_visible">draft,posted,reviewed</attribute>
             </xpath>
 
-            <!-- 3. Ujumbe wa chini ya Header kulingana na state -->
+            <!-- 4. Ujumbe wa chini ya Header kulingana na state -->
             <xpath expr="//sheet" position="before">
                 <div class="alert alert-warning mb-0" role="alert" invisible="state == 'reviewed'">
                     <strong>This entry contains a manual operation made in the bank reconciliation. It must be reviewed.</strong>
@@ -26,7 +34,7 @@
                 </div>
             </xpath>
 
-            <!-- 4. Sehemu ya ziada ya Logistics fields -->
+            <!-- 5. Sehemu ya ziada ya Logistics fields -->
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="driver_ids" widget="many2many_tags" domain="[('is_external', '=', False)]" options="{'no_create_edit': True}" readonly="state != 'draft'"/>
                 <field name="sale_helper_ids" widget="many2many_tags" domain="[('is_external', '=', False)]" options="{'no_create_edit': True}" readonly="state != 'draft'"/>
