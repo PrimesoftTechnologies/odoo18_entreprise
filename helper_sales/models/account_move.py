@@ -77,10 +77,8 @@ class AccountMoveLine(models.Model):
 
     @api.onchange('account_id')
     def _onchange_account_id_analytic(self):
-        """ Inavuta Analytic Account kiotomatiki kutoka kwenye Chart of Account iliyochaguliwa """
+        """ Inavuta Analytic Account kutoka kwenye Chart of Account (analytic_account_id) kiotomatiki """
         for line in self:
-            if line.account_id:
-                if line.account_id.analytic_distribution:
-                    line.analytic_distribution = line.account_id.analytic_distribution
-                elif hasattr(line.account_id, 'analytic_account_id') and line.account_id.analytic_account_id:
-                    line.analytic_distribution = {str(line.account_id.analytic_account_id.id): 100}
+            if line.account_id and hasattr(line.account_id, 'analytic_account_id') and line.account_id.analytic_account_id:
+                # Odoo 18 inatumia mfumo wa dictionary kwa ajili ya analytic_distribution
+                line.analytic_distribution = {str(line.account_id.analytic_account_id.id): 100}
