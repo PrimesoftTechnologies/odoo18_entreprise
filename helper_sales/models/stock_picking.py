@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import re
 
 from odoo import _, api, fields, models
@@ -17,18 +19,25 @@ class StockPicking(models.Model):
         for picking in self:
             picking.car_id = picking.sale_id.car_id or picking.car_id
 
-    # ---- Rule: Return needs signed delivery slip -------------------------------------------
+    # ---- Rule: Return needs signed delivery slip attached before validating ----------------
     def _check_signed_delivery_slip_attached(self):
-        for picking in self.filtered(lambda p: p.picking_type_code == 'outgoing'):
-            count = self.env['ir.attachment'].sudo().search_count([
-                ('res_model', '=', 'stock.picking'),
-                ('res_id', '=', picking.id),
-                ('res_field', '=', False),
-            ])
-            if not count:
-                raise UserError(_(
-                    "Please attach the Delivery Slip that is signed by the customer before creating a Return."
-                ))
+        for picking in self:
+            # Angalia kama ni Return (kwa mfano kama ina return_id au inatoka kwa mteja kwenda stock)
+            if picking.return_id or (picking.picking_type_code == 'incoming' and picking.location_id.usage == 'customer'):
+                count = self.env['ir.attachment'].sudo().search_count([
+                    ('res_model', '=', 'stock.picking'),
+                    ('res_id', '=', picking.id),
+                    ('res_field', '=', False),
+                ])
+                if not count:
+                    raise UserError(_(
+                        "Please attach the Delivery Slip that is signed by the customer before validating this Return."
+                    ))
+
+    def button_validate(self):
+        """ Kagua attachment ya Delivery Slip wakati wa kubonyeza Validate kwenye Return """
+        self._check_signed_delivery_slip_attached()
+        return super().button_validate()
 
     # ---- Rule: Receipts only from a Purchase Order ----------------------------------------
     @api.model
