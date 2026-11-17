@@ -88,14 +88,18 @@ class AccountMove(models.Model):
         return attachments.filtered(_is_manual)
 
     def _check_credit_note_attachments(self):
-        for move in self.filtered(lambda m: m.move_type == 'out_invoice'):
+        """ Inakagua kama Credit Note ina attachments kabla ya kuifanya Posted """
+        for move in self.filtered(lambda m: m.move_type == 'out_refund'):
             if not move._get_manual_attachments():
                 raise UserError(_(
                     "Please attach the Delivery Slip signed with the customer and the "
-                    "Return Documents from the Inventory person before creating a Credit Note."
+                    "Return Documents from the Inventory person before posting this Credit Note."
                 ))
 
     def _post(self, soft=True):
+        # Kagua attachment kwenye Credit Note (out_refund) wakati wa ku-post
+        self._check_credit_note_attachments()
+        
         for move in self.filtered(lambda m: m.move_type in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund')):
             move.partner_id.commercial_partner_id._check_tin_required()
         return super()._post(soft=soft)
