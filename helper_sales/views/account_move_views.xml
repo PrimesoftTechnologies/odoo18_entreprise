@@ -6,23 +6,27 @@
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
             
-            <!-- 1. Kitufe cha Review na Statusbar ya Reviewed kwenye Header -->
+            <!-- 1. Weka kitufe cha Review (kionekane ikiwa Posted tu) -->
             <xpath expr="//header" position="inside">
-                <button name="action_review" string="Review" type="object" class="oe_highlight" invisible="state != 'posted' or review_state == 'reviewed'"/>
-                <field name="review_state" widget="statusbar" statusbar_visible="to_review,reviewed" invisible="state != 'posted'"/>
+                <button name="action_review" string="Review" type="object" class="oe_highlight" invisible="state != 'posted'"/>
             </xpath>
 
-            <!-- 2. Kubadilisha ujumbe wa onyo kuwa Reviewed ukishabonyeza -->
+            <!-- 2. Rekebisha statusbar ya asili ionyeshe Draft, Posted, Reviewed katika mstari mmoja -->
+            <xpath expr="//header/field[@name='state']" position="attributes">
+                <attribute name="statusbar_visible">draft,posted,reviewed</attribute>
+            </xpath>
+
+            <!-- 3. Ujumbe wa chini ya Header kulingana na state -->
             <xpath expr="//sheet" position="before">
-                <div class="alert alert-warning mb-0" role="alert" invisible="review_state == 'reviewed'">
+                <div class="alert alert-warning mb-0" role="alert" invisible="state == 'reviewed'">
                     <strong>This entry contains a manual operation made in the bank reconciliation. It must be reviewed.</strong>
                 </div>
-                <div class="alert alert-success mb-0" role="alert" invisible="review_state != 'reviewed'">
+                <div class="alert alert-success mb-0" role="alert" invisible="state != 'reviewed'">
                     <strong>Reviewed</strong>
                 </div>
             </xpath>
 
-            <!-- 3. Sehemu ya ziada ya Logistics fields -->
+            <!-- 4. Sehemu ya ziada ya Logistics fields -->
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="driver_ids" widget="many2many_tags" domain="[('is_external', '=', False)]" options="{'no_create_edit': True}" readonly="state != 'draft'"/>
                 <field name="sale_helper_ids" widget="many2many_tags" domain="[('is_external', '=', False)]" options="{'no_create_edit': True}" readonly="state != 'draft'"/>

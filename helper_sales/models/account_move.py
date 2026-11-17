@@ -26,16 +26,16 @@ class AccountMove(models.Model):
     car_id = fields.Many2one("sale.car", string="Car Number", tracking=True)
     region_id = fields.Many2one("sale.region", string="Region", tracking=True)
 
-    # Review field
-    review_state = fields.Selection([
-        ('to_review', 'To Review'),
-        ('reviewed', 'Reviewed')
-    ], string="Review Status", default='to_review', tracking=True)
+    # Kuongeza 'reviewed' moja kwa moja kwenye state ya asili ya Odoo
+    state = fields.Selection(
+        selection_add=[('reviewed', 'Reviewed')],
+        ondelete={'reviewed': 'set default'}
+    )
 
     def action_review(self):
-        """ Inabadilisha hali kuwa Reviewed """
+        """ Inabadilisha state kutoka 'posted' kwenda 'reviewed' """
         for move in self:
-            move.review_state = 'reviewed'
+            move.state = 'reviewed'
         return True
 
     def _get_manual_attachments(self):
