@@ -1,4 +1,3 @@
-
 from odoo import _, fields, models
 from odoo.exceptions import UserError
 
@@ -26,6 +25,19 @@ class AccountMove(models.Model):
     )
     car_id = fields.Many2one("sale.car", string="Car Number", tracking=True)
     region_id = fields.Many2one("sale.region", string="Region", tracking=True)
+
+    # --- MPYA: Sehemu ya Review ya Bank Reconciliation ---
+    review_state = fields.Selection([
+        ('to_review', 'To Review'),
+        ('reviewed', 'Successfully Reviewed')
+    ], string="Review Status", default='to_review', tracking=True)
+
+    def action_review(self):
+        """ Inabadilisha hali kuwa Successfully Reviewed """
+        for move in self:
+            move.review_state = 'reviewed'
+        return True
+    # ----------------------------------------------------
 
     def _get_manual_attachments(self):
         """ Attachments uploaded by users (not the auto-generated invoice PDF). """

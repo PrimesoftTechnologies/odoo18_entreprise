@@ -5,12 +5,33 @@
         <field name="model">account.move</field>
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
+            
+            <!-- 1. Kuongeza Kitufe cha Review kwenye Header -->
+            <xpath expr="//header" position="inside">
+                <button name="action_review" string="Review" type="object" class="oe_highlight" invisible="review_state == 'reviewed'"/>
+                <field name="review_state" widget="statusbar" statusbar_visible="to_review,reviewed"/>
+            </xpath>
+
+            <!-- 2. Kuongeza Ujumbe auonyeshe au ubadilike kulingana na hali ya review -->
+            <xpath expr="//sheet" position="before">
+                <!-- Onyo likiwa bado haijakaguliwa -->
+                <div class="alert alert-warning mb-0" role="alert" invisible="review_state == 'reviewed'">
+                    <strong>This entry contains a manual operation made in the bank reconciliation. It must be reviewed.</strong>
+                </div>
+                <!-- Ujumbe wa mafanikio mara baada ya kukaguliwa -->
+                <div class="alert alert-success mb-0" role="alert" invisible="review_state != 'reviewed'">
+                    <strong>Successfully reviewed!</strong>
+                </div>
+            </xpath>
+
+            <!-- Sehemu yako ya zamani ya mashamba (fields) -->
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="driver_ids" widget="many2many_tags" domain="[('is_external', '=', False)]" options="{'no_create_edit': True}" readonly="state != 'draft'"/>
                 <field name="sale_helper_ids" widget="many2many_tags" domain="[('is_external', '=', False)]" options="{'no_create_edit': True}" readonly="state != 'draft'"/>
                 <field name="car_id" options="{'no_create': True, 'no_quick_create': True, 'no_create_edit': True}" readonly="state != 'draft'"/>
                 <field name="region_id" readonly="state != 'draft'"/>
             </xpath>
+            
         </field>
     </record>
 </odoo>
