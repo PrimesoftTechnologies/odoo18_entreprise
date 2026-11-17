@@ -11,8 +11,14 @@
                 <button name="action_review" string="Review" type="object" class="oe_highlight" invisible="state != 'posted'"/>
             </xpath>
 
-            <!-- 2. Kuruhusu vifungo vya Reverse Entry na Reset to Draft vionekane hata kikiwa Reviewed -->
+            <!-- 2. Kuruhusu vifungo vyote vya Reverse / Credit Note na Reset to Draft vionekane kikiwa Reviewed -->
             <xpath expr="//header//button[@name='action_reverse']" position="attributes">
+                <attribute name="invisible">state not in ('posted', 'reviewed')</attribute>
+            </xpath>
+            <xpath expr="//header//button[@name='action_undo']" position="attributes">
+                <attribute name="invisible">state not in ('posted', 'reviewed')</attribute>
+            </xpath>
+            <xpath expr="//header//button[@name='action_unpost']" position="attributes">
                 <attribute name="invisible">state not in ('posted', 'reviewed')</attribute>
             </xpath>
             <xpath expr="//header//button[@name='button_draft']" position="attributes">
