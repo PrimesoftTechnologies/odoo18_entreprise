@@ -13,7 +13,7 @@ class SaleBusinessModel(models.Model):
     code = fields.Char(string='Short Code', required=True)
     company_id = fields.Many2one(
         'res.company', string='Company', required=True, default=lambda self: self.env.company,
-        help="Only users working in this company see this Business Model.")
+        help="Only users working in this company see this Business Line.")
     active = fields.Boolean(default=True)
 
     _sql_constraints = [
@@ -36,7 +36,7 @@ class SaleOrderBusiness(models.Model):
     _inherit = 'sale.order'
 
     business_model_id = fields.Many2one(
-        'sale.business.model', string='Business Model', required=True, tracking=True, ondelete='restrict', copy=True)
+        'sale.business.model', string='Business Line', required=True, tracking=True, ondelete='restrict', copy=True)
 
     @api.constrains('business_model_id', 'company_id')
     def _check_business_model_company(self):
@@ -44,7 +44,7 @@ class SaleOrderBusiness(models.Model):
             model = order.business_model_id
             if model and model.company_id != order.company_id:
                 raise ValidationError(_(
-                    "The Business Model '%(model)s' belongs to %(company)s, not to the company of this order (%(order_company)s).",
+                    "The Business Line '%(model)s' belongs to %(company)s, not to the company of this order (%(order_company)s).",
                     model=model.name, company=model.company_id.name, order_company=order.company_id.name))
 
     @api.model_create_multi
@@ -65,7 +65,7 @@ class SaleOrderBusiness(models.Model):
         return res
 
     def _apply_business_prefix(self, old_model=None):
-        """ S00013 -> HP/S00013 (Short Code of the chosen Business Model) """
+        """ S00013 -> HP/S00013 (Short Code of the chosen Business Line) """
         self.ensure_one()
         name = self.name or ''
         if not name or name == _("New"):
