@@ -115,15 +115,13 @@ class SaleOrderBusiness(models.Model):
             self.name = name
 
     def _prepare_invoice(self):
-        """Inapitisha Journal ya Business Line kwenda kwenye Sale Invoice."""
+        """Inapitisha Business Line na Journal yake kwenda kwenye Sale Invoice bila kubadili namba ya invoice."""
         self.ensure_one()
         invoice_vals = super()._prepare_invoice()
-        if (
-            invoice_vals.get('move_type') == 'out_invoice'
-            and self.business_model_id
-            and self.business_model_id.journal_id
-        ):
-            invoice_vals['journal_id'] = self.business_model_id.journal_id.id
+        if invoice_vals.get('move_type') == 'out_invoice' and self.business_model_id:
+            invoice_vals['business_model_id'] = self.business_model_id.id
+            if self.business_model_id.journal_id:
+                invoice_vals['journal_id'] = self.business_model_id.journal_id.id
         return invoice_vals
 
 
