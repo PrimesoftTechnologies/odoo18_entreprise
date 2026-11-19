@@ -22,3 +22,4 @@ from . import account_move_review
 from . import mrp_production_variance
 from . import sale_business_model
 from . import mrp_production_uom
+from . import vehicle_fleet

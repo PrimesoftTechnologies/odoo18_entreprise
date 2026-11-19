@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Sales Order form: ONE driver + Car Number from Fleet -->
+    <record id="view_sale_order_form_vehicle_driver" model="ir.ui.view">
+        <field name="name">sale.order.form.vehicle.driver</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='driver_ids']" position="replace">
+                <field name="current_driver_id" domain="[('is_external', '=', False)]"
+                       options="{'no_create_edit': True}" required="1"
+                       readonly="state not in ['draft', 'sent']"/>
+            </xpath>
+            <xpath expr="//field[@name='car_id']" position="replace">
+                <field name="vehicle_id" options="{'no_create': True, 'no_quick_create': True, 'no_create_edit': True}" required="1"
+                       readonly="state not in ['draft', 'sent']"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_quotation_tree_vehicle" model="ir.ui.view">
+        <field name="name">sale.order.tree.vehicle</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_quotation_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='car_id']" position="replace">
+                <field name="vehicle_id" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Invoice form -->
+    <record id="view_move_form_vehicle_driver" model="ir.ui.view">
+        <field name="name">account.move.form.vehicle.driver</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='driver_ids']" position="replace">
+                <field name="current_driver_id" domain="[('is_external', '=', False)]"
+                       options="{'no_create_edit': True}" readonly="state != 'draft'"/>
+            </xpath>
+            <xpath expr="//field[@name='car_id']" position="replace">
+                <field name="vehicle_id" options="{'no_create': True, 'no_quick_create': True, 'no_create_edit': True}" readonly="state != 'draft'"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Transfers (Inventory) -->
+    <record id="view_picking_form_vehicle" model="ir.ui.view">
+        <field name="name">stock.picking.form.vehicle</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='car_id']" position="replace">
+                <field name="vehicle_id" options="{'no_create': True, 'no_quick_create': True, 'no_create_edit': True}" readonly="state in ('done', 'cancel')"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
