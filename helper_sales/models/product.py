@@ -14,8 +14,8 @@ def _check_update_quantity_access(env):
 class ProductCategory(models.Model):
     _inherit = 'product.category'
 
-    short_code = fields.Char(string='Short Code', help="Mfano: DC, FG, RM, n.k.")
-    prefix = fields.Char(string='Prefix', help="Sehemu ya namba au ziada, mfano: 5")
+    short_code = fields.Char(string='Prefix', help="Mfano: DC, FG, RM, n.k.")
+    prefix = fields.Char(string='Sequence Number', help="number area like 00001, 00002, 00003, etc.")
     auto_generate_ref = fields.Boolean(
         string='Auto Generate Reference', 
         default=True,
