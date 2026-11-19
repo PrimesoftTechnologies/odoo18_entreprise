@@ -115,15 +115,13 @@ class SaleOrderBusiness(models.Model):
             self.name = name
 
     def _prepare_invoice(self):
-        """Inapitisha Journal ya Business Line kwenda kwenye Sale Invoice."""
+        """Inapitisha Business Line na Journal yake kwenda kwenye Sale Invoice."""
         self.ensure_one()
         invoice_vals = super()._prepare_invoice()
-        if (
-            invoice_vals.get('move_type') == 'out_invoice'
-            and self.business_model_id
-            and self.business_model_id.journal_id
-        ):
-            invoice_vals['journal_id'] = self.business_model_id.journal_id.id
+        if invoice_vals.get('move_type') == 'out_invoice' and self.business_model_id:
+            invoice_vals['business_model_id'] = self.business_model_id.id
+            if self.business_model_id.journal_id:
+                invoice_vals['journal_id'] = self.business_model_id.journal_id.id
         return invoice_vals
 
 
@@ -147,3 +145,43 @@ class AccountMoveBusiness(models.Model):
                 and move.business_model_id.journal_id.company_id == move.company_id
             ):
                 move.journal_id = move.business_model_id.journal_id
+
+    def _get_business_short_code(self):
+        self.ensure_one()
+        model = self.business_model_id
+        if not model and self.invoice_origin:
+            sale_order = self.env['sale.order'].search([
+                ('name', '=', self.invoice_origin),
+                ('company_id', '=', self.company_id.id),
+            ], limit=1)
+            if sale_order and sale_order.business_model_id:
+                model = sale_order.business_model_id
+                self.business_model_id = model
+        return (model.code or '').strip().upper() if model else ''
+
+    def _apply_business_code_to_invoice_name(self):
+        """INV/2026/00131 -> INV/HP/2026/00131"""
+        for move in self:
+            if move.move_type not in ('out_invoice', 'out_refund'):
+                continue
+            code = move._get_business_short_code()
+            if not code or not move.name or move.name in ('/', _('Draft')):
+                continue
+
+            parts = move.name.split('/')
+            # Epuka kurudia Short Code ikiwa tayari ipo
+            if len(parts) >= 4 and parts[1].upper() == code:
+                continue
+
+            if parts[0].upper() == 'INV' and len(parts) >= 3:
+                new_name = f"{parts[0]}/{code}/{'/'.join(parts[1:])}"
+            else:
+                new_name = f"{code}/{move.name}"
+
+            if new_name != move.name:
+                move.name = new_name
+
+    def _post(self, soft=True):
+        res = super()._post(soft=soft)
+        self._apply_business_code_to_invoice_name()
+        return res
