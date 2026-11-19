@@ -61,7 +61,7 @@
         </field>
     </record>
 
-    <!-- Invoice form: Business Model -->
+    <!-- Invoice form: Business Model (optional visibility/tracking) -->
     <record id="view_move_form_business_model" model="ir.ui.view">
         <field name="name">account.move.form.business.model</field>
         <field name="model">account.move</field>
