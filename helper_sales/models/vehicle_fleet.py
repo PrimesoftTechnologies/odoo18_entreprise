@@ -80,3 +80,16 @@ class StockPickingVehicle(models.Model):
     def _compute_vehicle_id(self):
         for picking in self:
             picking.vehicle_id = picking.sale_id.vehicle_id or picking.vehicle_id
+
+
+class FleetVehicleOptionalModel(models.Model):
+    _inherit = 'fleet.vehicle'
+
+    # A vehicle can be registered with only its plate number (no brand / model needed)
+    model_id = fields.Many2one(required=False)
+
+    @api.depends('model_id.brand_id.name', 'model_id.name', 'license_plate')
+    def _compute_vehicle_name(self):
+        for record in self:
+            parts = [record.model_id.brand_id.name, record.model_id.name, record.license_plate or _('No Plate')]
+            record.name = '/'.join(part for part in parts if part)

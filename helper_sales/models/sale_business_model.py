@@ -44,7 +44,7 @@ class SaleOrderBusiness(models.Model):
             model = order.business_model_id
             if model and model.company_id != order.company_id:
                 raise ValidationError(_(
-                    "The Business Line '%(model)s' belongs to %(company)s, not to the company of this order (%(order_company)s).",
+                    "The Business Model '%(model)s' belongs to %(company)s, not to the company of this order (%(order_company)s).",
                     model=model.name, company=model.company_id.name, order_company=order.company_id.name))
 
     @api.model_create_multi

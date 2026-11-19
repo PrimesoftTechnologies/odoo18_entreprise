@@ -23,14 +23,9 @@ def _copy_cars(cr):
     if not cars:
         return
     Vehicle = env["fleet.vehicle"].with_context(active_test=False)
-    model = env["fleet.vehicle.model"].search([("name", "=", "Unknown")], limit=1)
-    if not model:
-        brand = env["fleet.vehicle.model.brand"].search([("name", "=", "Unknown")], limit=1) \
-            or env["fleet.vehicle.model.brand"].create({"name": "Unknown"})
-        model = env["fleet.vehicle.model"].create({"name": "Unknown", "brand_id": brand.id})
     for car in cars:
         vehicle = Vehicle.search([("license_plate", "=ilike", car.name)], limit=1) \
-            or Vehicle.create({"license_plate": car.name, "model_id": model.id})
+            or Vehicle.create({"license_plate": car.name})
         for table in ("sale_order", "account_move", "stock_picking"):
             cr.execute(
                 "UPDATE %s SET vehicle_id = %%s WHERE car_id = %%s AND vehicle_id IS NULL" % table,
