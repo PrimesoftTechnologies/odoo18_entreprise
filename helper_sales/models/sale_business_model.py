@@ -12,12 +12,22 @@ class SaleBusinessModel(models.Model):
     name = fields.Char(string='Business Name', required=True)
     code = fields.Char(string='Short Code', required=True)
     company_id = fields.Many2one(
-        'res.company', string='Company', required=True, default=lambda self: self.env.company,
-        help="Only users working in this company see this Business Line.")
+        'res.company',
+        string='Company',
+        required=True,
+        default=lambda self: self.env.company,
+        help="Only users working in this company see this Business Line.",
+    )
+    journal_id = fields.Many2one(
+        'account.journal',
+        string='Journal',
+        domain="[('company_id', '=', company_id), ('type', '=', 'sale')]",
+        help="Sales Journal automatically applied when creating a customer invoice for this Business Line.",
+    )
     active = fields.Boolean(default=True)
 
     _sql_constraints = [
-        ('code_uniq', 'unique(code)', 'The Short Code must be unique.'),
+        ('code_company_uniq', 'unique(code, company_id)', 'The Short Code must be unique per Company.'),
     ]
 
     @api.constrains('code')
@@ -25,6 +35,23 @@ class SaleBusinessModel(models.Model):
         for rec in self:
             if not rec.code or '/' in rec.code or ' ' in rec.code:
                 raise ValidationError(_("The Short Code cannot contain spaces or '/'."))
+
+    @api.constrains('journal_id', 'company_id')
+    def _check_journal_company(self):
+        for rec in self:
+            if rec.journal_id and rec.journal_id.company_id != rec.company_id:
+                raise ValidationError(_(
+                    "The selected Journal '%(journal)s' belongs to %(journal_company)s, not to %(company)s.",
+                    journal=rec.journal_id.name,
+                    journal_company=rec.journal_id.company_id.name,
+                    company=rec.company_id.name,
+                ))
+
+    @api.onchange('company_id')
+    def _onchange_company_id(self):
+        for rec in self:
+            if rec.journal_id and rec.journal_id.company_id != rec.company_id:
+                rec.journal_id = False
 
     @api.depends('name', 'code')
     def _compute_display_name(self):
@@ -36,7 +63,13 @@ class SaleOrderBusiness(models.Model):
     _inherit = 'sale.order'
 
     business_model_id = fields.Many2one(
-        'sale.business.model', string='Business Line', required=True, tracking=True, ondelete='restrict', copy=True)
+        'sale.business.model',
+        string='Business Line',
+        required=True,
+        tracking=True,
+        ondelete='restrict',
+        copy=True,
+    )
 
     @api.constrains('business_model_id', 'company_id')
     def _check_business_model_company(self):
@@ -45,7 +78,10 @@ class SaleOrderBusiness(models.Model):
             if model and model.company_id != order.company_id:
                 raise ValidationError(_(
                     "The Business Model '%(model)s' belongs to %(company)s, not to the company of this order (%(order_company)s).",
-                    model=model.name, company=model.company_id.name, order_company=order.company_id.name))
+                    model=model.name,
+                    company=model.company_id.name,
+                    order_company=order.company_id.name,
+                ))
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -65,7 +101,7 @@ class SaleOrderBusiness(models.Model):
         return res
 
     def _apply_business_prefix(self, old_model=None):
-        """ S00013 -> HP/S00013 (Short Code of the chosen Business Line) """
+        """S00013 -> HP/S00013 (Short Code of the chosen Business Line)"""
         self.ensure_one()
         name = self.name or ''
         if not name or name == _("New"):
@@ -77,3 +113,37 @@ class SaleOrderBusiness(models.Model):
             name = '%s/%s' % (code, name)
         if name != self.name:
             self.name = name
+
+    def _prepare_invoice(self):
+        """Inapitisha Journal ya Business Line kwenda kwenye Sale Invoice."""
+        self.ensure_one()
+        invoice_vals = super()._prepare_invoice()
+        if (
+            invoice_vals.get('move_type') == 'out_invoice'
+            and self.business_model_id
+            and self.business_model_id.journal_id
+        ):
+            invoice_vals['journal_id'] = self.business_model_id.journal_id.id
+        return invoice_vals
+
+
+class AccountMoveBusiness(models.Model):
+    _inherit = 'account.move'
+
+    business_model_id = fields.Many2one(
+        'sale.business.model',
+        string='Business Line',
+        copy=False,
+        index=True,
+    )
+
+    @api.onchange('business_model_id')
+    def _onchange_business_model_id_journal(self):
+        for move in self:
+            if (
+                move.is_sale_document(include_receipts=True)
+                and move.business_model_id
+                and move.business_model_id.journal_id
+                and move.business_model_id.journal_id.company_id == move.company_id
+            ):
+                move.journal_id = move.business_model_id.journal_id
