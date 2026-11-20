@@ -23,3 +23,4 @@ from . import mrp_production_variance
 from . import sale_business_model
 from . import mrp_production_uom
 from . import vehicle_fleet
+from . import product_hide_update_qty
