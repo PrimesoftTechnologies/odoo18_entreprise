@@ -124,6 +124,13 @@ class SaleOrderBusiness(models.Model):
                 invoice_vals['journal_id'] = self.business_model_id.journal_id.id
         return invoice_vals
 
+    def _create_invoices(self, grouped=False, final=False, date=None):
+        """Safety net: whatever happened inside Odoo or other modules, make sure the draft
+        customer invoice ends up in the Journal of its Business Line."""
+        moves = super()._create_invoices(grouped=grouped, final=final, date=date)
+        moves._apply_business_model_journal()
+        return moves
+
 
 class AccountMoveBusiness(models.Model):
     _inherit = 'account.move'
@@ -134,6 +141,30 @@ class AccountMoveBusiness(models.Model):
         copy=False,
         index=True,
     )
+
+    def _apply_business_model_journal(self):
+        for move in self:
+            journal = move.business_model_id.journal_id
+            if (
+                move.state == 'draft'
+                and move.move_type == 'out_invoice'
+                and journal
+                and journal.company_id == move.company_id
+                and move.journal_id != journal
+            ):
+                move.journal_id = journal
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        moves = super().create(vals_list)
+        moves._apply_business_model_journal()
+        return moves
+
+    def write(self, vals):
+        res = super().write(vals)
+        if 'business_model_id' in vals and 'journal_id' not in vals:
+            self._apply_business_model_journal()
+        return res
 
     @api.onchange('business_model_id')
     def _onchange_business_model_id_journal(self):
