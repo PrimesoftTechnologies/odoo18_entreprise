@@ -127,8 +127,26 @@ class SaleOrderBusiness(models.Model):
         return invoice_vals
 
     def _create_invoices(self, grouped=False, final=False, date=None):
-        """Safety net: inahakikisha draft customer invoice inapata Journal ya Business Line."""
+        """Inahakikisha draft regular invoice inapata Business Line na Journal yake."""
         moves = super()._create_invoices(grouped=grouped, final=final, date=date)
+        for order in self:
+            model = order.business_model_id
+            journal = model.journal_id
+            if model and journal and journal.company_id == order.company_id:
+                target_moves = moves.filtered(
+                    lambda m: m.state == 'draft'
+                    and m.move_type == 'out_invoice'
+                    and m.company_id == order.company_id
+                    and order in m.line_ids.mapped('sale_line_ids.order_id')
+                )
+                for move in target_moves:
+                    vals_to_update = {}
+                    if move.business_model_id != model:
+                        vals_to_update['business_model_id'] = model.id
+                    if move.journal_id != journal:
+                        vals_to_update['journal_id'] = journal.id
+                    if vals_to_update:
+                        move.write(vals_to_update)
         moves._apply_business_model_journal()
         return moves
 
