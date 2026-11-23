@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Sequences used for lot names / measurement references -->
+        <record id="seq_timber_log" model="ir.sequence">
+            <field name="name">Timber Log Reference</field>
+            <field name="code">timber.log</field>
+            <field name="prefix">LOG/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+        <record id="seq_timber_board" model="ir.sequence">
+            <field name="name">Timber Board Reference</field>
+            <field name="code">timber.board</field>
+            <field name="prefix">BRD/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Product category -->
+        <record id="product_category_timber" model="product.category">
+            <field name="name">Timber</field>
+            <field name="parent_id" ref="product.product_category_all"/>
+        </record>
+
+        <!-- Raw material: log, bought in m3, one Lot per log -->
+        <record id="product_timber_log" model="product.product">
+            <field name="name">Mtiki Log</field>
+            <field name="categ_id" ref="product_category_timber"/>
+            <field name="type">consu</field>
+            <field name="is_storable" eval="True"/>
+            <field name="tracking">lot</field>
+            <field name="uom_id" ref="uom.product_uom_cubic_meter"/>
+            <field name="uom_po_id" ref="uom.product_uom_cubic_meter"/>
+            <field name="timber_type">log</field>
+            <field name="sale_ok" eval="False"/>
+            <field name="purchase_ok" eval="True"/>
+        </record>
+
+        <!-- Finished product: sawn timber, sold in m3 -->
+        <record id="product_timber_board" model="product.template">
+            <field name="name">Mtiki Timber (Boards)</field>
+            <field name="categ_id" ref="product_category_timber"/>
+            <field name="type">consu</field>
+            <field name="is_storable" eval="True"/>
+            <field name="tracking">lot</field>
+            <field name="uom_id" ref="uom.product_uom_cubic_meter"/>
+            <field name="uom_po_id" ref="uom.product_uom_cubic_meter"/>
+            <field name="timber_type">board</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+        </record>
+
+        <!-- By-product: waste -->
+        <record id="product_timber_waste" model="product.product">
+            <field name="name">Sawing Waste</field>
+            <field name="categ_id" ref="product_category_timber"/>
+            <field name="type">consu</field>
+            <field name="is_storable" eval="True"/>
+            <field name="uom_id" ref="uom.product_uom_cubic_meter"/>
+            <field name="uom_po_id" ref="uom.product_uom_cubic_meter"/>
+            <field name="timber_type">waste</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+        </record>
+
+        <!-- Standard Bill of Materials = the old Board % / Waste % settings.
+             1.0 m3 log  ->  0.6 m3 boards + 0.4 m3 waste.
+             Change the quantities here to change the ratios. -->
+        <record id="bom_timber_sawing" model="mrp.bom">
+            <field name="product_tmpl_id" ref="product_timber_board"/>
+            <field name="product_qty">0.6</field>
+            <field name="product_uom_id" ref="uom.product_uom_cubic_meter"/>
+            <field name="type">normal</field>
+        </record>
+        <record id="bom_line_timber_log" model="mrp.bom.line">
+            <field name="bom_id" ref="bom_timber_sawing"/>
+            <field name="product_id" ref="product_timber_log"/>
+            <field name="product_qty">1.0</field>
+            <field name="product_uom_id" ref="uom.product_uom_cubic_meter"/>
+        </record>
+        <record id="bom_byproduct_timber_waste" model="mrp.bom.byproduct">
+            <field name="bom_id" ref="bom_timber_sawing"/>
+            <field name="product_id" ref="product_timber_waste"/>
+            <field name="product_qty">0.4</field>
+            <field name="product_uom_id" ref="uom.product_uom_cubic_meter"/>
+        </record>
+
+        <!-- Expenses = standard Landed Cost products (Inventory > Landed Costs) -->
+        <record id="product_cost_fuel" model="product.template">
+            <field name="name">Fuel (Mafuta)</field>
+            <field name="categ_id" ref="product_category_timber"/>
+            <field name="type">service</field>
+            <field name="landed_cost_ok" eval="True"/>
+            <field name="split_method_landed_cost">by_quantity</field>
+        </record>
+        <record id="product_cost_transport" model="product.template">
+            <field name="name">Transport (Usafiri)</field>
+            <field name="categ_id" ref="product_category_timber"/>
+            <field name="type">service</field>
+            <field name="landed_cost_ok" eval="True"/>
+            <field name="split_method_landed_cost">by_quantity</field>
+        </record>
+        <record id="product_cost_food" model="product.template">
+            <field name="name">Food (Chakula)</field>
+            <field name="categ_id" ref="product_category_timber"/>
+            <field name="type">service</field>
+            <field name="landed_cost_ok" eval="True"/>
+            <field name="split_method_landed_cost">by_quantity</field>
+        </record>
+        <record id="product_cost_other" model="product.template">
+            <field name="name">Other Expenses</field>
+            <field name="categ_id" ref="product_category_timber"/>
+            <field name="type">service</field>
+            <field name="landed_cost_ok" eval="True"/>
+            <field name="split_method_landed_cost">by_quantity</field>
+        </record>
+    </data>
+</odoo>

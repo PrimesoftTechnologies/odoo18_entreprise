@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- PDF: Log intake & measurements, printed from the standard Receipt -->
+    <template id="report_timber_log_intake_document">
+        <t t-call="web.external_layout">
+            <div class="page">
+                <h2>Log Intake &amp; Measurements: <span t-field="o.name"/></h2>
+                <div class="row mt-3 mb-3">
+                    <div class="col-4"><strong>Vendor:</strong> <span t-field="o.partner_id"/></div>
+                    <div class="col-4"><strong>Date:</strong> <span t-field="o.scheduled_date" t-options="{'widget': 'date'}"/></div>
+                    <div class="col-4"><strong>Source:</strong> <span t-field="o.origin"/></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4"><strong>TP Number:</strong> <span t-field="o.tp_number"/></div>
+                    <div class="col-4"><strong>Vehicle:</strong> <span t-field="o.tp_vehicle_no"/></div>
+                    <div class="col-4"><strong>Forest Origin:</strong> <span t-field="o.tp_forest_origin"/></div>
+                </div>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Reference</th>
+                            <th class="text-end">Circumference (cm)</th>
+                            <th class="text-end">Length (cm)</th>
+                            <th class="text-end">CBM</th>
+                            <th>Lot</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="o.timber_measurement_ids" t-as="m">
+                            <td><span t-field="m.name"/></td>
+                            <td class="text-end"><span t-field="m.circumference"/></td>
+                            <td class="text-end"><span t-field="m.length"/></td>
+                            <td class="text-end"><span t-field="m.cbm"/></td>
+                            <td><span t-field="m.lot_id"/></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-end"><strong>Total CBM</strong></td>
+                            <td class="text-end"><strong><span t-field="o.timber_total_cbm"/></strong></td>
+                            <td/>
+                        </tr>
+                    </tfoot>
+                </table>
+                <div class="row mt-5">
+                    <div class="col-6">Prepared By: ______________________</div>
+                    <div class="col-6 text-end">Authorized Signature: ______________________</div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_timber_log_intake">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="timber_log_process.report_timber_log_intake_document"/>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_timber_log_intake" model="ir.actions.report">
+        <field name="name">Log Intake &amp; Measurements (PDF)</field>
+        <field name="model">stock.picking</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">timber_log_process.report_timber_log_intake</field>
+        <field name="report_file">timber_log_process.report_timber_log_intake</field>
+        <field name="binding_model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- PDF: Sawing report, printed from the standard Manufacturing Order -->
+    <template id="report_timber_sawing_document">
+        <t t-call="web.external_layout">
+            <div class="page">
+                <h2>Sawing Report: <span t-field="o.name"/></h2>
+                <div class="row mt-3 mb-3">
+                    <div class="col-4"><strong>Product:</strong> <span t-field="o.product_id"/></div>
+                    <div class="col-4"><strong>Status:</strong> <span t-field="o.state"/></div>
+                    <div class="col-4"><strong>Planned CBM:</strong> <span t-field="o.product_qty"/></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-3"><strong>Logs used (CBM):</strong> <span t-field="o.timber_input_cbm"/></div>
+                    <div class="col-3"><strong>Boards (CBM):</strong> <span t-field="o.timber_board_cbm"/></div>
+                    <div class="col-3"><strong>Waste (CBM):</strong> <span t-field="o.timber_waste_cbm"/></div>
+                    <div class="col-3"><strong>Yield (%):</strong> <span t-field="o.timber_yield_pct"/></div>
+                </div>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Board</th>
+                            <th class="text-end">Width (in)</th>
+                            <th class="text-end">Thickness (in)</th>
+                            <th class="text-end">Length (in)</th>
+                            <th class="text-end">CBM</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="o.timber_board_ids" t-as="b">
+                            <td><span t-field="b.name"/></td>
+                            <td class="text-end"><span t-field="b.width"/></td>
+                            <td class="text-end"><span t-field="b.thickness"/></td>
+                            <td class="text-end"><span t-field="b.board_length"/></td>
+                            <td class="text-end"><span t-field="b.cbm"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="row mt-5">
+                    <div class="col-6">Sawing Supervisor: ______________________</div>
+                    <div class="col-6 text-end">Manager Approval: ______________________</div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_timber_sawing">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="timber_log_process.report_timber_sawing_document"/>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_timber_sawing" model="ir.actions.report">
+        <field name="name">Sawing Report (PDF)</field>
+        <field name="model">mrp.production</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">timber_log_process.report_timber_sawing</field>
+        <field name="report_file">timber_log_process.report_timber_sawing</field>
+        <field name="binding_model_id" ref="mrp.model_mrp_production"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

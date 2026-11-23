@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mrp_production_form_view_timber" model="ir.ui.view">
+        <field name="name">mrp.production.form.timber</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Timber Boards" name="timber_boards">
+                    <div class="mb-2">
+                        <button name="action_timber_apply_board_cbm" type="object"
+                                string="Use Boards CBM as Produced Quantity"
+                                class="btn-secondary"
+                                invisible="state in ('draft', 'done', 'cancel')"/>
+                    </div>
+                    <field name="timber_board_ids" context="{'default_kind': 'board'}"
+                           readonly="state in ('done', 'cancel')">
+                        <list editable="bottom">
+                            <field name="kind" column_invisible="1"/>
+                            <field name="name"/>
+                            <field name="width"/>
+                            <field name="thickness"/>
+                            <field name="board_length"/>
+                            <field name="cbm" sum="Total Boards CBM"/>
+                        </list>
+                    </field>
+                    <group>
+                        <group string="Sawing Summary">
+                            <field name="timber_input_cbm"/>
+                            <field name="timber_board_cbm"/>
+                            <field name="timber_waste_cbm"/>
+                            <field name="timber_yield_pct"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,28 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Root Menu with Custom App Icon -->
-    <menuitem id="menu_timber_root" name="Timber Management" sequence="10" web_icon="timber_log_process,static/description/icon.png"/>
+    <menuitem id="menu_timber_root" name="Timber Management" sequence="10"
+              web_icon="timber_log_process,static/description/icon.png"
+              groups="group_timber_user"/>
 
-    <!-- Submenus -->
-    <menuitem id="menu_timber_dashboard" name="Dashboard" parent="menu_timber_root" action="action_timber_dashboard" sequence="10"/>
-    <menuitem id="menu_timber_logs" name="Log Intake" parent="menu_timber_root" action="action_timber_log" sequence="20"/>
-    
-    <menuitem id="menu_timber_processing" name="Sawing &amp; Production" parent="menu_timber_root" action="action_timber_processing" sequence="30"/>
-    
-    <menuitem id="menu_timber_boards" name="Timber Boards" parent="menu_timber_root" action="action_timber_board" sequence="40"/>
+    <menuitem id="menu_timber_dashboard" name="Dashboard" parent="menu_timber_root" action="action_timber_dashboard" sequence="1"/>
 
-    <!-- Reports Menu -->
-    <menuitem id="menu_timber_reports" name="Reports" parent="menu_timber_root" sequence="60"/>
-    
-    <!-- Log Report (Sahihi) -->
-    <menuitem id="menu_timber_report_logs" name="Log Report" parent="menu_timber_reports" action="action_timber_log_report" sequence="10"/>
-    
-    <!-- Production Report (Imerekebishwa ikaelekezwa kwenye action_timber_production_report) -->
-    <menuitem id="menu_timber_report_production" name="Production Report" parent="menu_timber_reports" action="action_timber_production_report" sequence="20"/>
-    
-    <!-- Timber Stock Report (Imerekebishwa ikaelekezwa kwenye action_timber_finished_stock_report) -->
-    <menuitem id="menu_timber_report_boards" name="Timber Stock Report" parent="menu_timber_reports" action="action_timber_finished_stock_report" sequence="30"/>
-    
-    <!-- Expense Report -->
-    <menuitem id="menu_timber_report_expense" name="Expense Report" parent="menu_timber_reports" action="action_timber_expense_report_wizard" sequence="40"/>
+    <menuitem id="menu_timber_purchase" name="Purchase Logs" parent="menu_timber_root" sequence="10"/>
+    <menuitem id="menu_timber_purchase_orders" name="Purchase Orders" parent="menu_timber_purchase" action="action_timber_purchase" sequence="10"/>
+    <menuitem id="menu_timber_receipts" name="Log Receipts (Measurements &amp; TP)" parent="menu_timber_purchase" action="action_timber_receipts" sequence="20"/>
+    <menuitem id="menu_timber_expenses" name="Expenses (Landed Costs)" parent="menu_timber_purchase" action="action_timber_landed_cost" sequence="30"/>
+
+    <menuitem id="menu_timber_production" name="Sawing" parent="menu_timber_root" sequence="20"/>
+    <menuitem id="menu_timber_mrp" name="Sawing Orders" parent="menu_timber_production" action="action_timber_mrp" sequence="10"/>
+
+    <menuitem id="menu_timber_sales" name="Sales" parent="menu_timber_root" sequence="30"/>
+    <menuitem id="menu_timber_sale_orders" name="Sales Orders" parent="menu_timber_sales" action="action_timber_sale" sequence="10"/>
+
+    <menuitem id="menu_timber_reports" name="Reports" parent="menu_timber_root" sequence="40"/>
+    <menuitem id="menu_timber_report_logs" name="Log Intake" parent="menu_timber_reports" action="action_timber_measurement_report" sequence="10"/>
+    <menuitem id="menu_timber_report_production" name="Production" parent="menu_timber_reports" action="action_timber_production_report" sequence="20"/>
+    <menuitem id="menu_timber_report_stock" name="Timber Stock" parent="menu_timber_reports" action="action_timber_stock_report" sequence="30"/>
+    <menuitem id="menu_timber_report_lots" name="Log Lots" parent="menu_timber_reports" action="action_timber_lots" sequence="40"/>
+
+    <menuitem id="menu_timber_config" name="Configuration" parent="menu_timber_root" sequence="100" groups="group_timber_manager"/>
+    <menuitem id="menu_timber_config_products" name="Timber Products" parent="menu_timber_config" action="action_timber_products" sequence="10"/>
+    <menuitem id="menu_timber_config_bom" name="Sawing Ratios (Bill of Materials)" parent="menu_timber_config" action="action_timber_bom" sequence="20"/>
+    <menuitem id="menu_timber_config_costs" name="Expense Types" parent="menu_timber_config" action="action_timber_cost_products" sequence="30"/>
 </odoo>

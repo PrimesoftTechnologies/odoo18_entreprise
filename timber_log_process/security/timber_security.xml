@@ -1,23 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Module Category for Timber Management -->
     <record id="module_category_timber" model="ir.module.category">
-        <field name="name">Timber Management</field>
+        <field name="name">Timber Industry</field>
         <field name="sequence">15</field>
     </record>
 
-    <!-- Timber User Group -->
+    <!-- Timber User: gets the standard Odoo groups/settings the timber flow needs
+         (Lots &amp; Serial Numbers, By-Products, Units of Measure), so nobody has to
+         switch them on by hand in Settings. -->
     <record id="group_timber_user" model="res.groups">
         <field name="name">Timber User</field>
         <field name="category_id" ref="module_category_timber"/>
-        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="implied_ids" eval="[
+            (4, ref('base.group_user')),
+            (4, ref('stock.group_stock_user')),
+            (4, ref('stock.group_production_lot')),
+            (4, ref('mrp.group_mrp_user')),
+            (4, ref('mrp.group_mrp_byproducts')),
+            (4, ref('purchase.group_purchase_user')),
+            (4, ref('sales_team.group_sale_salesman')),
+            (4, ref('uom.group_uom')),
+        ]"/>
     </record>
 
-    <!-- Timber Manager Group -->
     <record id="group_timber_manager" model="res.groups">
         <field name="name">Timber Manager</field>
         <field name="category_id" ref="module_category_timber"/>
-        <!-- Tumeongeza base.group_system ili Manager aweze kuhifadhi Configuration Settings bila shida -->
-        <field name="implied_ids" eval="[(4, ref('group_timber_user')), (4, ref('base.group_system'))]"/>
+        <field name="implied_ids" eval="[
+            (4, ref('group_timber_user')),
+            (4, ref('stock.group_stock_manager')),
+            (4, ref('mrp.group_mrp_manager')),
+            (4, ref('purchase.group_purchase_manager')),
+            (4, ref('sales_team.group_sale_manager')),
+        ]"/>
+    </record>
+
+    <record id="base.user_admin" model="res.users">
+        <field name="groups_id" eval="[(4, ref('group_timber_manager'))]"/>
     </record>
 </odoo>

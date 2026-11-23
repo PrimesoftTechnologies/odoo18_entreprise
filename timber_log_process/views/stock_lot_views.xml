@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_production_lot_form_timber" model="ir.ui.view">
+        <field name="name">stock.lot.form.timber</field>
+        <field name="model">stock.lot</field>
+        <field name="inherit_id" ref="stock.view_production_lot_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <field name="timber_type" invisible="1"/>
+                <group string="Timber Log Measurements" invisible="timber_type != 'log'">
+                    <group>
+                        <field name="timber_circumference"/>
+                        <field name="timber_log_length"/>
+                    </group>
+                    <group>
+                        <field name="timber_cbm"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

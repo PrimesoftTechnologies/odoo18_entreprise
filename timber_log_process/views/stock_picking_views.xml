@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_picking_form_timber" model="ir.ui.view">
+        <field name="name">stock.picking.form.timber</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Timber Logs" name="timber_logs" invisible="picking_type_code != 'incoming'">
+                    <div class="mb-2">
+                        <button name="action_timber_generate_lots" type="object"
+                                string="Generate Lots &amp; Set Quantities"
+                                class="btn-primary"
+                                invisible="state in ('done', 'cancel')"/>
+                    </div>
+                    <field name="timber_measurement_ids" context="{'default_kind': 'log'}"
+                           readonly="state in ('done', 'cancel')">
+                        <list editable="bottom">
+                            <field name="kind" column_invisible="1"/>
+                            <field name="name"/>
+                            <field name="circumference"/>
+                            <field name="length"/>
+                            <field name="cbm" sum="Total CBM"/>
+                            <field name="lot_id"/>
+                        </list>
+                    </field>
+                    <group class="oe_subtotal_footer oe_right">
+                        <field name="timber_total_cbm" class="oe_subtotal_footer_separator"/>
+                    </group>
+                </page>
+                <page string="Transit Pass (TP)" name="timber_tp" invisible="picking_type_code != 'incoming'">
+                    <group>
+                        <group string="General TP Information">
+                            <field name="tp_number"/>
+                            <field name="tp_office_seal"/>
+                            <field name="tp_number_ref"/>
+                            <field name="tp_date"/>
+                            <field name="tp_due_date"/>
+                            <field name="tp_purchaser"/>
+                            <field name="tp_licence_type"/>
+                        </group>
+                        <group string="Origin &amp; Produce Details">
+                            <field name="tp_produce_desc"/>
+                            <field name="tp_species_size"/>
+                            <field name="tp_quantity"/>
+                            <field name="tp_forest_origin"/>
+                            <field name="tp_town_district"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Transport &amp; Logistics">
+                            <field name="tp_transport_mode"/>
+                            <field name="tp_vehicle_no"/>
+                            <field name="tp_estimated_distance"/>
+                            <field name="tp_expired_date"/>
+                            <field name="tp_registration_no"/>
+                        </group>
+                        <group string="Officer &amp; Authority Details">
+                            <field name="tp_marker_name"/>
+                            <field name="tp_designation"/>
+                            <field name="tp_station"/>
+                            <field name="tp_indicator_a"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
