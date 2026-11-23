@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Login, reset password, signup zote zinatumia web.login_layout -->
+    <template id="login_layout_external_logo_hill" inherit_id="web.login_layout">
+        <xpath expr="//img[contains(@t-attf-src, 'company_logo')]" position="attributes">
+            <attribute name="t-attf-src">/external_logo_hill/logo{{ '?dbname='+db if db else '' }}</attribute>
+        </xpath>
+    </template>
+</odoo>
