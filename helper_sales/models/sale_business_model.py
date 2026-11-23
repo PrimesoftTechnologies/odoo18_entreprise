@@ -115,18 +115,19 @@ class SaleOrderBusiness(models.Model):
             self.name = name
 
     def _prepare_invoice(self):
-        """Inapitisha Business Line na Journal yake kwenda kwenye Sale Invoice bila kubadili namba ya invoice."""
+        """Inapitisha Business Line na Journal yake kwenda kwenye Sale Invoice."""
         self.ensure_one()
         invoice_vals = super()._prepare_invoice()
-        if invoice_vals.get('move_type') == 'out_invoice' and self.business_model_id:
+        move_type = invoice_vals.get('move_type') or 'out_invoice'
+        if move_type == 'out_invoice' and self.business_model_id:
             invoice_vals['business_model_id'] = self.business_model_id.id
-            if self.business_model_id.journal_id:
-                invoice_vals['journal_id'] = self.business_model_id.journal_id.id
+            journal = self.business_model_id.journal_id
+            if journal and journal.company_id == self.company_id:
+                invoice_vals['journal_id'] = journal.id
         return invoice_vals
 
     def _create_invoices(self, grouped=False, final=False, date=None):
-        """Safety net: whatever happened inside Odoo or other modules, make sure the draft
-        customer invoice ends up in the Journal of its Business Line."""
+        """Safety net: inahakikisha draft customer invoice inapata Journal ya Business Line."""
         moves = super()._create_invoices(grouped=grouped, final=final, date=date)
         moves._apply_business_model_journal()
         return moves
