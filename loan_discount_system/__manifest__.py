@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Loan Discount System',
-    'version': '18.0.2.0.0',
+    'version': '18.0.2.1.0',
     'category': 'Accounting/Accounting',
     'summary': 'Distribute a bank loan to customers (Discount Centers) with their own amortization schedule',
     'description': """

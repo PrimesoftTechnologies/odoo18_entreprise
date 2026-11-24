@@ -37,4 +37,14 @@ def restore_legacy(env):
 
 
 def uninstall_hook(env):
+    xmlid = env['ir.model.data'].sudo().search([
+        ('module', '=', 'loan_discount_system'),
+        ('name', '=', 'view_bank_loan_form_lds_distributors'),
+    ], limit=1)
+    if xmlid:
+        view = env['ir.ui.view'].sudo().browse(xmlid.res_id).exists()
+        if view:
+            view.unlink()
+        xmlid.unlink()
+
     restore_legacy(env)
