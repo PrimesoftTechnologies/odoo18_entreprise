@@ -13,48 +13,83 @@ class LdsBankLoanHook(models.AbstractModel):
         return res
 
     @api.model
+    def _attach_field(self, target_model, field_name, field_obj):
+        """Attach a field cleanly to target_model and Odoo registry."""
+        field_obj.name = field_name
+        field_obj.model_name = target_model._name
+        target_model._fields[field_name] = field_obj
+        setattr(target_model.__class__, field_name, field_obj)
+        if hasattr(target_model, '_field_create'):
+            try:
+                target_model._field_create(field_obj)
+            except Exception:
+                pass
+
+    @api.model
     def _install_bank_loan_extension(self):
         LoanModel = self.env['lds.customer.loan']
-        model_name = LoanModel._default_loan_model()
+        model_name = LoanModel._default_loan_model() or ('account.loan' if 'account.loan' in self.env else False)
         if not model_name or model_name not in self.env:
             return
 
         TargetModel = self.env[model_name]
 
-        # 1. Dynamically add computed One2many field 'lds_distributor_ids' and summary totals on the bank loan model
+        def _compute_lds_distributors(records):
+            Dist = records.env['lds.customer.loan']
+            for rec in records:
+                dists = Dist.search([
+                    ('odoo_loan_model', '=', rec._name),
+                    ('odoo_loan_id', '=', rec.id),
+                ])
+                rec.lds_distributor_ids = dists
+                active_dists = dists.filtered(lambda d: d.state != 'draft')
+                rec.lds_total_distributed = sum(active_dists.mapped('amount'))
+                rec.lds_distributor_count = len(dists)
+
+        changed = False
         if 'lds_distributor_ids' not in TargetModel._fields:
-            def _compute_lds_distributors(records):
-                Dist = records.env['lds.customer.loan']
-                for rec in records:
-                    dists = Dist.search([
-                        ('odoo_loan_model', '=', rec._name),
-                        ('odoo_loan_id', '=', rec.id),
-                    ])
-                    rec.lds_distributor_ids = dists
-                    active_dists = dists.filtered(lambda d: d.state != 'draft')
-                    rec.lds_total_distributed = sum(active_dists.mapped('amount'))
-                    rec.lds_distributor_count = len(dists)
-
-            field_o2m = fields.One2many(
-                comodel_name='lds.customer.loan',
-                compute=_compute_lds_distributors,
-                string='Loan Distributors',
+            self._attach_field(
+                TargetModel,
+                'lds_distributor_ids',
+                fields.One2many(
+                    comodel_name='lds.customer.loan',
+                    compute=_compute_lds_distributors,
+                    string='Loan Distributors',
+                    store=False,
+                ),
             )
-            TargetModel._add_field('lds_distributor_ids', field_o2m)
+            changed = True
 
-            field_total = fields.Float(
-                compute=_compute_lds_distributors,
-                string='Total Distributed',
+        if 'lds_total_distributed' not in TargetModel._fields:
+            self._attach_field(
+                TargetModel,
+                'lds_total_distributed',
+                fields.Float(
+                    compute=_compute_lds_distributors,
+                    string='Total Distributed',
+                    store=False,
+                ),
             )
-            TargetModel._add_field('lds_total_distributed', field_total)
+            changed = True
 
-            field_count = fields.Integer(
-                compute=_compute_lds_distributors,
-                string='Distributors Count',
+        if 'lds_distributor_count' not in TargetModel._fields:
+            self._attach_field(
+                TargetModel,
+                'lds_distributor_count',
+                fields.Integer(
+                    compute=_compute_lds_distributors,
+                    string='Distributors Count',
+                    store=False,
+                ),
             )
-            TargetModel._add_field('lds_distributor_count', field_count)
+            changed = True
 
-        # 2. Ensure inherited XML view exists for the bank loan form view (adds "Loan Distributors" tab near "Loan Settings")
+        if changed and hasattr(self.env.registry, 'setup_models'):
+            try:
+                self.env.registry.setup_models(self.env.cr)
+            except Exception:
+                pass
+
         View = self.env['ir.ui.view'].sudo()
         Data = self.env['ir.model.data'].sudo()
         xmlid_rec = Data.search([
@@ -62,7 +97,6 @@ class LdsBankLoanHook(models.AbstractModel):
             ('name', '=', 'view_bank_loan_form_lds_distributors'),
         ], limit=1)
 
-        # Find the primary form view of the bank loan model (prefer one containing 'Loan Settings' or 'settings')
         form_views = View.search([
             ('model', '=', model_name),
             ('type', '=', 'form'),
@@ -80,7 +114,6 @@ class LdsBankLoanHook(models.AbstractModel):
         if not target_view:
             return
 
-        # Choose xpath: right after the page with string='Loan Settings' if present, else inside //notebook
         arch_str = target_view.arch_db or ''
         if "Loan Settings" in arch_str:
             xpath_expr = "//notebook/page[@string='Loan Settings']"
