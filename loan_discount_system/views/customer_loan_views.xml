@@ -106,21 +106,6 @@
                             </group>
                             <field name="notes" placeholder="Notes..."/>
                         </page>
-                        <page string="Loan Distributors" name="distributors">
-                            <field name="distributor_ids" readonly="1">
-                                <list decoration-success="state == 'closed'" decoration-info="state == 'draft'">
-                                    <field name="name"/>
-                                    <field name="partner_id"/>
-                                    <field name="date"/>
-                                    <field name="duration"/>
-                                    <field name="amount" sum="Total Distributed"/>
-                                    <field name="interest" sum="Total Interest"/>
-                                    <field name="outstanding_balance" sum="Total Outstanding"/>
-                                    <field name="currency_id" column_invisible="1"/>
-                                    <field name="state" widget="badge"/>
-                                </list>
-                            </field>
-                        </page>
                     </notebook>
                 </sheet>
                 <chatter/>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Adds the "Loan Distributors" tab to the form of Accounting > Loans -->
+    <record id="view_account_loan_form_lds_distributors" model="ir.ui.view">
+        <field name="name">account.loan.form.lds.distributors</field>
+        <field name="model">account.loan</field>
+        <field name="inherit_id"
+               search="[('model', '=', 'account.loan'), ('type', '=', 'form'), ('inherit_id', '=', False)]"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Loan Distributors" name="lds_distributors">
+                    <field name="lds_distributor_ids" readonly="1" nolabel="1">
+                        <list decoration-success="state == 'closed'" decoration-info="state == 'draft'">
+                            <field name="partner_id"/>
+                            <field name="name"/>
+                            <field name="date"/>
+                            <field name="duration"/>
+                            <field name="amount" sum="Total Distributed"/>
+                            <field name="interest" sum="Total Interest"/>
+                            <field name="outstanding_balance" sum="Total Outstanding"/>
+                            <field name="currency_id" column_invisible="1"/>
+                            <field name="state" widget="badge"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

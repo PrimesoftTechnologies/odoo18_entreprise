@@ -7,3 +7,4 @@ access_lds_customer_loan_line_treasurer,lds.customer.loan.line treasurer,model_l
 access_lds_customer_loan_line_acc,lds.customer.loan.line accountant,model_lds_customer_loan_line,account.group_account_manager,1,1,1,1
 access_lds_customer_loan_upload_treasurer,lds.customer.loan.upload treasurer,model_lds_customer_loan_upload,group_lds_treasurer,1,1,1,1
 access_lds_customer_loan_upload_acc,lds.customer.loan.upload accountant,model_lds_customer_loan_upload,account.group_account_manager,1,1,1,1
+access_lds_customer_loan_account_user,lds.customer.loan account user (read),model_lds_customer_loan,account.group_account_user,1,0,0,0

@@ -34,9 +34,6 @@ class LdsCustomerLoan(models.Model):
     odoo_loan_amount = fields.Monetary(compute='_compute_odoo_loan', string='Bank Loan Amount')
     loan_distributed = fields.Monetary(compute='_compute_odoo_loan', string='Already Distributed (others)')
     loan_available = fields.Monetary(compute='_compute_odoo_loan', string='Still Available')
-    distributor_ids = fields.Many2many(
-        'lds.customer.loan', string='Loan Distributors', compute='_compute_distributor_ids',
-        help="All customers (distributions) that receive money from the same bank loan.")
     journal_id = fields.Many2one(
         'account.journal', string='Journal',
         domain="[('company_id', '=', company_id), ('type', '=', 'general')]",
@@ -114,17 +111,6 @@ class LdsCustomerLoan(models.Model):
             loan.odoo_loan_amount = total
             loan.loan_distributed = others
             loan.loan_available = total - others if total else 0.0
-
-    @api.depends('odoo_loan_model', 'odoo_loan_id')
-    def _compute_distributor_ids(self):
-        for loan in self:
-            if loan.odoo_loan_model and loan.odoo_loan_id:
-                loan.distributor_ids = self.sudo().search([
-                    ('odoo_loan_model', '=', loan.odoo_loan_model),
-                    ('odoo_loan_id', '=', loan.odoo_loan_id),
-                ], order='date, id')
-            else:
-                loan.distributor_ids = False
 
     @api.constrains('amount', 'interest', 'duration')
     def _check_values(self):

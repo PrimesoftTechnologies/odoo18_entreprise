@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Loan Discount System',
-    'version': '18.0.2.0.0',
+    'version': '18.0.2.1.0',
     'category': 'Accounting/Accounting',
     'summary': 'Distribute a bank loan to customers (Discount Centers) with their own amortization schedule',
     'description': """
@@ -15,15 +15,17 @@ This module records the distribution of that money to customers (Discount Center
 * Confirm / Upload (Excel schedule) / Compute buttons
 * Accounting entries on one journal: disbursement and customer payments
 * Link to the bank loan of Accounting > Loans
+* "Loan Distributors" tab on the Accounting > Loans form: all customers that received money from that loan
     """,
     'author': 'Primesoft',
-    'depends': ['base', 'account', 'mail'],
+    'depends': ['base', 'account', 'mail', 'account_loans'],
     'external_dependencies': {'python': ['openpyxl']},
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
         'wizard/upload_wizard_views.xml',
         'views/customer_loan_views.xml',
+        'views/account_loan_views.xml',
         'views/res_company_views.xml',
         'views/menus.xml',
         'data/restore.xml',

@@ -1,6 +1,7 @@
 # Loan Discount System (Odoo 18)
 
-Accounting > Loans is NOT modified: the treasurer registers the bank loan there as before.
+The treasurer registers the bank loan in Accounting > Loans as before. The only addition there is a **Loan Distributors** tab
+(on the loan form) listing every customer that received money from that bank loan.
 This app records the money given to customers (Discount Centers), with the same layout as the Loan form.
 
 ## Install
