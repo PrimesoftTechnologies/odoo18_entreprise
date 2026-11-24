@@ -72,6 +72,27 @@ class LdsCustomerLoan(models.Model):
                 return rec.model
         return False
 
+    @api.model
+    def _get_distributions_for_bank_loan(self, model_name, res_id):
+        """Return all customer loan distributions linked to a specific bank loan record."""
+        if not (model_name and res_id):
+            return self.browse()
+        return self.search([
+            ('odoo_loan_model', '=', model_name),
+            ('odoo_loan_id', '=', res_id),
+        ])
+
+    def action_open_distribution(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Loan Distribution'),
+            'res_model': 'lds.customer.loan',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
+
     def _get_bank_loan(self):
         self.ensure_one()
         model = self.odoo_loan_model

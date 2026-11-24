@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Loan Discount System',
-    'version': '18.0.2.0.0',
+    'version': '18.0.2.2.0',
     'category': 'Accounting/Accounting',
     'summary': 'Distribute a bank loan to customers (Discount Centers) with their own amortization schedule',
     'description': """
@@ -24,6 +24,7 @@ This module records the distribution of that money to customers (Discount Center
         'security/ir.model.access.csv',
         'wizard/upload_wizard_views.xml',
         'views/customer_loan_views.xml',
+        'views/bank_loan_views.xml',
         'views/res_company_views.xml',
         'views/menus.xml',
         'data/restore.xml',
