@@ -32,10 +32,12 @@ def _insert_after(node, *new_nodes):
 # stock.location
 # --------------------------------------------------------------------------
 def inject_location_form(arch):
-    if arch.xpath("//field[@name='location_owner_id']"):
+    if arch.xpath("//field[@name='location_owner_ids']"):
         return
     usage = _first(arch, "//field[@name='usage'][not(ancestor::field)]")
-    node = etree.Element('field', {'name': 'location_owner_id'})
+    node = etree.Element('field', {
+        'name': 'location_owner_ids', 'widget': 'many2many_tags',
+        'options': "{'no_create': True}"})
     if usage is not None:
         _insert_after(usage, node)
         return
@@ -45,12 +47,15 @@ def inject_location_form(arch):
 
 
 def inject_location_list(arch):
-    if arch.xpath("//field[@name='location_owner_id']"):
+    if arch.xpath("//field[@name='location_owner_ids']"):
         return
-    ref = _first(arch, "//field[@name='complete_name']") or _first(arch, "//field[@name='usage']")
+    ref = _first(arch, "//field[@name='complete_name']")
+    if ref is None:
+        ref = _first(arch, "//field[@name='usage']")
     if ref is not None:
         _insert_after(ref, etree.Element('field', {
-            'name': 'location_owner_id', 'optional': 'show'}))
+            'name': 'location_owner_ids', 'widget': 'many2many_tags',
+            'optional': 'show'}))
 
 
 # --------------------------------------------------------------------------
@@ -92,9 +97,11 @@ def inject_picking_form(arch):
     _insert_after(vbtns[-1], pending_btn, reject_btn, *hidden)
 
     src_owner = etree.Element('field', {
-        'name': 'location_owner_id', 'invisible': 'not location_owner_id'})
+        'name': 'location_owner_ids', 'widget': 'many2many_tags',
+        'invisible': 'not location_owner_ids'})
     dest_owner = etree.Element('field', {
-        'name': 'location_dest_owner_id', 'invisible': 'not location_dest_owner_id'})
+        'name': 'location_dest_owner_ids', 'widget': 'many2many_tags',
+        'invisible': 'not location_dest_owner_ids'})
     src = _first(arch, "//field[@name='location_id'][not(ancestor::field)]")
     dest = _first(arch, "//field[@name='location_dest_id'][not(ancestor::field)]")
     if dest is not None:
