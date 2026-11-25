@@ -1,6 +1,6 @@
 {
     'name': 'Hill Location Owner',
-    'version': '18.0.1.5.0',
+    'version': '18.0.1.5.1',
     'category': 'Inventory/Inventory',
     'summary': 'Assign one or more owners to each stock location and require owner approval on internal transfers, receipts, deliveries and pick components',
     'description': """

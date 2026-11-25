@@ -6,6 +6,7 @@ import { _t } from "@web/core/l10n/translation";
 const BELL_URL = "/hill_location_owner/static/src/sounds/approval_bell.wav";
 const BUS_EVENT = "hill_location_owner/pending_approval";
 const UNLOCK_EVENTS = ["pointerdown", "keydown", "touchstart"];
+const BELL_VOLUME = 0.35; // 0 (silent) .. 1 (full); the sound file itself is already soft
 
 /**
  * Rings a bell + shows a sticky notification when the current user has a transfer
@@ -22,6 +23,7 @@ export const approvalBellService = {
 
         function ring() {
             const audio = new Audio(BELL_URL);
+            audio.volume = BELL_VOLUME;
             audio.play().catch(() => {
                 // Browsers may block sound until the user interacts with the page:
                 // ring on the very first click / key press / tap instead.
@@ -60,7 +62,8 @@ export const approvalBellService = {
             }
             fresh.forEach((item) => announced.add(item.id));
             const ids = fresh.map((item) => item.id);
-            notification.add(
+            let closeNotification;
+            closeNotification = notification.add(
                 _t("Waiting for your approval: %s", fresh.map((item) => item.name).join(", ")),
                 {
                     title: _t("Approval needed"),
@@ -70,7 +73,18 @@ export const approvalBellService = {
                         {
                             name: _t("Open"),
                             primary: true,
-                            onClick: () => openApprovals(ids),
+                            onClick: async () => {
+                                if (closeNotification) {
+                                    closeNotification();
+                                }
+                                try {
+                                    // opening it = seen: remove MY to-do activity for these transfers
+                                    await orm.call("stock.picking", "acknowledge_pending_approvals", [ids]);
+                                } catch {
+                                    // never block opening the transfer
+                                }
+                                await openApprovals(ids);
+                            },
                         },
                     ],
                 }

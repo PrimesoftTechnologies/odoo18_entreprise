@@ -145,6 +145,21 @@ class StockPicking(models.Model):
             lambda p: p.pending_validation and p.state not in ('done', 'cancel'))
         return [{'id': p.id, 'name': p.name} for p in pickings]
 
+    @api.model
+    def acknowledge_pending_approvals(self, picking_ids):
+        """The approver opened the transfer from the bell: remove HIS to-do activity only.
+
+        The transfer stays pending and the other approvers keep their activity.
+        """
+        pickings = self.browse(picking_ids).exists().filtered('pending_validation')
+        self.env['mail.activity'].sudo().search([
+            ('res_model', '=', 'stock.picking'),
+            ('res_id', 'in', pickings.ids),
+            ('user_id', '=', self.env.uid),
+            ('activity_type_id', '=', self.env.ref('mail.mail_activity_data_todo').id),
+        ]).unlink()
+        return True
+
     def action_confirm(self):
         # Server-side twin of the hidden "Mark as Todo" button. Only the button sends the
         # context flag, so automatic flows (sale, purchase, POS, MRP, returns) are never blocked.

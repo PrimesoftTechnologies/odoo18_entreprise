@@ -49,7 +49,12 @@ Every approver gets a bell + a sticky "Approval needed" notification (with an *O
 * right after login (web client load), if transfers are waiting for his approval;
 * live, when a new approval request arrives while he is logged in.
 
-Sound file: `static/src/sounds/approval_bell.wav` (replace it to change the tone).
+Clicking **Open** closes the notification, opens the transfer and removes the approver's OWN to-do activity
+for it (the transfer stays pending; other approvers keep theirs). Because that to-do is gone, the bell will
+not remind him again at the next login - the transfer is still listed as pending on the transfers list.
+
+Sound: one soft bell, `static/src/sounds/approval_bell.wav` (replace the file to change the tone).
+Loudness: `BELL_VOLUME` (0 to 1) at the top of `static/src/js/approval_bell.js`.
 Browsers may block sound until the user has interacted with the page; in that case the bell rings on the
 first click / key press / tap, and the notification is always shown. A muted tab or device stays silent.
 
@@ -57,6 +62,7 @@ first click / key press / tap, and the notification is always shown. A muted tab
 * 18.0.1.1.0: single field `location_owner_id` replaced by many2many `location_owner_ids`.
 * 18.0.1.2.0: Receipts added.
 * 18.0.1.3.0: Deliveries and Pick Components added. Helper fields renamed (`is_approver`, `hide_approver_buttons`).
+* 18.0.1.5.1: softer single bell; Open removes the approver's own activity.
 * 18.0.1.5.0: approval bell (login + live). Clear the browser cache / reload after upgrading.
 * 18.0.1.4.0: Pick Components are now approved by destination (Production) owners instead of source owners.
   Set owners on the Production location after upgrading. No stored data changes.

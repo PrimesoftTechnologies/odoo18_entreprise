@@ -238,6 +238,19 @@ class TestLocationOwnersValidation(TransactionCase):
         picking.with_user(self.dest_a).action_reject_pending_validation()
         self.assertFalse(Picking.with_user(self.dest_b).get_my_pending_approvals())
 
+    def test_open_from_bell_removes_only_my_activity(self):
+        picking = self._make_picking(self.src_loc, self.dest_loc)
+        picking.with_user(self.src_a).button_validate()
+        Picking = self.env['stock.picking']
+        Picking.with_user(self.dest_a).acknowledge_pending_approvals([picking.id])
+        picking.invalidate_recordset(['activity_ids'])
+        self.assertEqual(picking.activity_ids.mapped('user_id'), self.dest_b)
+        self.assertTrue(picking.pending_validation)  # still waiting for a decision
+        self.assertFalse(Picking.with_user(self.dest_a).get_my_pending_approvals())
+        self.assertEqual(
+            [r['id'] for r in Picking.with_user(self.dest_b).get_my_pending_approvals()],
+            [picking.id])
+
     # ------------------------------------------------------------ mark as todo guard
     def test_mark_as_todo_guard_only_with_button_context(self):
         picking = self._make_picking(self.src_loc, self.dest_loc)
