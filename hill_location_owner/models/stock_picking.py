@@ -125,6 +125,25 @@ class StockPicking(models.Model):
                     user_id=owner.id,
                     summary=_('Validate transfer %s', picking.name),
                     note=_('Requested by %s.', self.env.user.name))
+                # live bell for approvers who are already logged in (see static/src/js)
+                self.env['bus.bus']._sendone(
+                    owner.partner_id, 'hill_location_owner/pending_approval', {
+                        'picking_id': picking.id,
+                        'name': picking.name,
+                        'requested_by': self.env.user.name,
+                    })
+
+    @api.model
+    def get_my_pending_approvals(self):
+        """Transfers waiting for the current user's approval (used by the login bell)."""
+        activities = self.env['mail.activity'].search([
+            ('res_model', '=', 'stock.picking'),
+            ('user_id', '=', self.env.uid),
+            ('activity_type_id', '=', self.env.ref('mail.mail_activity_data_todo').id),
+        ])
+        pickings = self.browse(activities.mapped('res_id')).exists().filtered(
+            lambda p: p.pending_validation and p.state not in ('done', 'cancel'))
+        return [{'id': p.id, 'name': p.name} for p in pickings]
 
     def action_confirm(self):
         # Server-side twin of the hidden "Mark as Todo" button. Only the button sends the

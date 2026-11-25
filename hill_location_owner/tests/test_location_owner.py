@@ -224,6 +224,20 @@ class TestLocationOwnersValidation(TransactionCase):
         picking = self._make_picking(self.src_loc, self.free_production_loc, self.internal_type)
         self.assertFalse(picking._requires_owner_validation())
 
+    # ------------------------------------------------------------ login bell
+    def test_my_pending_approvals_lists_only_for_approvers(self):
+        picking = self._make_picking(self.src_loc, self.dest_loc)
+        Picking = self.env['stock.picking']
+        self.assertFalse(Picking.with_user(self.dest_a).get_my_pending_approvals())
+        picking.with_user(self.src_a).button_validate()
+        for approver in (self.dest_a, self.dest_b):
+            res = Picking.with_user(approver).get_my_pending_approvals()
+            self.assertEqual([r['id'] for r in res], [picking.id])
+        for other in (self.src_a, self.src_b, self.other_user):
+            self.assertFalse(Picking.with_user(other).get_my_pending_approvals())
+        picking.with_user(self.dest_a).action_reject_pending_validation()
+        self.assertFalse(Picking.with_user(self.dest_b).get_my_pending_approvals())
+
     # ------------------------------------------------------------ mark as todo guard
     def test_mark_as_todo_guard_only_with_button_context(self):
         picking = self._make_picking(self.src_loc, self.dest_loc)

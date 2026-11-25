@@ -44,10 +44,20 @@ Validate is always enforced server-side.
 Pick / Pack steps of multi-step deliveries are ordinary internal transfers (approvers = destination owners).
 To change which picking types are covered, edit `OWNER_VALIDATION_TYPES` in `models/stock_picking.py`.
 
+## Approval bell
+Every approver gets a bell + a sticky "Approval needed" notification (with an *Open* button):
+* right after login (web client load), if transfers are waiting for his approval;
+* live, when a new approval request arrives while he is logged in.
+
+Sound file: `static/src/sounds/approval_bell.wav` (replace it to change the tone).
+Browsers may block sound until the user has interacted with the page; in that case the bell rings on the
+first click / key press / tap, and the notification is always shown. A muted tab or device stays silent.
+
 ## Upgrade notes
 * 18.0.1.1.0: single field `location_owner_id` replaced by many2many `location_owner_ids`.
 * 18.0.1.2.0: Receipts added.
 * 18.0.1.3.0: Deliveries and Pick Components added. Helper fields renamed (`is_approver`, `hide_approver_buttons`).
+* 18.0.1.5.0: approval bell (login + live). Clear the browser cache / reload after upgrading.
 * 18.0.1.4.0: Pick Components are now approved by destination (Production) owners instead of source owners.
   Set owners on the Production location after upgrading. No stored data changes.
 
