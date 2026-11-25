@@ -49,15 +49,12 @@ class StockPicking(models.Model):
     #   starters : owners of the other side who make the transfer "pending" (may be empty;
     #              then any user who is not an approver can start it)
     #
-    #   Internal / Receipt          -> approvers = destination owners
-    #   Delivery / Pick components  -> approvers = source owners
+    #   Internal / Receipt / Pick components -> approvers = destination owners
+    #   Delivery                             -> approvers = source owners
+    #   (Pick components are ordinary internal transfers: stock -> production location)
     def _approver_is_source(self):
         self.ensure_one()
-        if self.picking_type_code == 'outgoing':
-            return True
-        # "Pick Components" (manufacturing): internal move from stock to the production location
-        return (self.picking_type_code == 'internal'
-                and self.location_dest_id.usage == 'production')
+        return self.picking_type_code == 'outgoing'
 
     def _get_owner_roles(self):
         """Return (starters, approvers) as res.users recordsets."""
@@ -90,7 +87,7 @@ class StockPicking(models.Model):
         return user in approvers             # no starters: anyone except the approvers
 
     @api.depends('location_owner_ids', 'location_dest_owner_ids', 'pending_validation',
-                 'state', 'picking_type_code', 'location_dest_id.usage')
+                 'state', 'picking_type_code')
     @api.depends_context('uid')
     def _compute_owner_flags(self):
         user = self.env.user

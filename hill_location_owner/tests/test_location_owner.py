@@ -38,9 +38,12 @@ class TestLocationOwnersValidation(TransactionCase):
             'location_owner_ids': [(6, 0, (cls.dest_a | cls.dest_b).ids)]})
         cls.free_loc = Location.create({
             'name': 'Hill Free', 'usage': 'internal', 'location_id': parent.id})
-        cls.production_loc = cls.env['stock.location'].search(
-            [('usage', '=', 'production'),
-             ('company_id', 'in', [False, cls.env.company.id])], limit=1)
+        # production locations: one with owners (approvers of pick components), one without
+        cls.production_loc = Location.create({
+            'name': 'Hill Production', 'usage': 'production',
+            'location_owner_ids': [(6, 0, (cls.dest_a | cls.dest_b).ids)]})
+        cls.free_production_loc = Location.create({
+            'name': 'Hill Production Free', 'usage': 'production'})
         cls.supplier_loc = cls.env.ref('stock.stock_location_suppliers')
         cls.customer_loc = cls.env.ref('stock.stock_location_customers')
         cls.internal_type = warehouse.int_type_id
@@ -194,18 +197,32 @@ class TestLocationOwnersValidation(TransactionCase):
         self.assertFalse(picking._requires_owner_validation())
 
     # ------------------------------------------------------------ pick components
-    # internal move stock -> production location: approvers = SOURCE owners
-    def test_pick_components_approvers_are_source_owners(self):
-        self.assertTrue(self.production_loc, 'no production location found')
+    # internal move stock -> production location: same rules as an internal transfer
+    # (approvers = destination (production) owners, starters = source owners)
+    def test_pick_components_approvers_are_production_owners(self):
         picking = self._make_picking(self.src_loc, self.production_loc, self.internal_type)
         self.assertTrue(picking._requires_owner_validation())
-        self.assertEqual(picking._get_owner_roles()[1], self.src_a | self.src_b)
-        with self.assertRaises(UserError):
-            picking.with_user(self.src_a).button_validate()
-        picking.with_user(self.other_user).button_validate()
+        starters, approvers = picking._get_owner_roles()
+        self.assertEqual(starters, self.src_a | self.src_b)
+        self.assertEqual(approvers, self.dest_a | self.dest_b)
+
+    def test_pick_components_flow(self):
+        picking = self._make_picking(self.src_loc, self.production_loc, self.internal_type)
+        for owner in (self.dest_a, self.dest_b, self.other_user):
+            with self.assertRaises(UserError):
+                picking.with_user(owner).button_validate()
+        picking.with_user(self.src_a).button_validate()
         self.assertTrue(picking.pending_validation)
-        picking.with_user(self.src_b).action_reject_pending_validation()
+        self.assertEqual(picking.activity_ids.mapped('user_id'), self.dest_a | self.dest_b)
+        with self.assertRaises(UserError):
+            picking.with_user(self.src_b).action_reject_pending_validation()
+        picking.with_user(self.dest_b).action_reject_pending_validation()
         self.assertFalse(picking.pending_validation)
+
+    def test_pick_components_without_production_owner_skips_flow(self):
+        # source owners alone do not trigger approval any more
+        picking = self._make_picking(self.src_loc, self.free_production_loc, self.internal_type)
+        self.assertFalse(picking._requires_owner_validation())
 
     # ------------------------------------------------------------ mark as todo guard
     def test_mark_as_todo_guard_only_with_button_context(self):
