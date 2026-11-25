@@ -1,11 +1,10 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
-from .view_utils import inject_picking_form
+from .view_utils import CONFIRM_CONTEXT_KEY, inject_picking_form
 
-
-# Picking types that go through the owner validation flow (Internal Transfers + Receipts)
-OWNER_VALIDATION_TYPES = ('internal', 'incoming')
+# Picking types that go through the owner validation flow
+OWNER_VALIDATION_TYPES = ('internal', 'incoming', 'outgoing')
 
 
 def _names(users):
@@ -31,9 +30,9 @@ class StockPicking(models.Model):
         string='Validation Requested On', copy=False, readonly=True)
 
     # UI helpers (depend on the current user)
-    is_dest_owner = fields.Boolean(compute='_compute_owner_flags')
+    is_approver = fields.Boolean(compute='_compute_owner_flags')
     hide_validation_buttons = fields.Boolean(compute='_compute_owner_flags')
-    hide_dest_buttons = fields.Boolean(compute='_compute_owner_flags')
+    hide_approver_buttons = fields.Boolean(compute='_compute_owner_flags')
 
     # ------------------------------------------------------------------
     # Views
@@ -45,11 +44,37 @@ class StockPicking(models.Model):
         return arch, view
 
     # ------------------------------------------------------------------
+    # Roles
+    #   approvers: owners who give the FINAL validation (they receive or hand over the goods)
+    #   starters : owners of the other side who make the transfer "pending" (may be empty;
+    #              then any user who is not an approver can start it)
+    #
+    #   Internal / Receipt          -> approvers = destination owners
+    #   Delivery / Pick components  -> approvers = source owners
+    def _approver_is_source(self):
+        self.ensure_one()
+        if self.picking_type_code == 'outgoing':
+            return True
+        # "Pick Components" (manufacturing): internal move from stock to the production location
+        return (self.picking_type_code == 'internal'
+                and self.location_dest_id.usage == 'production')
+
+    def _get_owner_roles(self):
+        """Return (starters, approvers) as res.users recordsets."""
+        self.ensure_one()
+        src, dest = self.location_owner_ids, self.location_dest_owner_ids
+        return (dest, src) if self._approver_is_source() else (src, dest)
+
+    def _get_approver_location(self):
+        self.ensure_one()
+        return self.location_id if self._approver_is_source() else self.location_dest_id
+
+    # ------------------------------------------------------------------
     # Rules
     def _requires_owner_validation(self):
         self.ensure_one()
         return (self.picking_type_code in OWNER_VALIDATION_TYPES
-                and bool(self.location_dest_owner_ids)
+                and bool(self._get_owner_roles()[1])
                 and self.state not in ('done', 'cancel'))
 
     def _owner_validation_blocked(self, user):
@@ -57,33 +82,34 @@ class StockPicking(models.Model):
         self.ensure_one()
         if not self._requires_owner_validation():
             return False
-        src, dest = self.location_owner_ids, self.location_dest_owner_ids
+        starters, approvers = self._get_owner_roles()
         if self.pending_validation:
-            return user not in dest      # step 2: any destination owner
-        if src:
-            return user not in src       # step 1: any source owner
-        return user in dest              # no source owner: anyone except destination owners
+            return user not in approvers     # step 2: any approver
+        if starters:
+            return user not in starters      # step 1: any starter
+        return user in approvers             # no starters: anyone except the approvers
 
     @api.depends('location_owner_ids', 'location_dest_owner_ids', 'pending_validation',
-                 'state', 'picking_type_code')
+                 'state', 'picking_type_code', 'location_dest_id.usage')
     @api.depends_context('uid')
     def _compute_owner_flags(self):
         user = self.env.user
         for picking in self:
-            src, dest = picking.location_owner_ids, picking.location_dest_owner_ids
+            starters, approvers = picking._get_owner_roles()
             requires = picking._requires_owner_validation()
-            picking.is_dest_owner = user in dest
+            picking.is_approver = user in approvers
             picking.hide_validation_buttons = picking._owner_validation_blocked(user)
-            # destination owners see NO button until a source owner made it pending
-            picking.hide_dest_buttons = bool(
-                requires and user in dest and user not in src and not picking.pending_validation)
+            # approvers see NO button until a starter made the transfer pending
+            picking.hide_approver_buttons = bool(
+                requires and user in approvers and user not in starters
+                and not picking.pending_validation)
 
     # ------------------------------------------------------------------
     # Workflow
     def _set_pending_validation(self):
         now = fields.Datetime.now()
         for picking in self:
-            owners = picking.location_dest_owner_ids
+            approvers = picking._get_owner_roles()[1]
             picking.write({
                 'pending_validation': True,
                 'pending_validation_user_id': self.env.user.id,
@@ -92,11 +118,11 @@ class StockPicking(models.Model):
             picking.message_post(
                 body=_('%(user)s requested validation of this transfer. Waiting for one of: '
                        '%(owners)s (owners of %(location)s).',
-                       user=self.env.user.name, owners=_names(owners),
-                       location=picking.location_dest_id.display_name),
-                partner_ids=owners.partner_id.ids,
+                       user=self.env.user.name, owners=_names(approvers),
+                       location=picking._get_approver_location().display_name),
+                partner_ids=approvers.partner_id.ids,
                 message_type='comment', subtype_xmlid='mail.mt_comment')
-            for owner in owners:
+            for owner in approvers:
                 picking.activity_schedule(
                     'mail.mail_activity_data_todo',
                     user_id=owner.id,
@@ -104,11 +130,10 @@ class StockPicking(models.Model):
                     note=_('Requested by %s.', self.env.user.name))
 
     def action_confirm(self):
-        # server-side twin of the hidden "Mark as Todo" button (sudo/cron are not restricted)
-        if not self.env.su:
+        # Server-side twin of the hidden "Mark as Todo" button. Only the button sends the
+        # context flag, so automatic flows (sale, purchase, POS, MRP, returns) are never blocked.
+        if not self.env.su and self.env.context.get(CONFIRM_CONTEXT_KEY):
             for picking in self:
-                if 'return_id' in picking._fields and picking.return_id:
-                    continue  # returns are confirmed by Odoo's return wizard, not the button
                 if picking._owner_validation_blocked(self.env.user):
                     raise UserError(_(
                         'You are not allowed to confirm %s at this step of the owner validation.',
@@ -121,25 +146,29 @@ class StockPicking(models.Model):
         for picking in self:
             if not picking._requires_owner_validation():
                 continue
-            src, dest = picking.location_owner_ids, picking.location_dest_owner_ids
-            if user in src and user in dest:
+            starters, approvers = picking._get_owner_roles()
+            if user in starters and user in approvers:
                 continue  # owns both sides: validate directly
             if picking.pending_validation:
-                if user not in dest:
+                if user not in approvers:
                     raise UserError(_(
                         '%(name)s is waiting for validation by one of: %(owners)s. '
-                        'Only a destination location owner can validate it.',
-                        name=picking.name, owners=_names(dest)))
+                        'Only these location owners can validate it.',
+                        name=picking.name, owners=_names(approvers)))
                 continue
             # step 1: not pending yet
-            if user in dest:
+            if user in approvers:
+                if starters:
+                    raise UserError(_(
+                        '%(name)s must first be validated by one of: %(owners)s.',
+                        name=picking.name, owners=_names(starters)))
                 raise UserError(_(
-                    '%(name)s must first be validated by a source location owner (%(owners)s).',
-                    name=picking.name, owners=_names(src)))
-            if src and user not in src:
+                    '%(name)s must first be validated by another user who is not an owner of %(location)s.',
+                    name=picking.name, location=picking._get_approver_location().display_name))
+            if starters and user not in starters:
                 raise UserError(_(
-                    'Only a source location owner (%(owners)s) can validate %(name)s first.',
-                    owners=_names(src), name=picking.name))
+                    'Only one of: %(owners)s can validate %(name)s first.',
+                    owners=_names(starters), name=picking.name))
             to_pending |= picking
 
         if to_pending:
@@ -147,13 +176,16 @@ class StockPicking(models.Model):
             remaining = self - to_pending
             if remaining:
                 return super(StockPicking, remaining).button_validate()
-            owners = _names(to_pending.location_dest_owner_ids)
+            approvers = self.env['res.users']
+            for picking in to_pending:
+                approvers |= picking._get_owner_roles()[1]
             return {
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
                 'params': {
                     'title': _('Pending Validation'),
-                    'message': _('Waiting for one of: %s to validate this transfer.', owners),
+                    'message': _('Waiting for one of: %s to validate this transfer.',
+                                 _names(approvers)),
                     'type': 'warning',
                     'sticky': False,
                     'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
@@ -165,7 +197,7 @@ class StockPicking(models.Model):
         pendings = self.filtered('pending_validation')
         res = super()._action_done()
         if pendings:
-            # closes the todo of every destination owner, not only the one who validated
+            # closes the todo of every approver, not only the one who validated
             pendings.activity_feedback(['mail.mail_activity_data_todo'])
             pendings.write({'pending_validation': False})
         return res
@@ -180,7 +212,7 @@ class StockPicking(models.Model):
                 'title': _('Pending Validation'),
                 'message': _('Waiting for one of: %(owners)s to validate this transfer '
                              '(requested by %(user)s).',
-                             owners=_names(self.location_dest_owner_ids),
+                             owners=_names(self._get_owner_roles()[1]),
                              user=self.pending_validation_user_id.name or '-'),
                 'type': 'info',
                 'sticky': False,
@@ -189,8 +221,8 @@ class StockPicking(models.Model):
 
     def action_reject_pending_validation(self):
         for picking in self:
-            if self.env.user not in picking.location_dest_owner_ids:
-                raise UserError(_('Only a destination location owner can reject this validation.'))
+            if self.env.user not in picking._get_owner_roles()[1]:
+                raise UserError(_('Only a location owner who must validate this transfer can reject it.'))
             requester = picking.pending_validation_user_id
             picking.activity_unlink(['mail.mail_activity_data_todo'])
             picking.write({'pending_validation': False})

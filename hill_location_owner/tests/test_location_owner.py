@@ -38,6 +38,9 @@ class TestLocationOwnersValidation(TransactionCase):
             'location_owner_ids': [(6, 0, (cls.dest_a | cls.dest_b).ids)]})
         cls.free_loc = Location.create({
             'name': 'Hill Free', 'usage': 'internal', 'location_id': parent.id})
+        cls.production_loc = cls.env['stock.location'].search(
+            [('usage', '=', 'production'),
+             ('company_id', 'in', [False, cls.env.company.id])], limit=1)
         cls.supplier_loc = cls.env.ref('stock.stock_location_suppliers')
         cls.customer_loc = cls.env.ref('stock.stock_location_customers')
         cls.internal_type = warehouse.int_type_id
@@ -152,6 +155,62 @@ class TestLocationOwnersValidation(TransactionCase):
         picking = self._make_picking(self.supplier_loc, self.free_loc, self.receipt_type)
         self.assertFalse(picking._requires_owner_validation())
 
-    def test_delivery_is_not_affected(self):
-        picking = self._make_picking(self.dest_loc, self.customer_loc, self.delivery_type)
+    # ------------------------------------------------------------ deliveries
+    # approvers = SOURCE owners (they hand the goods over); customer has no owner,
+    # so any user who is not a source owner starts it.
+    def test_delivery_requires_validation_from_source_owners(self):
+        picking = self._make_picking(self.src_loc, self.customer_loc, self.delivery_type)
+        self.assertTrue(picking._requires_owner_validation())
+        starters, approvers = picking._get_owner_roles()
+        self.assertFalse(starters)
+        self.assertEqual(approvers, self.src_a | self.src_b)
+
+    def test_delivery_source_owner_cannot_validate_first(self):
+        picking = self._make_picking(self.src_loc, self.customer_loc, self.delivery_type)
+        for owner in (self.src_a, self.src_b):
+            with self.assertRaises(UserError):
+                picking.with_user(owner).button_validate()
+
+    def test_delivery_non_owner_starts_then_source_owner_can_reject(self):
+        picking = self._make_picking(self.src_loc, self.customer_loc, self.delivery_type)
+        picking.with_user(self.other_user).button_validate()
+        self.assertTrue(picking.pending_validation)
+        self.assertEqual(picking.activity_ids.mapped('user_id'), self.src_a | self.src_b)
+        with self.assertRaises(UserError):
+            picking.with_user(self.other_user).action_reject_pending_validation()
+        picking.with_user(self.src_b).action_reject_pending_validation()
+        self.assertFalse(picking.pending_validation)
+
+    def test_delivery_button_flags(self):
+        picking = self._make_picking(self.src_loc, self.customer_loc, self.delivery_type)
+        self.assertTrue(picking.with_user(self.src_a).hide_validation_buttons)
+        self.assertFalse(picking.with_user(self.other_user).hide_validation_buttons)
+        picking.with_user(self.other_user).button_validate()
+        self.assertFalse(picking.with_user(self.src_a).hide_validation_buttons)
+        self.assertTrue(picking.with_user(self.other_user).hide_validation_buttons)
+
+    def test_delivery_from_location_without_owner_skips_flow(self):
+        picking = self._make_picking(self.free_loc, self.customer_loc, self.delivery_type)
         self.assertFalse(picking._requires_owner_validation())
+
+    # ------------------------------------------------------------ pick components
+    # internal move stock -> production location: approvers = SOURCE owners
+    def test_pick_components_approvers_are_source_owners(self):
+        self.assertTrue(self.production_loc, 'no production location found')
+        picking = self._make_picking(self.src_loc, self.production_loc, self.internal_type)
+        self.assertTrue(picking._requires_owner_validation())
+        self.assertEqual(picking._get_owner_roles()[1], self.src_a | self.src_b)
+        with self.assertRaises(UserError):
+            picking.with_user(self.src_a).button_validate()
+        picking.with_user(self.other_user).button_validate()
+        self.assertTrue(picking.pending_validation)
+        picking.with_user(self.src_b).action_reject_pending_validation()
+        self.assertFalse(picking.pending_validation)
+
+    # ------------------------------------------------------------ mark as todo guard
+    def test_mark_as_todo_guard_only_with_button_context(self):
+        picking = self._make_picking(self.src_loc, self.dest_loc)
+        picking.with_user(self.dest_a).action_confirm()  # automatic flows are not blocked
+        picking2 = self._make_picking(self.src_loc, self.dest_loc)
+        with self.assertRaises(UserError):
+            picking2.with_user(self.dest_a).with_context(hill_owner_check=True).action_confirm()

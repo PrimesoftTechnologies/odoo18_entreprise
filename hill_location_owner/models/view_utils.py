@@ -1,6 +1,9 @@
 """Pure lxml helpers used by the _get_view overrides (no odoo import, easy to test)."""
 from lxml import etree
 
+# context flag sent ONLY by the "Mark as Todo" button, so automatic flows are never blocked
+CONFIRM_CONTEXT_KEY = 'hill_owner_check'
+
 
 def _orig_invisible(node):
     """Return the node's original `invisible` expression (converting legacy `states`)."""
@@ -10,6 +13,16 @@ def _orig_invisible(node):
     if 'states' in node.attrib:
         del node.attrib['states']
     return inv
+
+
+def _with_check_context(btn):
+    flag = "'%s': True" % CONFIRM_CONTEXT_KEY
+    ctx = (btn.get('context') or '').strip()
+    if not ctx:
+        btn.set('context', '{%s}' % flag)
+    elif ctx.startswith('{') and ctx.endswith('}'):
+        inner = ctx[1:-1].strip()
+        btn.set('context', '{%s}' % ('%s, %s' % (inner, flag) if inner else flag))
 
 
 def _or(orig, extra):
@@ -68,31 +81,33 @@ def inject_picking_form(arch):
     if not vbtns:
         return
     # - Validate / Mark as Todo: hidden for whoever may not act at the current step
-    # - every other header button: hidden for the destination owner until the transfer is pending
+    # - every other header button: hidden for the approvers until the transfer is pending
     for b in arch.xpath("//header/button"):
         orig = _orig_invisible(b)
         if b.get('name') in ('button_validate', 'action_confirm'):
             b.set('invisible', _or(orig, "hide_validation_buttons"))
+            if b.get('name') == 'action_confirm':
+                _with_check_context(b)
         else:
-            b.set('invisible', _or(orig, "hide_dest_buttons"))
+            b.set('invisible', _or(orig, "hide_approver_buttons"))
 
     pending_btn = etree.Element('button', {
         'name': 'action_pending_validation_info',
         'type': 'object',
         'string': 'Pending Validation',
         'class': 'btn-warning',
-        'invisible': "not pending_validation or is_dest_owner or state in ('done', 'cancel')",
+        'invisible': "not pending_validation or is_approver or state in ('done', 'cancel')",
     })
     reject_btn = etree.Element('button', {
         'name': 'action_reject_pending_validation',
         'type': 'object',
         'string': 'Reject Validation',
-        'invisible': "not pending_validation or not is_dest_owner or state in ('done', 'cancel')",
+        'invisible': "not pending_validation or not is_approver or state in ('done', 'cancel')",
     })
     hidden = [
         etree.Element('field', {'name': name, 'invisible': '1'})
-        for name in ('pending_validation', 'is_dest_owner',
-                     'hide_validation_buttons', 'hide_dest_buttons')
+        for name in ('pending_validation', 'is_approver',
+                     'hide_validation_buttons', 'hide_approver_buttons')
     ]
     _insert_after(vbtns[-1], pending_btn, reject_btn, *hidden)
 

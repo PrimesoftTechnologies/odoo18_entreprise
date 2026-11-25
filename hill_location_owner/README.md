@@ -6,30 +6,43 @@ Depends on: `stock`, `mail`.
 Inventory > Configuration > Locations > open a location > **Location Owners** (pick as many internal users as you need).
 Editing locations is limited by Odoo's standard rights (Inventory Manager).
 
-## 2. Owner approval: Internal Transfers AND Receipts
-Applies to transfers whose **picking type is Internal or Receipt** and whose **destination location has at least one owner**.
-Deliveries and other types keep the standard Odoo flow.
+## 2. Owner approval
+Covers **Internal Transfers, Receipts, Deliveries and Pick Components**.
+Each transfer has two roles:
 
-1. A source owner presses **Validate** -> transfer becomes **Pending Validation**
-   (every destination owner gets a message + a to-do activity).
-   * Internal transfer: ANY source owner starts it.
-   * Receipt: the vendor location normally has no owner, so ANY user who is not a
-     destination owner starts it (e.g. purchasing / the person who checked the goods).
-2. ANY destination owner can **Validate** (= receive; the normal Odoo flow continues)
-   or **Reject Validation**. When validated, the to-dos of all destination owners are closed.
-3. Until step 1, destination owners see no action buttons; other users cannot validate at step 2.
-4. A user who owns both the source and the destination validates directly.
-5. If the source has owners, only they can start step 1.
-6. If the destination has no owner, the standard Odoo flow is used.
+* **Approvers** - owners who give the FINAL validation (they receive / hand over the goods).
+* **Starters** - owners of the other side who make the transfer "Pending". If that side has no owner,
+  ANY user who is not an approver can start it.
 
-"Mark as Todo" is also restricted server-side (sudo / cron / return wizard are not affected).
+| Type | Approvers | Starters |
+|---|---|---|
+| Internal Transfer | destination owners | source owners (or anyone else if none) |
+| Receipt | destination owners | source owners (vendor: none -> anyone not an approver) |
+| Delivery | **source owners** | destination owners (customer: none -> anyone not an approver) |
+| Pick Components (stock -> production location) | **source owners** | none -> anyone not an approver |
 
-To change which types are covered, edit `OWNER_VALIDATION_TYPES` in `models/stock_picking.py`.
+Flow:
+1. A starter presses **Validate** -> transfer becomes **Pending Validation**
+   (every approver gets a message + a to-do activity).
+2. ANY approver can **Validate** (normal Odoo flow continues) or **Reject Validation**.
+   When validated, the to-dos of all approvers are closed.
+3. Until step 1, approvers see no action buttons. At step 2 nobody else can validate.
+4. A user who is both starter and approver validates directly.
+5. If the approving side has no owner at all, the standard Odoo flow is used.
+
+"Mark as Todo": the button is hidden for users who may not act, and the button call is also
+checked server-side. Automatic flows (sale, purchase, POS, MRP, returns) never send the flag, so they are not blocked.
+Validate is always enforced server-side.
+
+Pick Components are detected as *internal* transfers whose destination location is of type "Production".
+Pick / Pack steps of multi-step deliveries are ordinary internal transfers (approvers = destination owners).
+To change which picking types are covered, edit `OWNER_VALIDATION_TYPES` in `models/stock_picking.py`.
 
 ## Upgrade notes
-* 18.0.1.1.0 replaced the single field `location_owner_id` by the many2many `location_owner_ids`;
-  re-enter owners if an older build was installed.
-* 18.0.1.2.0 added Receipts (no data change).
+* 18.0.1.1.0: single field `location_owner_id` replaced by many2many `location_owner_ids`.
+* 18.0.1.2.0: Receipts added.
+* 18.0.1.3.0: Deliveries and Pick Components added (approvers = source owners).
+  Computed helper fields renamed (`is_approver`, `hide_approver_buttons`); no stored data changes.
 
 ## Tests
 `odoo -d <db> -i hill_location_owner --test-tags /hill_location_owner --stop-after-init`
