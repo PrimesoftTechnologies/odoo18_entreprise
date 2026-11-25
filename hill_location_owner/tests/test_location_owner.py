@@ -38,12 +38,16 @@ class TestLocationOwnersValidation(TransactionCase):
             'location_owner_ids': [(6, 0, (cls.dest_a | cls.dest_b).ids)]})
         cls.free_loc = Location.create({
             'name': 'Hill Free', 'usage': 'internal', 'location_id': parent.id})
-        cls.picking_type = warehouse.int_type_id
+        cls.supplier_loc = cls.env.ref('stock.stock_location_suppliers')
+        cls.customer_loc = cls.env.ref('stock.stock_location_customers')
+        cls.internal_type = warehouse.int_type_id
+        cls.receipt_type = warehouse.in_type_id
+        cls.delivery_type = warehouse.out_type_id
         cls.product = cls.env['product.product'].create({'name': 'Hill Product', 'type': 'consu'})
 
-    def _make_picking(self, src, dest):
+    def _make_picking(self, src, dest, picking_type=None):
         return self.env['stock.picking'].create({
-            'picking_type_id': self.picking_type.id,
+            'picking_type_id': (picking_type or self.internal_type).id,
             'location_id': src.id,
             'location_dest_id': dest.id,
             'move_ids': [(0, 0, {
@@ -56,6 +60,7 @@ class TestLocationOwnersValidation(TransactionCase):
             })],
         })
 
+    # ------------------------------------------------------------ internal transfers
     def test_owners_follow_locations(self):
         picking = self._make_picking(self.src_loc, self.dest_loc)
         self.assertEqual(picking.location_owner_ids, self.src_a | self.src_b)
@@ -111,4 +116,42 @@ class TestLocationOwnersValidation(TransactionCase):
 
     def test_no_destination_owner_skips_flow(self):
         picking = self._make_picking(self.src_loc, self.free_loc)
+        self.assertFalse(picking._requires_owner_validation())
+
+    # ------------------------------------------------------------ receipts
+    def test_receipt_requires_owner_validation(self):
+        picking = self._make_picking(self.supplier_loc, self.dest_loc, self.receipt_type)
+        self.assertTrue(picking._requires_owner_validation())
+
+    def test_receipt_destination_owner_cannot_validate_first(self):
+        picking = self._make_picking(self.supplier_loc, self.dest_loc, self.receipt_type)
+        for owner in (self.dest_a, self.dest_b):
+            with self.assertRaises(UserError):
+                picking.with_user(owner).button_validate()
+
+    def test_receipt_non_owner_starts_then_destination_owner_can_reject(self):
+        # vendor location has no owner -> anyone except the destination owners starts it
+        picking = self._make_picking(self.supplier_loc, self.dest_loc, self.receipt_type)
+        picking.with_user(self.other_user).button_validate()
+        self.assertTrue(picking.pending_validation)
+        self.assertEqual(picking.activity_ids.mapped('user_id'), self.dest_a | self.dest_b)
+        with self.assertRaises(UserError):
+            picking.with_user(self.other_user).action_reject_pending_validation()
+        picking.with_user(self.dest_a).action_reject_pending_validation()
+        self.assertFalse(picking.pending_validation)
+
+    def test_receipt_button_flags(self):
+        picking = self._make_picking(self.supplier_loc, self.dest_loc, self.receipt_type)
+        self.assertTrue(picking.with_user(self.dest_a).hide_validation_buttons)
+        self.assertFalse(picking.with_user(self.other_user).hide_validation_buttons)
+        picking.with_user(self.other_user).button_validate()
+        self.assertFalse(picking.with_user(self.dest_a).hide_validation_buttons)
+        self.assertTrue(picking.with_user(self.other_user).hide_validation_buttons)
+
+    def test_receipt_without_destination_owner_skips_flow(self):
+        picking = self._make_picking(self.supplier_loc, self.free_loc, self.receipt_type)
+        self.assertFalse(picking._requires_owner_validation())
+
+    def test_delivery_is_not_affected(self):
+        picking = self._make_picking(self.dest_loc, self.customer_loc, self.delivery_type)
         self.assertFalse(picking._requires_owner_validation())

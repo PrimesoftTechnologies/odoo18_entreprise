@@ -4,6 +4,10 @@ from odoo.exceptions import UserError
 from .view_utils import inject_picking_form
 
 
+# Picking types that go through the owner validation flow (Internal Transfers + Receipts)
+OWNER_VALIDATION_TYPES = ('internal', 'incoming')
+
+
 def _names(users):
     return ', '.join(users.mapped('name')) or '-'
 
@@ -44,7 +48,7 @@ class StockPicking(models.Model):
     # Rules
     def _requires_owner_validation(self):
         self.ensure_one()
-        return (self.picking_type_code == 'internal'
+        return (self.picking_type_code in OWNER_VALIDATION_TYPES
                 and bool(self.location_dest_owner_ids)
                 and self.state not in ('done', 'cancel'))
 
@@ -96,13 +100,15 @@ class StockPicking(models.Model):
                 picking.activity_schedule(
                     'mail.mail_activity_data_todo',
                     user_id=owner.id,
-                    summary=_('Validate internal transfer %s', picking.name),
+                    summary=_('Validate transfer %s', picking.name),
                     note=_('Requested by %s.', self.env.user.name))
 
     def action_confirm(self):
         # server-side twin of the hidden "Mark as Todo" button (sudo/cron are not restricted)
         if not self.env.su:
             for picking in self:
+                if 'return_id' in picking._fields and picking.return_id:
+                    continue  # returns are confirmed by Odoo's return wizard, not the button
                 if picking._owner_validation_blocked(self.env.user):
                     raise UserError(_(
                         'You are not allowed to confirm %s at this step of the owner validation.',
