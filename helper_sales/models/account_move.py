@@ -96,10 +96,32 @@ class AccountMove(models.Model):
                     "Return Documents from the Inventory person before posting this Credit Note."
                 ))
 
+    def _check_analytic_required_on_invoices(self):
+        """ Inazuia kuthibitisha/ku-post Invoice kama Analytic Account haijajazwa kwenye mistari """
+        invoice_moves = self.filtered(
+            lambda m: m.move_type in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund')
+        )
+        for move in invoice_moves:
+            missing_lines = move.invoice_line_ids.filtered(
+                lambda line: line.display_type == 'product' and not line.analytic_distribution
+            )
+            if missing_lines:
+                line_labels = ", ".join(
+                    missing_lines.mapped('product_id.display_name')
+                    or missing_lines.mapped('name')
+                    or missing_lines.mapped('account_id.display_name')
+                )
+                raise UserError(_(
+                    "Cannot confirm/post this invoice because Analytic Account is missing on:\n%s"
+                ) % line_labels)
+
     def _post(self, soft=True):
         # Kagua attachment kwenye Credit Note (out_refund) wakati wa ku-post
         self._check_credit_note_attachments()
-        
+
+        # Kagua Analytic Account kwenye mistari ya Invoice kabla ya ku-post
+        self._check_analytic_required_on_invoices()
+
         for move in self.filtered(lambda m: m.move_type in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund')):
             move.partner_id.commercial_partner_id._check_tin_required()
         return super()._post(soft=soft)
@@ -114,3 +136,5 @@ class AccountMoveLine(models.Model):
         for line in self:
             if line.account_id and hasattr(line.account_id, 'analytic_account_id') and line.account_id.analytic_account_id:
                 line.analytic_distribution = {str(line.account_id.analytic_account_id.id): 100}
+            elif line.account_id and not line.analytic_distribution:
+                line.analytic_distribution = False
