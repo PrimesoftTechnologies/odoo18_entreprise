@@ -185,3 +185,27 @@ class AccountBankStatementLine(models.Model):
         if 'line_ids' in vals or 'is_reconciled' in vals:
             self._check_analytic_on_statement_lines()
         return res
+
+
+class BankRecWidget(models.Model):
+    _inherit = "bank.rec.widget"
+
+    def button_validate(self, *args, **kwargs):
+        """ Inakagua Analytic Account kwenye Manual Operations kabla ya Validate kwenye Bank Reconciliation """
+        for widget in self:
+            missing_accounts = []
+            rec_lines = getattr(widget, 'line_ids', self.env['bank.rec.widget.line'])
+            for rec_line in rec_lines:
+                flag = getattr(rec_line, 'flag', False)
+                if flag in ('liquidity', 'auto_balance', 'tax_line'):
+                    continue
+                account = getattr(rec_line, 'account_id', False)
+                analytic_dist = getattr(rec_line, 'analytic_distribution', False)
+                if account and getattr(account, 'analytic_account_required', False) and not analytic_dist:
+                    if account.display_name not in missing_accounts:
+                        missing_accounts.append(account.display_name)
+            if missing_accounts:
+                raise UserError(_(
+                    "Cannot validate reconciliation because Analytic Account is required for:\n%s"
+                ) % ", ".join(missing_accounts))
+        return super().button_validate(*args, **kwargs)
