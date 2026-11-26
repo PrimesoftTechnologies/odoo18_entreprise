@@ -14,6 +14,7 @@ def _names(users):
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
 
+    # Owners come from the chosen locations (Inventory > Configuration > Locations)
     location_owner_ids = fields.Many2many(
         'res.users', string='Source Location Owners',
         related='location_id.location_owner_ids', readonly=True)
