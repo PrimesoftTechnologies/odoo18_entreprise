@@ -8,7 +8,7 @@ class AccountAccount(models.Model):
     analytic_account_required = fields.Boolean(
         string="Require Analytic Account",
         default=False,
-        help="If checked, any journal item or invoice line using this account cannot be confirmed/posted without an Analytic Account.",
+        help="If checked, any journal item, invoice line, or manual reconciliation operation using this account requires an Analytic Account.",
     )
 
 
@@ -106,30 +106,35 @@ class AccountMove(models.Model):
                     "Return Documents from the Inventory person before posting this Credit Note."
                 ))
 
+    def _check_analytic_required_on_lines(self, lines, context_label=""):
+        """ Inakagua mistari ya ledger/move na kuzuia kama akaunti yenye analytic_account_required haina analytic """
+        missing_lines = lines.filtered(
+            lambda line: (
+                line.display_type not in ('line_section', 'line_subsection', 'line_note')
+                and getattr(line.account_id, 'analytic_account_required', False)
+                and not line.analytic_distribution
+            )
+        )
+        if missing_lines:
+            line_labels = ", ".join(
+                missing_lines.mapped('account_id.display_name')
+                or missing_lines.mapped('product_id.display_name')
+                or missing_lines.mapped('name')
+            )
+            prefix = f"{context_label} " if context_label else ""
+            raise UserError(_(
+                "%sAnalytic Account is required for the selected account(s) on:\n%s"
+            ) % (prefix, line_labels))
+
     def _check_analytic_required_on_moves(self):
-        """ Inazuia kuthibitisha/ku-post muamala wowote kama Ledger ina analytic_account_required na Analytic haijajazwa """
+        """ Inazuia kuthibitisha/ku-post muamala wowote (Journal Entry, Invoice, Reconciliation, n.k.) bila Analytic """
         target_moves = self.filtered(
             lambda m: m.move_type in (
                 'entry', 'out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt'
             )
         )
         for move in target_moves:
-            missing_lines = move.line_ids.filtered(
-                lambda line: (
-                    line.display_type not in ('line_section', 'line_subsection', 'line_note')
-                    and getattr(line.account_id, 'analytic_account_required', False)
-                    and not line.analytic_distribution
-                )
-            )
-            if missing_lines:
-                line_labels = ", ".join(
-                    missing_lines.mapped('account_id.display_name')
-                    or missing_lines.mapped('product_id.display_name')
-                    or missing_lines.mapped('name')
-                )
-                raise UserError(_(
-                    "Cannot confirm/post because Analytic Account is required for the selected account(s) on:\n%s"
-                ) % line_labels)
+            self._check_analytic_required_on_lines(move.line_ids)
 
     def _post(self, soft=True):
         # Kagua attachment kwenye Credit Note (out_refund) wakati wa ku-post
@@ -154,3 +159,29 @@ class AccountMoveLine(models.Model):
                 line.analytic_distribution = {str(line.account_id.analytic_account_id.id): 100}
             elif line.account_id and not line.analytic_distribution:
                 line.analytic_distribution = False
+
+    def reconcile(self):
+        """ Inakagua pia wakati wa ku-reconcile mistari (ikiwemo manual reconciliation operations) """
+        self.move_id._check_analytic_required_on_lines(
+            self,
+            context_label=_("Cannot reconcile because"),
+        )
+        return super().reconcile()
+
+
+class AccountBankStatementLine(models.Model):
+    _inherit = "account.bank.statement.line"
+
+    def _prepare_reconciliation_move_line_vals(self, *args, **kwargs):
+        vals_list = super()._prepare_reconciliation_move_line_vals(*args, **kwargs)
+        for vals in vals_list:
+            account_id = vals.get('account_id')
+            if account_id and not vals.get('analytic_distribution'):
+                account = self.env['account.account'].browse(account_id)
+                if getattr(account, 'analytic_account_id', False):
+                    vals['analytic_distribution'] = {str(account.analytic_account_id.id): 100}
+                elif getattr(account, 'analytic_account_required', False):
+                    raise UserError(_(
+                        "Analytic Account is required for account %s in manual reconciliation."
+                    ) % account.display_name)
+        return vals_list
