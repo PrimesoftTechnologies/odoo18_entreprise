@@ -6,9 +6,9 @@ class AccountAccount(models.Model):
     _inherit = "account.account"
 
     analytic_account_required = fields.Boolean(
-        string="Require Analytic Account on Invoice",
+        string="Require Analytic Account",
         default=False,
-        help="If checked, invoices/entries using this account cannot be confirmed/posted without an Analytic Account.",
+        help="If checked, any journal item or invoice line using this account cannot be confirmed/posted without an Analytic Account.",
     )
 
 
@@ -106,14 +106,15 @@ class AccountMove(models.Model):
                     "Return Documents from the Inventory person before posting this Credit Note."
                 ))
 
-    def _check_analytic_required_on_invoices(self):
-        """ Inazuia kuthibitisha/ku-post Invoice au Journal Entry kama Account ina analytic_account_required na Analytic haijajazwa """
+    def _check_analytic_required_on_moves(self):
+        """ Inazuia kuthibitisha/ku-post muamala wowote kama Ledger ina analytic_account_required na Analytic haijajazwa """
         target_moves = self.filtered(
-            lambda m: m.move_type in ('entry', 'out_invoice', 'out_refund', 'in_invoice', 'in_refund')
+            lambda m: m.move_type in (
+                'entry', 'out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt'
+            )
         )
         for move in target_moves:
-            lines = move.line_ids if move.move_type == 'entry' else move.invoice_line_ids
-            missing_lines = lines.filtered(
+            missing_lines = move.line_ids.filtered(
                 lambda line: (
                     line.display_type not in ('line_section', 'line_subsection', 'line_note')
                     and getattr(line.account_id, 'analytic_account_required', False)
@@ -134,8 +135,8 @@ class AccountMove(models.Model):
         # Kagua attachment kwenye Credit Note (out_refund) wakati wa ku-post
         self._check_credit_note_attachments()
 
-        # Kagua Analytic Account kwenye mistari ya Invoice na Journal Entry kulingana na mipangilio ya Chart of Account
-        self._check_analytic_required_on_invoices()
+        # Kagua Analytic Account kwenye mistari yote ya ledger kabla ya ku-post
+        self._check_analytic_required_on_moves()
 
         for move in self.filtered(lambda m: m.move_type in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund')):
             move.partner_id.commercial_partner_id._check_tin_required()
@@ -149,7 +150,7 @@ class AccountMoveLine(models.Model):
     def _onchange_account_id_analytic(self):
         """ Inavuta Analytic Account kutoka kwenye Chart of Account (analytic_account_id) kiotomatiki """
         for line in self:
-            if line.account_id and hasattr(line.account_id, 'analytic_account_id') and line.account_id.analytic_account_id:
+            if line.account_id and getattr(line.account_id, 'analytic_account_id', False):
                 line.analytic_distribution = {str(line.account_id.analytic_account_id.id): 100}
             elif line.account_id and not line.analytic_distribution:
                 line.analytic_distribution = False
