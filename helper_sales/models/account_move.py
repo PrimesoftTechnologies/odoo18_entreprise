@@ -8,7 +8,7 @@ class AccountAccount(models.Model):
     analytic_account_required = fields.Boolean(
         string="Require Analytic Account",
         default=False,
-        help="If checked, any journal item, invoice line, or manual reconciliation operation using this account requires an Analytic Account.",
+        help="If checked, any journal item, invoice line, or reconciliation operation using this account requires an Analytic Account.",
     )
 
 
@@ -161,7 +161,7 @@ class AccountMoveLine(models.Model):
                 line.analytic_distribution = False
 
     def reconcile(self):
-        """ Inakagua pia wakati wa ku-reconcile mistari (ikiwemo manual reconciliation operations) """
+        """ Inakagua pia wakati wa ku-reconcile mistari """
         self.move_id._check_analytic_required_on_lines(
             self,
             context_label=_("Cannot reconcile because"),
@@ -172,16 +172,16 @@ class AccountMoveLine(models.Model):
 class AccountBankStatementLine(models.Model):
     _inherit = "account.bank.statement.line"
 
-    def _prepare_reconciliation_move_line_vals(self, *args, **kwargs):
-        vals_list = super()._prepare_reconciliation_move_line_vals(*args, **kwargs)
-        for vals in vals_list:
-            account_id = vals.get('account_id')
-            if account_id and not vals.get('analytic_distribution'):
-                account = self.env['account.account'].browse(account_id)
-                if getattr(account, 'analytic_account_id', False):
-                    vals['analytic_distribution'] = {str(account.analytic_account_id.id): 100}
-                elif getattr(account, 'analytic_account_required', False):
-                    raise UserError(_(
-                        "Analytic Account is required for account %s in manual reconciliation."
-                    ) % account.display_name)
-        return vals_list
+    def _check_analytic_on_statement_lines(self):
+        for st_line in self:
+            if st_line.line_ids:
+                st_line.move_id._check_analytic_required_on_lines(
+                    st_line.line_ids,
+                    context_label=_("Bank Reconciliation:"),
+                )
+
+    def write(self, vals):
+        res = super().write(vals)
+        if 'line_ids' in vals or 'is_reconciled' in vals:
+            self._check_analytic_on_statement_lines()
+        return res
