@@ -2,6 +2,16 @@ from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 
+class AccountAccount(models.Model):
+    _inherit = "account.account"
+
+    analytic_account_required = fields.Boolean(
+        string="Require Analytic Account on Invoice",
+        default=False,
+        help="If checked, invoices using this account cannot be confirmed/posted without an Analytic Account.",
+    )
+
+
 class AccountMove(models.Model):
     _inherit = "account.move"
 
@@ -97,13 +107,17 @@ class AccountMove(models.Model):
                 ))
 
     def _check_analytic_required_on_invoices(self):
-        """ Inazuia kuthibitisha/ku-post Invoice kama Analytic Account haijajazwa kwenye mistari """
+        """ Inazuia kuthibitisha/ku-post Invoice kama Chart of Account ina analytic_account_required na Analytic haijajazwa """
         invoice_moves = self.filtered(
             lambda m: m.move_type in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund')
         )
         for move in invoice_moves:
             missing_lines = move.invoice_line_ids.filtered(
-                lambda line: line.display_type == 'product' and not line.analytic_distribution
+                lambda line: (
+                    line.display_type == 'product'
+                    and getattr(line.account_id, 'analytic_account_required', False)
+                    and not line.analytic_distribution
+                )
             )
             if missing_lines:
                 line_labels = ", ".join(
@@ -112,14 +126,14 @@ class AccountMove(models.Model):
                     or missing_lines.mapped('account_id.display_name')
                 )
                 raise UserError(_(
-                    "Cannot confirm/post this invoice because Analytic Account is missing on:\n%s"
+                    "Cannot confirm/post this invoice because Analytic Account is required for the selected account(s) on:\n%s"
                 ) % line_labels)
 
     def _post(self, soft=True):
         # Kagua attachment kwenye Credit Note (out_refund) wakati wa ku-post
         self._check_credit_note_attachments()
 
-        # Kagua Analytic Account kwenye mistari ya Invoice kabla ya ku-post
+        # Kagua Analytic Account kwenye mistari ya Invoice kulingana na mipangilio ya Chart of Account
         self._check_analytic_required_on_invoices()
 
         for move in self.filtered(lambda m: m.move_type in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund')):

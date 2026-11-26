@@ -8,6 +8,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='account_type']" position="after">
                 <field name="analytic_account_id"/>
+                <field name="analytic_account_required"/>
             </xpath>
         </field>
     </record>
