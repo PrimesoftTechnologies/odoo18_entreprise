@@ -1,315 +1,424 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="paperformat_inventory_valuation_landscape" model="report.paperformat">
+        <field name="name">Inventory Valuation (A4 Landscape)</field>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">36</field>
+        <field name="margin_bottom">16</field>
+        <field name="margin_left">8</field>
+        <field name="margin_right">8</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">6</field>
+        <field name="dpi">96</field>
+    </record>
+
     <record id="stock_inventory_pdf_report_report" model="ir.actions.report">
         <field name="name">Inventory Valuation Report</field>
         <field name="model">inventory.valuation.report</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">eg_inventory_valuation_report.stock_inventory_pdf_report</field>
         <field name="report_file">eg_inventory_valuation_report.stock_inventory_pdf_report</field>
-        <field name="attachment">False</field>
+        <field name="print_report_name">'Inventory_Valuation_%s' % (object.end_date)</field>
+        <field name="paperformat_id" ref="paperformat_inventory_valuation_landscape"/>
+        <field name="attachment" eval="False"/>
+        <field name="binding_type">report</field>
     </record>
 
     <template id="stock_inventory_pdf_report">
         <t t-call="web.html_container">
-            <div class="page">
-                <div style="position: absolute; left: 20px; top: -10px; text-align: left;">
-                    <p>
-                        <t t-esc="company_name"/>
-                        <br/>
-                        <t t-esc="company_street"/>
-                        <br/>
-                        <t t-esc="company_city"/>
-                        <br/>
-                        <t t-esc="company_zip"/>
-                        <br/>
-                        <t t-esc="company_country"/>
-                    </p>
-                </div>
+            <t t-set="cm" t-value="company_main"/>
+            <t t-set="period" t-value="meta['report_type'] == 'period'"/>
+            <t t-set="detailed" t-value="meta['detail_level'] == 'detailed'"/>
+            <t t-set="show_adj_qty" t-value="any(s['totals']['adj_qty'] for s in ds['sections'] if s['totals']['adj_qty'] is not None) or any(r['adj_qty'] for s in ds['sections'] for g in s['groups'] for r in g['rows'])"/>
+            <t t-set="ncols" t-value="(12 + (2 if show_adj_qty else 1)) if period else 7"/>
 
-                <div style="text-align: center; margin-bottom: 40px;">
-                    <h2>Inventory Valuation Report</h2>
-                    <p>
-                        <strong>Report Duration:</strong>
-                        From
-                        <t t-esc="start_date"/>
-                        to
-                        <t t-esc="end_date"/>
-                    </p>
-                </div>
+            <!-- ================= HEADER ================= -->
+            <div class="header">
+                <table t-attf-style="width:100%; border-collapse:collapse; font-family:'Helvetica Neue',Arial,sans-serif; border-bottom:3px solid {{primary}};">
+                    <tr>
+                        <td style="width:16%; vertical-align:middle; padding:0 0 6px 0;">
+                            <img t-if="cm.get('logo')" t-att-src="image_data_uri(cm['logo'])" style="max-height:52px; max-width:150px;" alt="Logo"/>
+                        </td>
+                        <td style="width:44%; vertical-align:middle; padding:0 0 6px 6px; font-size:9px; color:#4A5A6A; line-height:1.35;">
+                            <div t-attf-style="font-size:14px; font-weight:bold; color:{{primary}};" t-out="' | '.join(c['name'] for c in ds['companies'])"/>
+                            <t t-if="len(ds['companies']) == 1">
+                                <div t-out="', '.join(cm.get('address') or [])"/>
+                                <div>
+                                    <t t-out="' · '.join(x for x in (cm.get('phone'), cm.get('email'), cm.get('website')) if x)"/>
+                                    <t t-if="cm.get('vat')"> · Tax ID: <t t-out="cm['vat']"/></t>
+                                </div>
+                            </t>
+                        </td>
+                        <td style="width:40%; vertical-align:middle; text-align:right; padding:0 0 6px 0;">
+                            <div t-attf-style="font-size:15px; font-weight:bold; color:{{primary}}; letter-spacing:0.5px;" t-out="meta['title'].upper()"/>
+                            <div style="font-size:10px; color:#33475B;"><t t-out="meta['period_label']"/></div>
+                            <div style="font-size:9px; color:#6B7C8D;">
+                                Currency: <t t-out="', '.join(sorted({c['currency']['name'] for c in ds['companies']}))"/>
+                                <t t-if="meta['allocated']"> · <span style="color:#8A5300; font-weight:bold;">ESTIMATED ALLOCATION</span></t>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
 
-                <t t-foreach="warehouses" t-as="warehouse">
-                    <div class="page">
-                        <div style="text-align: center; margin-bottom: 40px;">
-                            <h3>Warehouse:
-                                <t t-esc="warehouse['warehouse_name']"/>
-                            </h3>
+            <!-- ================= BODY ================= -->
+            <div class="article">
+                <style>
+                    .ivr { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1F2D3D; font-size: 8.5px; }
+                    .ivr h2 { font-size: 13px; font-weight: bold; margin: 10px 0 6px 0; padding-bottom: 3px; }
+                    .ivr .band { color: #fff; font-weight: bold; font-size: 10px; padding: 5px 8px; margin-top: 10px; }
+                    .ivr table { width: 100%; border-collapse: collapse; }
+                    .ivr .params td { padding: 3px 6px; border-bottom: 1px solid #E3E8EE; font-size: 8.5px; vertical-align: top; }
+                    .ivr .params td.k { color: #5A6B7D; font-weight: bold; width: 20%; background: #F4F7FA; }
+                    .ivr table.kpi { table-layout: fixed; }
+                    .ivr .kpi td { padding: 8px 6px; text-align: center; border: 1px solid #DCE3EA; background: #F7F9FC; }
+                    .ivr .kpi .lbl { font-size: 7.5px; color: #5A6B7D; text-transform: uppercase; letter-spacing: 0.6px; }
+                    .ivr .kpi .num { font-size: 13px; font-weight: bold; margin-top: 3px; }
+                    .ivr .kpi .cur { font-size: 7.5px; color: #8796A5; }
+                    .ivr table.grid { table-layout: fixed; }
+                    .ivr table.grid thead { display: table-header-group; }
+                    .ivr table.grid tr { page-break-inside: avoid; }
+                    .ivr table.grid th { color: #fff; font-weight: bold; font-size: 7.5px; padding: 4px 3px; border: 1px solid #FFFFFF; text-align: center; vertical-align: middle; }
+                    .ivr table.grid td { padding: 2.5px 3px; border-bottom: 1px solid #E6EBF0; font-size: 8px; vertical-align: middle; overflow: hidden; }
+                    .ivr table.grid td.n { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+                    .ivr table.grid td.c { text-align: center; }
+                    .ivr table.grid td.prod { word-wrap: break-word; }
+                    .ivr tr.zebra td { background: #F7F9FC; }
+                    .ivr tr.grp td { background: #EEF3F8; font-weight: bold; font-size: 8px; padding: 4px 4px; }
+                    .ivr tr.sub td { background: #DCE6F1; font-weight: bold; border-top: 1px solid #9FB3C8; }
+                    .ivr tr.tot td { color: #fff; font-weight: bold; font-size: 8px; padding: 4px 3px; }
+                    .ivr .warn { background: #FFF4E0; border: 1px solid #F0B357; color: #6B4100; padding: 6px 8px; margin: 6px 0; font-size: 8.5px; }
+                    .ivr .ok { color: #1E7B34; font-weight: bold; }
+                    .ivr .bad { color: #B42318; font-weight: bold; }
+                    .ivr .na { color: #6B7C8D; }
+                    .ivr .flag { color: #B42318; font-size: 6.8px; }
+                    .ivr .muted { color: #6B7C8D; }
+                    .ivr .ctl td, .ivr .ctl th { padding: 3px 5px; font-size: 8px; border-bottom: 1px solid #E3E8EE; }
+                    .ivr .ctl th { color: #fff; text-align: left; }
+                    .ivr .notes p { margin: 0 0 5px 0; font-size: 8px; line-height: 1.4; }
+                    .ivr .pb { page-break-before: always; }
+                </style>
+                <div class="ivr">
+                    <!-- Title & parameters -->
+                    <h2 t-attf-style="color:{{primary}}; border-bottom:2px solid {{primary}};">Report parameters</h2>
+                    <table class="params">
+                        <t t-foreach="[meta['filters'][i:i + 2] for i in range(0, len(meta['filters']), 2)]" t-as="pair">
+                            <tr>
+                                <t t-foreach="pair" t-as="f">
+                                    <td class="k" t-out="f[0]"/>
+                                    <td t-out="f[1]" style="width:30%;"/>
+                                </t>
+                                <t t-if="len(pair) == 1"><td class="k"/><td/></t>
+                            </tr>
+                        </t>
+                    </table>
+
+                    <div t-if="meta['allocated']" class="warn">
+                        <b>Estimated allocation.</b> Odoo values inventory per company, not per location.
+                        Warehouse/location values below are allocated at company average cost and are management
+                        estimates. The authoritative company valuation and the allocation difference are shown in
+                        the reconciliation section.
+                    </div>
+
+                    <!-- Executive summary -->
+                    <h2 t-attf-style="color:{{primary}}; border-bottom:2px solid {{primary}};">Executive summary</h2>
+                    <t t-foreach="ds['currency_totals']" t-as="ct">
+                        <t t-set="d" t-value="ct['currency']['digits']"/>
+                        <div class="muted" style="margin:2px 0 3px 0;">
+                            <t t-out="', '.join(ct['companies'])"/> — <t t-out="ct['currency']['name']"/>
+                            <t t-if="ct['allocated']"> (sum of allocated sections<t t-if="ct['transfers_eliminated']">; transfers between sections eliminated: <t t-out="fv(ct['transfers_eliminated'], d)"/></t>)</t>
+                            <t t-if="len(ct['companies']) &gt; 1"> — sum of companies, inter-company flows not eliminated</t>
                         </div>
+                        <table class="kpi" style="margin-bottom:6px;">
+                            <tr>
+                                <t t-if="period">
+                                    <td><div class="lbl">Opening value</div><div class="num" t-attf-style="color:{{primary}}" t-out="fz(ct['open_value'], d)"/></td>
+                                    <td><div class="lbl">Incoming</div><div class="num" style="color:#1E7B34" t-out="fz(ct['in_value'], d)"/></td>
+                                    <td><div class="lbl">Outgoing</div><div class="num" style="color:#B42318" t-out="fz(ct['out_value'], d)"/></td>
+                                    <td><div class="lbl">Valuation adjustments</div><div class="num" style="color:#8A5300" t-out="fz(ct['adj_value'], d)"/></td>
+                                </t>
+                                <td t-attf-style="background:{{primary}}; border-color:{{primary}};">
+                                    <div class="lbl" style="color:#DCE6F1;">Closing value</div>
+                                    <div class="num" style="color:#FFFFFF;" t-out="fz(ct['close_value'], d)"/>
+                                    <div class="cur" style="color:#DCE6F1;" t-out="ct['currency']['name']"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </t>
+                    <table class="grid">
+                        <thead>
+                            <tr t-attf-style="background:{{primary}};">
+                                <th style="width:34%; text-align:left;">Company / section</th>
+                                <th style="width:6%;">Products</th>
+                                <t t-if="period">
+                                    <th>Opening value</th><th>Incoming</th><th>Outgoing</th><th>Adjustments</th>
+                                </t>
+                                <th>Closing value</th>
+                                <th style="width:6%;">Cur.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="ds['sections']" t-as="s">
+                                <t t-set="d" t-value="s['currency']['digits']"/>
+                                <tr t-att-class="'zebra' if s_index % 2 else ''">
+                                    <td><b t-out="s['company_name']"/> — <t t-out="s['label']"/><t t-if="s['allocated']"> <i class="muted">(est.)</i></t></td>
+                                    <td class="c" t-out="s['product_count']"/>
+                                    <t t-if="period">
+                                        <td class="n" t-out="fv(s['totals']['open_value'], d)"/>
+                                        <td class="n" t-out="fv(s['totals']['in_value'], d)"/>
+                                        <td class="n" t-out="fv(s['totals']['out_value'], d)"/>
+                                        <td class="n" t-out="fv(s['totals']['adj_value'], d)"/>
+                                    </t>
+                                    <td class="n"><b t-out="fv(s['totals']['close_value'], d)"/></td>
+                                    <td class="c" t-out="s['currency']['name']"/>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    <div style="margin-top:6px;" class="muted">
+                        Control checks:
+                        <t t-foreach="ds['reconciliation']" t-as="rec">
+                            <t t-foreach="rec['checks']" t-as="chk">
+                                <span t-att-class="'ok' if chk['ok'] else ('na' if chk['ok'] is None else 'bad')">
+                                    <t t-out="'✔' if chk['ok'] else ('–' if chk['ok'] is None else '✘')"/>
+                                </span>
+                                <t t-out="rec['company_name']"/>: <t t-out="chk['label']"/>;
+                            </t>
+                            <t t-set="qc" t-value="rec.get('qty_check')"/>
+                            <t t-if="qc">
+                                <span t-att-class="'ok' if qc['ok'] else ('na' if qc['ok'] is None else 'bad')"
+                                      t-out="'✔' if qc['ok'] else ('–' if qc['ok'] is None else '✘')"/>
+                                <t t-out="rec['company_name']"/>: physical stock vs valued quantity
+                                (<t t-out="qc['count']"/> difference(s));
+                            </t>
+                        </t>
+                        Exceptions flagged: <b t-out="len(ds['exceptions'])"/>.
+                    </div>
 
-                        <table class="table table-bordered"
-                               style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                    <!-- Detail -->
+                    <t t-set="detail_sections" t-value="[s for s in ds['sections'] if s['product_count']]"/>
+                    <div t-if="not detail_sections" class="muted" style="padding:10px 0;">
+                        No stock and no movement for the selected parameters.
+                    </div>
+                    <t t-foreach="detail_sections" t-as="sec">
+                        <t t-set="d" t-value="sec['currency']['digits']"/>
+                        <div class="pb"/>
+                        <div class="band" t-attf-style="background:{{accent}};">
+                            <t t-out="sec['company_name']"/> — <t t-out="sec['label']"/>
+                            <span style="float:right; font-weight:normal;">
+                                <t t-out="sec['currency']['name']"/>
+                                <t t-if="sec['allocated']"> · ESTIMATED</t>
+                            </span>
+                        </div>
+                        <table class="grid">
+                            <colgroup>
+                                <col style="width:8%"/>
+                                <col t-att-style="'width:19%' if period else 'width:46%'"/>
+                                <col style="width:4%"/>
+                                <t t-if="period">
+                                    <col/><col/><col/><col/><col/><col/>
+                                    <col t-if="show_adj_qty"/>
+                                    <col/>
+                                </t>
+                                <col t-if="not period" style="width:7%"/>
+                                <col/><col/><col/>
+                            </colgroup>
                             <thead>
-                                <tr style="background-color: #f2f2f2;">
-                                    <th style="border: 1px solid #000; padding: 8px;">Product Name</th>
-                                    <th style="border: 1px solid #000; padding: 8px;">Cost Method</th>
-                                    <th style="border: 1px solid #000; padding: 8px;">Beginning Qty</th>
-                                    <th style="border: 1px solid #000; padding: 8px;">Beginning Value</th>
-                                    <th style="border: 1px solid #000; padding: 8px;">Received Qty</th>
-                                    <th style="border: 1px solid #000; padding: 8px;">Received Value</th>
-                                    <th style="border: 1px solid #000; padding: 8px;">Sale Qty</th>
-                                    <th style="border: 1px solid #000; padding: 8px;">Sale Value</th>
-                                    <th style="border: 1px solid #000; padding: 8px;">Internal Qty</th>
-                                    <th style="border: 1px solid #000; padding: 8px;">Internal Value</th>
-                                    <th style="border: 1px solid #000; padding: 8px;">Adjustment Qty</th>
-                                    <th style="border: 1px solid #000; padding: 8px;">Adjustment Value</th>
-                                    <th style="border: 1px solid #000; padding: 8px;">Ending Qty</th>
-                                    <th style="border: 1px solid #000; padding: 8px;">Ending Value</th>
+                                <tr t-if="period" t-attf-style="background:{{accent}};">
+                                    <th colspan="3" style="border-bottom:0;"/>
+                                    <th colspan="2">OPENING</th>
+                                    <th colspan="2">INCOMING</th>
+                                    <th colspan="2">OUTGOING</th>
+                                    <th t-att-colspan="2 if show_adj_qty else 1">ADJUSTMENTS</th>
+                                    <th colspan="3">CLOSING</th>
+                                </tr>
+                                <tr t-attf-style="background:{{primary}};">
+                                    <th>Reference</th>
+                                    <th style="text-align:left;"><t t-if="detailed">Product</t><t t-else="">Category</t></th>
+                                    <th>UoM</th>
+                                    <t t-if="period">
+                                        <th>Qty</th><th>Value</th>
+                                        <th>Qty</th><th>Value</th>
+                                        <th>Qty</th><th>Value</th>
+                                        <th t-if="show_adj_qty">Qty</th><th>Value</th>
+                                    </t>
+                                    <th t-if="not period">Costing</th>
+                                    <th>Qty</th><th>Unit cost</th><th>Value</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <t t-if="filter_by == 'product'">
-                                    <t t-foreach="warehouse['products']" t-as="line">
-                                        <tr>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="line['name']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                               <t t-esc="line['costing_method']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="line['beginning_qty']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="line['beginning_value']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="line['received_qty']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="line['received_value']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="line['sales_qty']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="line['sales_value']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="line['internal_qty']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="line['internal_value']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="line['adjustment_qty']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="line['adjustment_value']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="line['ending_qty']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="line['ending_value']"/>
+                                <t t-foreach="sec['groups']" t-as="grp">
+                                    <t t-if="detailed">
+                                        <tr t-if="grp['label']" class="grp">
+                                            <td t-att-colspan="ncols" t-attf-style="color:{{primary}};">
+                                                <t t-out="grp['label']"/>
+                                                <span class="muted" style="font-weight:normal;"> · <t t-out="len(grp['rows'])"/> product(s)</span>
                                             </td>
                                         </tr>
-                                    </t>
-                                    <tr style="background-color: #f2f2f2;">
-                                        <td style="border: 1px solid #000; padding: 8px; text-align: center;"
-                                            colspan="1">
-                                            <strong>Total</strong>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['beginning_qty']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['beginning_value']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['received_qty']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['received_value']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['sales_qty']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['sales_value']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['internal_qty']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['internal_value']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['adjustment_qty']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['adjustment_value']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['ending_qty']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['ending_value']"/>
-                                        </td>
-                                    </tr>
-                                </t>
-                                <t t-elif="filter_by == 'category'">
-                                    <t t-foreach="warehouse['products']" t-as="category">
-                                        <tr>
-                                            <td colspan="13"
-                                                style="background-color: #f2f2f2; font-weight: bold; text-align: center;">
-                                                <t t-esc="category['category_name']"/>
-                                            </td>
-                                        </tr>
-                                        <t t-foreach="category['products']" t-as="line">
-                                            <tr>
-                                                <td style="border: 1px solid #000; padding: 8px;">
-                                                    <t t-esc="line['name']"/>
+                                        <t t-foreach="grp['rows']" t-as="r">
+                                            <tr t-att-class="'zebra' if r_index % 2 else ''">
+                                                <td t-out="r['code']"/>
+                                                <td class="prod">
+                                                    <t t-out="r['name']"/>
+                                                    <span t-if="r['cost_method']" class="muted"> · <t t-out="r['cost_method']"/></span>
+                                                    <div t-if="r['flags']" class="flag" t-out="'; '.join(r['flags'])"/>
                                                 </td>
-                                                <td style="border: 1px solid #000; padding: 8px;">
-                                                    <t t-esc="line['costing_method']"/>
-                                                </td>
-                                                <td style="border: 1px solid #000; padding: 8px;">
-                                                    <t t-esc="line['beginning_qty']"/>
-                                                </td>
-                                                <td style="border: 1px solid #000; padding: 8px;">
-                                                    <t t-esc="line['beginning_value']"/>
-                                                </td>
-                                                <td style="border: 1px solid #000; padding: 8px;">
-                                                    <t t-esc="line['received_qty']"/>
-                                                </td>
-                                                <td style="border: 1px solid #000; padding: 8px;">
-                                                    <t t-esc="line['received_value']"/>
-                                                </td>
-                                                <td style="border: 1px solid #000; padding: 8px;">
-                                                    <t t-esc="line['sales_qty']"/>
-                                                </td>
-                                                <td style="border: 1px solid #000; padding: 8px;">
-                                                    <t t-esc="line['sales_value']"/>
-                                                </td>
-                                                <td style="border: 1px solid #000; padding: 8px;">
-                                                    <t t-esc="line['internal_qty']"/>
-                                                </td>
-                                                <td style="border: 1px solid #000; padding: 8px;">
-                                                    <t t-esc="line['internal_value']"/>
-                                                </td>
-                                                <td style="border: 1px solid #000; padding: 8px;">
-                                                    <t t-esc="line['adjustment_qty']"/>
-                                                </td>
-                                                <td style="border: 1px solid #000; padding: 8px;">
-                                                    <t t-esc="line['adjustment_value']"/>
-                                                </td>
-                                                <td style="border: 1px solid #000; padding: 8px;">
-                                                    <t t-esc="line['ending_qty']"/>
-                                                </td>
-                                                <td style="border: 1px solid #000; padding: 8px;">
-                                                    <t t-esc="line['ending_value']"/>
-                                                </td>
+                                                <td class="c" t-out="r['uom']"/>
+                                                <t t-call="eg_inventory_valuation_report.ivr_figures">
+                                                    <t t-set="x" t-value="r"/>
+                                                </t>
                                             </tr>
                                         </t>
-                                        <tr style="background-color: #f2f2f2;">
-                                            <td style="border: 1px solid #000; padding: 8px; text-align: center;"
-                                                colspan="1">
-                                                <strong>Category Total</strong>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="category['category_totals']['beginning_qty']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="category['category_totals']['beginning_value']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="category['category_totals']['received_qty']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="category['category_totals']['received_value']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="category['category_totals']['sales_qty']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="category['category_totals']['sales_value']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="category['category_totals']['internal_qty']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="category['category_totals']['internal_value']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="category['category_totals']['adjustment_qty']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="category['category_totals']['adjustment_value']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="category['category_totals']['ending_qty']"/>
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 8px;">
-                                                <t t-esc="category['category_totals']['ending_value']"/>
-                                            </td>
+                                        <tr t-if="grp['label']" class="sub">
+                                            <td/>
+                                            <td>Subtotal <t t-out="grp['label']"/></td>
+                                            <td class="c" t-out="grp['totals']['uom'] or 'mixed'"/>
+                                            <t t-call="eg_inventory_valuation_report.ivr_figures">
+                                                <t t-set="x" t-value="grp['totals']"/>
+                                            </t>
                                         </tr>
                                     </t>
-                                    <tr style="background-color: #f2f2f2;">
-                                        <td style="border: 1px solid #000; padding: 8px; text-align: center;"
-                                            colspan="1">
-                                            <strong>Total</strong>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['beginning_qty']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['beginning_value']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['received_qty']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['received_value']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['sales_qty']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['sales_value']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['internal_qty']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['internal_value']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['adjustment_qty']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['adjustment_value']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['ending_qty']"/>
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 8px;">
-                                            <t t-esc="warehouse['totals']['ending_value']"/>
-                                        </td>
-                                    </tr>
+                                    <t t-else="">
+                                        <tr t-att-class="'zebra' if grp_index % 2 else ''">
+                                            <td class="muted" t-out="'%s prod.' % grp['totals']['count']"/>
+                                            <td class="prod" t-out="grp['label'] or 'All products'"/>
+                                            <td class="c" t-out="grp['totals']['uom'] or 'mixed'"/>
+                                            <t t-call="eg_inventory_valuation_report.ivr_figures">
+                                                <t t-set="x" t-value="grp['totals']"/>
+                                            </t>
+                                        </tr>
+                                    </t>
                                 </t>
+                                <tr class="tot" t-attf-style="background:{{primary}};">
+                                    <td t-attf-style="background:{{primary}};"/>
+                                    <td t-attf-style="background:{{primary}};">TOTAL <t t-out="sec['label']"/></td>
+                                    <td class="c" t-attf-style="background:{{primary}};" t-out="sec['totals']['uom'] or ''"/>
+                                    <t t-call="eg_inventory_valuation_report.ivr_figures">
+                                        <t t-set="x" t-value="sec['totals']"/>
+                                        <t t-set="bg" t-value="primary"/>
+                                    </t>
+                                </tr>
                             </tbody>
                         </table>
+                    </t>
+
+                    <!-- Reconciliation -->
+                    <h2 t-attf-style="color:{{primary}}; border-bottom:2px solid {{primary}}; margin-top:16px; page-break-after:avoid;">Reconciliation &amp; controls</h2>
+                    <t t-foreach="ds['reconciliation']" t-as="rec">
+                        <t t-set="d" t-value="rec['currency']['digits']"/>
+                        <div class="band" t-attf-style="background:{{accent}};">
+                            <t t-out="rec['company_name']"/> (<t t-out="rec['currency']['name']"/>) — authoritative closing value:
+                            <t t-out="fv(rec['authoritative_close_value'], d)"/>
+                        </div>
+                        <table class="ctl">
+                            <tr t-attf-style="background:{{primary}};">
+                                <th style="width:30%;">Control</th><th style="width:11%; text-align:right;">This report</th>
+                                <th style="width:11%; text-align:right;">Reference</th><th style="width:10%; text-align:right;">Difference</th>
+                                <th style="width:7%;">Status</th><th>Explanation</th>
+                            </tr>
+                            <tr t-foreach="rec['checks']" t-as="chk">
+                                <td t-out="chk['label']"/>
+                                <td style="text-align:right;" t-out="fv(chk['report'], d)"/>
+                                <td style="text-align:right;" t-out="fv(chk['reference'], d) if chk['reference'] is not None else 'n/a'"/>
+                                <td style="text-align:right;" t-out="fv(chk['difference'], d) if chk['difference'] is not None else ''"/>
+                                <td t-att-class="'ok' if chk['ok'] else ('na' if chk['ok'] is None else 'bad')"
+                                    t-out="'OK' if chk['ok'] else ('n/a' if chk['ok'] is None else 'DIFFERENCE')"/>
+                                <td class="muted" t-out="chk['note']"/>
+                            </tr>
+                            <tr t-if="rec.get('qty_check')">
+                                <t t-set="qc" t-value="rec['qty_check']"/>
+                                <td>Physical stock vs valued quantity</td>
+                                <td style="text-align:right;"><t t-out="qc['count']"/> difference(s)</td>
+                                <td/><td/>
+                                <td t-att-class="'ok' if qc['ok'] else ('na' if qc['ok'] is None else 'bad')"
+                                    t-out="'OK' if qc['ok'] else ('n/a' if qc['ok'] is None else 'DIFFERENCE')"/>
+                                <td class="muted" t-out="qc['note']"/>
+                            </tr>
+                        </table>
+                        <table class="ctl" t-if="rec['gl']" style="margin-top:6px;">
+                            <tr t-attf-style="background:{{primary}};">
+                                <th style="width:30%;">Stock valuation account</th><th style="width:11%; text-align:right;">Inventory value</th>
+                                <th style="width:11%; text-align:right;">GL balance</th><th style="width:10%; text-align:right;">Difference</th>
+                                <th style="width:7%;">Status</th><th/>
+                            </tr>
+                            <tr t-foreach="rec['gl']" t-as="gl">
+                                <td t-out="gl['account']"/>
+                                <td style="text-align:right;" t-out="fv(gl['inventory_value'], d)"/>
+                                <td style="text-align:right;" t-out="fv(gl['gl_balance'], d)"/>
+                                <td style="text-align:right;" t-out="fv(gl['difference'], d)"/>
+                                <td t-att-class="'ok' if gl['ok'] else 'bad'" t-out="'OK' if gl['ok'] else 'DIFFERENCE'"/>
+                                <td/>
+                            </tr>
+                            <tr t-if="rec.get('manual_value')">
+                                <td>Manually valued inventory (not posted to GL)</td>
+                                <td style="text-align:right;" t-out="fv(rec['manual_value'], d)"/>
+                                <td colspan="4"/>
+                            </tr>
+                        </table>
+                        <p class="muted" style="margin:4px 0 10px 0;" t-out="rec['gl_note']"/>
+                    </t>
+
+                    <h2 t-attf-style="color:{{primary}}; border-bottom:2px solid {{primary}};">
+                        Exceptions requiring review (<t t-out="len(ds['exceptions'])"/>)
+                    </h2>
+                    <p t-if="not ds['exceptions']" class="muted">No exceptions found.</p>
+                    <table t-else="" class="ctl">
+                        <tr t-attf-style="background:{{primary}};">
+                            <th style="width:46%;">Product</th><th style="width:12%; text-align:right;">Closing qty</th>
+                            <th style="width:14%; text-align:right;">Closing value</th><th>Issue</th>
+                        </tr>
+                        <tr t-foreach="ds['exceptions'][:exceptions_limit]" t-as="e">
+                            <td><t t-if="e['code']">[<t t-out="e['code']"/>] </t><t t-out="e['name']"/> <span class="muted">(<t t-out="e['section']"/>)</span></td>
+                            <td style="text-align:right;"><t t-out="fq(e['close_qty'])"/> <t t-out="e['uom']"/></td>
+                            <td style="text-align:right;"><t t-out="fz(e['close_value'])"/> <t t-out="e['currency']"/></td>
+                            <td class="bad" t-out="e['issue']"/>
+                        </tr>
+                    </table>
+                    <p t-if="len(ds['exceptions']) &gt; exceptions_limit" class="muted">
+                        … <t t-out="len(ds['exceptions']) - exceptions_limit"/> more in the Excel workbook (Reconciliation sheet).
+                    </p>
+
+                    <h2 t-attf-style="color:{{primary}}; border-bottom:2px solid {{primary}};">Methodology</h2>
+                    <div class="notes">
+                        <p t-foreach="notes" t-as="n"><b t-out="n[0]"/>: <t t-out="n[1]"/></p>
                     </div>
-                    <div style="page-break-before: always;"></div>
-                </t>
+                </div>
+            </div>
+
+            <!-- ================= FOOTER ================= -->
+            <div class="footer">
+                <table style="width:100%; border-top:1px solid #C9D3DD; font-family:'Helvetica Neue',Arial,sans-serif; font-size:8px; color:#6B7C8D;">
+                    <tr>
+                        <td style="width:45%; padding-top:4px;">
+                            Generated <t t-out="meta['generated_at']"/> (<t t-out="meta['generated_tz']"/>) by <t t-out="meta['generated_by']"/>
+                        </td>
+                        <td style="width:25%; text-align:center; padding-top:4px;">Confidential — for internal use</td>
+                        <td style="width:30%; text-align:right; padding-top:4px;">
+                            <t t-out="meta['title']"/> · Page <span class="page"/> of <span class="topage"/>
+                        </td>
+                    </tr>
+                </table>
             </div>
         </t>
+    </template>
+
+    <!-- numeric cells of a row / subtotal / total -->
+    <template id="ivr_figures">
+        <t t-set="st" t-value="'background:%s;' % bg if bg else ''"/>
+        <t t-if="period">
+            <td class="n" t-att-style="st" t-out="fq(x['open_qty'])"/>
+            <td class="n" t-att-style="st" t-out="fv(x['open_value'], d)"/>
+            <td class="n" t-att-style="st" t-out="fq(x['in_qty'])"/>
+            <td class="n" t-att-style="st" t-out="fv(x['in_value'], d)"/>
+            <td class="n" t-att-style="st" t-out="fq(x['out_qty'])"/>
+            <td class="n" t-att-style="st" t-out="fv(x['out_value'], d)"/>
+            <td t-if="show_adj_qty" class="n" t-att-style="st" t-out="fq(x['adj_qty'])"/>
+            <td class="n" t-att-style="st" t-out="fv(x['adj_value'], d)"/>
+        </t>
+        <td t-if="not period" class="c" t-att-style="st" t-out="x.get('cost_method') or ''"/>
+        <td class="n" t-att-style="st" t-out="fq(x['close_qty'])"/>
+        <td class="n" t-att-style="st" t-out="fp(x['unit_cost']) if x.get('unit_cost') is not None else ''"/>
+        <td class="n" t-att-style="st"><b t-out="fv(x['close_value'], d)"/></td>
     </template>
 </odoo>

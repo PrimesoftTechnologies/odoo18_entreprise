@@ -1,321 +1,205 @@
 # -*- coding: utf-8 -*-
 import base64
-from io import BytesIO
-import xlwt
+import re
 
-from odoo import models, fields, api, _
-from odoo.exceptions import ValidationError
+from odoo import _, api, fields, models
+from odoo.exceptions import AccessError, UserError, ValidationError
+
+from ..report.valuation_xlsx import InventoryValuationXlsx
 
 
 class InventoryValuationReport(models.TransientModel):
     _name = 'inventory.valuation.report'
     _description = 'Inventory Valuation Report'
 
-    start_date = fields.Date(string='Start Date', required=True)
-    end_date = fields.Date(string='End Date', required=True)
-    location_ids = fields.Many2many('stock.location', string='Locations')
+    # ------------------------------------------------------------------
+    # Parameters
+    # ------------------------------------------------------------------
+    # Legacy single-company field (kept for API compatibility). Only used
+    # as a fallback when ``company_ids`` is empty.
+    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company)
+    # NOTE: no field-level domains on the relational parameters below. Odoo
+    # applies an x2many field's domain when *reading* it, which would silently
+    # drop a forbidden or non-matching selection instead of refusing it.
+    # Domains live in the view; the server validates the stored selection.
+    company_ids = fields.Many2many(
+        'res.company', 'inventory_valuation_report_company_rel', 'wizard_id', 'company_id',
+        string='Companies', default=lambda self: self.env.company,
+        help="Report several companies side by side. Each company is valued in its own currency; "
+             "totals are never added across currencies.")
+    report_type = fields.Selection([
+        ('period', 'Movements over a period'),
+        ('as_of', 'Valuation as of a date'),
+    ], string='Report Type', required=True, default='period',
+        help="Period: opening balance, incoming, outgoing, adjustments and closing balance.\n"
+             "As of a date: stock quantity and value at the end of the chosen date.")
+    start_date = fields.Date(string='Start Date', default=lambda self: fields.Date.context_today(self).replace(day=1))
+    end_date = fields.Date(string='End Date', required=True, default=fields.Date.context_today,
+                           help="Balances are taken at the end of this day (in your time zone).")
+    date_basis = fields.Selection([
+        ('valuation', 'Inventory valuation date'),
+        ('accounting', 'Journal entry date'),
+    ], string='Date Basis', required=True, default='valuation',
+        help="Inventory valuation date: when the stock was valued (identical to Odoo's Valuation report).\n"
+             "Journal entry date: accounting date of the related journal entry, for automated valuation "
+             "(useful when entries are back-dated, e.g. inventory adjustments with an accounting date).")
+    scope = fields.Selection([
+        ('company', 'Company'),
+        ('warehouse', 'Per warehouse'),
+        ('location', 'Selected locations'),
+    ], string='Level', required=True, default='company',
+        help="Company: authoritative valuation from Odoo's valuation layers.\n"
+             "Per warehouse / locations: quantities per location with values ALLOCATED at company "
+             "average cost (Odoo values stock per company, not per location). Clearly marked as estimated.")
+    warehouse_ids = fields.Many2many('stock.warehouse', string='Warehouses',
+                                     help="Leave empty for all warehouses (plus locations outside warehouses).")
+    location_ids = fields.Many2many('stock.location', string='Locations',
+                                    help="Sub-locations are included automatically.")
+    category_ids = fields.Many2many('product.category', string='Product Categories',
+                                    help="Sub-categories are included automatically.")
+    product_ids = fields.Many2many('product.product', string='Products')
+    cost_method = fields.Selection([
+        ('all', 'All'),
+        ('standard', 'Standard Price'),
+        ('average', 'Average Cost (AVCO)'),
+        ('fifo', 'First In First Out (FIFO)'),
+    ], string='Costing Method', required=True, default='all')
+    valuation_type = fields.Selection([
+        ('all', 'Manual and automated'),
+        ('real_time', 'Automated only'),
+        ('manual_periodic', 'Manual only'),
+    ], string='Inventory Valuation', required=True, default='all')
+    stock_filter = fields.Selection([
+        ('active', 'With a balance or movement'),
+        ('nonzero', 'Non-zero closing balance only'),
+        ('all', 'All storable products'),
+    ], string='Products to Show', required=True, default='active')
+    include_archived = fields.Boolean(
+        string='Include Archived Products', default=True,
+        help="Archived products can still hold stock value. Excluding them makes totals differ "
+             "from the company valuation.")
+    detail_level = fields.Selection([
+        ('detailed', 'Detailed (per product)'),
+        ('summary', 'Summary (per category)'),
+    ], string='Detail Level', required=True, default='detailed')
     filter_by = fields.Selection([
-        ('product', 'Product'),
-        ('category', 'Category')
-    ], string='Filter By', default='product')
+        ('category', 'Product category'),
+        ('product', 'No grouping'),
+    ], string='Group By', required=True, default='category',
+        help="Category: category sections with subtotals. No grouping: one product list per section.")
 
-    company_id = fields.Many2one(
-        'res.company',
-        string='Company',
-        default=lambda self: self.env.user.company_id
-    )
+    file_name = fields.Char(string='File Name', readonly=True)
+    data = fields.Binary('Download Report', readonly=True, attachment=False)
 
-    file_name = fields.Char(string='File Name')
-    data = fields.Binary('Download Report', readonly=True)
+    # ------------------------------------------------------------------
+    # UI helpers
+    # ------------------------------------------------------------------
+    def _get_companies(self):
+        """Selected companies, read without record-rule filtering so that a
+        company the user may not access is *refused*, never silently dropped."""
+        self.ensure_one()
+        raw = self.sudo()
+        companies = raw.company_ids or raw.company_id
+        return self.env['res.company'].browse(companies.ids)
 
-    # ------------------------------------------------------------
-    # VALIDATIONS
-    # ------------------------------------------------------------
-    @api.constrains('start_date', 'end_date')
+    @api.onchange('company_ids')
+    def _onchange_company_ids(self):
+        self.location_ids = self.location_ids.filtered(lambda l: l.company_id in self.company_ids)
+        self.warehouse_ids = self.warehouse_ids.filtered(lambda w: w.company_id in self.company_ids)
+
+    @api.constrains('start_date', 'end_date', 'report_type')
     def _check_dates(self):
         for rec in self:
-            if rec.start_date > rec.end_date:
-                raise ValidationError(_("End date must be after start date."))
+            if rec.report_type == 'period':
+                if not rec.start_date:
+                    raise ValidationError(_("Please set a start date."))
+                if rec.start_date > rec.end_date:
+                    raise ValidationError(_("The end date must be on or after the start date."))
 
-    @api.onchange('company_id')
-    def _onchange_company_id(self):
-        self.location_ids = False
-
-    # ------------------------------------------------------------
-    # HELPERS
-    # ------------------------------------------------------------
-    def _get_all_locations(self, locations):
-        """ Recursively get children locations """
-        all_locations = self.env['stock.location']
-        for loc in locations:
-            all_locations |= loc
-            if loc.child_ids:
-                all_locations |= self._get_all_locations(loc.child_ids)
-        return all_locations
-
-    def _compute_qty(self, product, locations):
-        """ Compute movements for product in locations """
-        MoveLine = self.env['stock.move.line']
-        loc_ids = locations.ids
-
-        move_lines = MoveLine.search([
-            ('product_id', '=', product.id),
-            ('state', '=', 'done'),
-            ('company_id', '=', self.company_id.id),
-            '|',
-            ('location_id', 'in', loc_ids),
-            ('location_dest_id', 'in', loc_ids),
-        ])
-
-        incoming = outgoing = internal = adjustment = 0.0
-
-        for ml in move_lines:
-            # Odoo 18 safety: qty_done may not exist in some builds
-            qty = ml.qty_done if hasattr(ml, 'qty_done') else ml.quantity or 0.0
-
-            # Incoming
-            if ml.location_id.id not in loc_ids and ml.location_dest_id.id in loc_ids:
-                incoming += qty
-
-            # Outgoing
-            elif ml.location_id.id in loc_ids and ml.location_dest_id.id not in loc_ids:
-                outgoing += qty
-
-            # Internal (net zero)
-            elif ml.location_id.id in loc_ids and ml.location_dest_id.id in loc_ids:
-                internal += 0
-
-            # Inventory adjustment
-            if ml.location_id.usage == 'inventory':
-                adjustment -= qty
-            if ml.location_dest_id.usage == 'inventory':
-                adjustment += qty
-
-        return incoming, outgoing, internal, adjustment
-
-    def _get_product_data(self, product, locations):
-        """ Build data line for product """
-        quants = self.env['stock.quant'].search([
-            ('product_id', '=', product.id),
-            ('location_id', 'in', locations.ids),
-            ('company_id', '=', self.company_id.id),
-        ])
-
-        beginning_qty = sum(quants.mapped('quantity'))
-
-        received_qty, sales_qty, internal_qty, adjustment_qty = self._compute_qty(product, locations)
-
-        ending_qty = beginning_qty + received_qty - sales_qty + internal_qty + adjustment_qty
-
-        price = product.standard_price
-
+    # ------------------------------------------------------------------
+    # Dataset (single source for PDF and XLSX)
+    # ------------------------------------------------------------------
+    def _get_engine_params(self):
+        self.ensure_one()
+        companies = self._get_companies()
+        if not companies:
+            raise UserError(_("Select at least one company."))
+        user_companies = self.env.user.company_ids
+        if companies - user_companies:
+            raise AccessError(_("You are not allowed to access the selected companies."))
+        if self.scope == 'location':
+            if not self.location_ids:
+                raise UserError(_("Select at least one location."))
+            if self.with_context(active_test=False).location_ids.filtered(lambda l: l.company_id not in companies):
+                raise UserError(_("Every selected location must belong to one of the selected companies."))
+        if self.scope == 'warehouse' and self.warehouse_ids.filtered(lambda w: w.company_id not in companies):
+            raise UserError(_("Every selected warehouse must belong to one of the selected companies."))
+        sel = self.with_context(active_test=False)
         return {
-            'name': product.display_name,
-            'costing_method': product.categ_id.property_cost_method,
-            'beginning_qty': beginning_qty,
-            'beginning_value': beginning_qty * price,
-            'received_qty': received_qty,
-            'received_value': received_qty * price,
-            'sales_qty': sales_qty,
-            'sales_value': sales_qty * price,
-            'internal_qty': internal_qty,
-            'internal_value': internal_qty * price,
-            'adjustment_qty': adjustment_qty,
-            'adjustment_value': adjustment_qty * price,
-            'ending_qty': ending_qty,
-            'ending_value': ending_qty * price,
+            'company_ids': companies.ids,
+            'report_type': self.report_type,
+            'date_from': self.start_date,
+            'date_to': self.end_date,
+            'date_basis': self.date_basis,
+            'tz': self.env.context.get('tz') or self.env.user.tz or 'UTC',
+            'scope': self.scope,
+            # active_test=False: an archived product/location explicitly
+            # selected by the user must not silently disappear from the report.
+            'warehouse_ids': sel.warehouse_ids.ids if self.scope == 'warehouse' else [],
+            'location_ids': sel.location_ids.ids if self.scope == 'location' else [],
+            'category_ids': sel.category_ids.ids,
+            'product_ids': sel.product_ids.ids,
+            'cost_method': self.cost_method,
+            'valuation_type': self.valuation_type,
+            'stock_filter': self.stock_filter,
+            'include_archived': self.include_archived,
+            'detail_level': self.detail_level,
+            'group_by': 'category' if self.filter_by == 'category' else 'none',
         }
 
-    def _build_dataset(self, location):
-        """ Build dataset for one location """
-        all_locations = self._get_all_locations(location)
+    def _get_report_dataset(self):
+        self.ensure_one()
+        self._check_dates()
+        params = self._get_engine_params()  # validates companies, locations, warehouses
+        engine = self.env['eg.inventory.valuation.engine'].with_context(
+            allowed_company_ids=params['company_ids'])
+        return engine._build_dataset(params)
 
-        totals = {
-            'beginning_qty': 0, 'beginning_value': 0,
-            'received_qty': 0, 'received_value': 0,
-            'sales_qty': 0, 'sales_value': 0,
-            'internal_qty': 0, 'internal_value': 0,
-            'adjustment_qty': 0, 'adjustment_value': 0,
-            'ending_qty': 0, 'ending_value': 0,
-        }
-
-        products_data = []
-
-        if self.filter_by == 'category':
-            categories = self.env['product.category'].search([])
-
-            for cat in categories:
-                cat_products = self.env['product.product'].search([('categ_id', '=', cat.id)])
-                cat_lines = []
-                cat_totals = dict(totals)
-
-                for prod in cat_products:
-                    pdata = self._get_product_data(prod, all_locations)
-                    if pdata['ending_qty']:
-                        cat_lines.append(pdata)
-                        for k in totals:
-                            cat_totals[k] += pdata[k]
-
-                if cat_lines:
-                    products_data.append({
-                        'category_name': cat.name,
-                        'products': cat_lines,
-                        'category_totals': cat_totals,
-                    })
-                    for k in totals:
-                        totals[k] += cat_totals[k]
-
+    def _report_filename(self, ext):
+        self.ensure_one()
+        companies = self._get_companies()
+        name = companies[0].name if len(companies) == 1 else 'Multi-company'
+        slug = re.sub(r'[^A-Za-z0-9]+', '_', name).strip('_') or 'Company'
+        if self.report_type == 'period':
+            period = '%s_%s' % (self.start_date, self.end_date)
         else:
-            products = self.env['product.product'].search([])
+            period = 'as_of_%s' % self.end_date
+        return 'Inventory_Valuation_%s_%s.%s' % (slug, period, ext)
 
-            for prod in products:
-                pdata = self._get_product_data(prod, all_locations)
-                if pdata['ending_qty']:
-                    products_data.append(pdata)
-                    for k in totals:
-                        totals[k] += pdata[k]
+    # ------------------------------------------------------------------
+    # Actions
+    # ------------------------------------------------------------------
+    def action_print_pdf(self):
+        self.ensure_one()
+        self._get_engine_params()  # validate before rendering
+        return self.env.ref('eg_inventory_valuation_report.stock_inventory_pdf_report_report').report_action(self)
 
-        return products_data, totals
-
-    def get_report_data(self):
-        """ Build report """
-        report_data = {
-            'start_date': self.start_date,
-            'end_date': self.end_date,
-            'company': self.company_id,
-            'lines': [],
-        }
-
-        locations = self.location_ids or self.env['stock.location'].search([('usage', '=', 'internal')])
-
-        for loc in locations:
-            products, totals = self._build_dataset(loc)
-            report_data['lines'].append({
-                'location_name': loc.complete_name,
-                'products': products,
-                'totals': totals,
-            })
-
-        return report_data
-
-    # ------------------------------------------------------------
-    # EXCEL EXPORT (PROFESSIONAL)
-    # ------------------------------------------------------------
-    def action_export_xls(self):
-        output = BytesIO()
-        workbook = xlwt.Workbook()
-        report_data = self.get_report_data()
-
-        # Styles
-        title_style = xlwt.easyxf('font: bold True, height 360; align: horiz center;')
-        header_style = xlwt.easyxf(
-            'font: bold True, colour white; pattern: pattern solid, fore_colour 0x2F;'
-            'align: horiz center; borders: left thin, right thin, top thin, bottom thin;'
-        )
-        text_style = xlwt.easyxf('borders: left thin, right thin, top thin, bottom thin;')
-        zebra_style = xlwt.easyxf('pattern: pattern solid, fore_colour 0x16; borders: left thin, right thin, top thin, bottom thin;')
-
-        num_style = xlwt.easyxf(
-            'align: horiz right; borders: left thin, right thin, top thin, bottom thin;',
-            num_format_str='#,##0.00'
-        )
-        zebra_num = xlwt.easyxf(
-            'pattern: pattern solid, fore_colour 0x16; align: horiz right;'
-            'borders: left thin, right thin, top thin, bottom thin;',
-            num_format_str='#,##0.00'
-        )
-
-        total_style = xlwt.easyxf(
-            'font: bold True; pattern: pattern solid, fore_colour 0x2C;'
-            'align: horiz right; borders: left thin, right thin, top thin, bottom thin;',
-            num_format_str='#,##0.00'
-        )
-        total_text = xlwt.easyxf(
-            'font: bold True; pattern: pattern solid, fore_colour 0x2C;'
-            'borders: left thin, right thin, top thin, bottom thin;'
-        )
-
-        for location in report_data['lines']:
-            sheet = workbook.add_sheet(location['location_name'][:31])
-
-            widths = [8000, 4000] + [4200] * 12
-            for i, w in enumerate(widths):
-                sheet.col(i).width = w
-
-            # Freeze
-            sheet.set_panes_frozen(True)
-            sheet.set_horz_split_pos(5)
-
-            # Title
-            sheet.write_merge(0, 0, 0, 13, "INVENTORY VALUATION REPORT", title_style)
-            sheet.write_merge(1, 1, 0, 13, location['location_name'], text_style)
-            sheet.write_merge(2, 2, 0, 13, f"Company: {report_data['company'].name}", text_style)
-            sheet.write_merge(3, 3, 0, 13, f"Period: {report_data['start_date']} to {report_data['end_date']}", text_style)
-
-            headers = [
-                'Product', 'Costing',
-                'Begin Qty', 'Begin Value',
-                'In Qty', 'In Value',
-                'Out Qty', 'Out Value',
-                'Internal Qty', 'Internal Value',
-                'Adjust Qty', 'Adjust Value',
-                'End Qty', 'End Value'
-            ]
-
-            for col, h in enumerate(headers):
-                sheet.write(4, col, h, header_style)
-
-            row = 5
-            zebra = False
-
-            for prod in location['products']:
-                style_txt = zebra_style if zebra else text_style
-                style_num = zebra_num if zebra else num_style
-
-                values = [
-                    prod['name'], prod['costing_method'],
-                    prod['beginning_qty'], prod['beginning_value'],
-                    prod['received_qty'], prod['received_value'],
-                    prod['sales_qty'], prod['sales_value'],
-                    prod['internal_qty'], prod['internal_value'],
-                    prod['adjustment_qty'], prod['adjustment_value'],
-                    prod['ending_qty'], prod['ending_value'],
-                ]
-
-                for col, val in enumerate(values):
-                    if col < 2:
-                        sheet.write(row, col, val, style_txt)
-                    else:
-                        sheet.write(row, col, val, style_num)
-
-                zebra = not zebra
-                row += 1
-
-            totals = location['totals']
-            sheet.write_merge(row, row, 0, 1, "GRAND TOTAL", total_text)
-
-            keys = [
-                'beginning_qty','beginning_value','received_qty','received_value',
-                'sales_qty','sales_value','internal_qty','internal_value',
-                'adjustment_qty','adjustment_value','ending_qty','ending_value'
-            ]
-
-            col = 2
-            for k in keys:
-                sheet.write(row, col, totals[k], total_style)
-                col += 1
-
-        workbook.save(output)
-        file_data = base64.b64encode(output.getvalue())
-        output.close()
-
-        self.write({
-            'file_name': 'inventory_valuation_report.xls',
-            'data': file_data
-        })
-
+    def action_export_xlsx(self):
+        self.ensure_one()
+        dataset = self._get_report_dataset()
+        content = InventoryValuationXlsx(self.env, dataset).render()
+        filename = self._report_filename('xlsx')
+        self.write({'file_name': filename, 'data': base64.b64encode(content)})
         return {
             'type': 'ir.actions.act_url',
-            'url': f'/web/content/?model=inventory.valuation.report&id={self.id}&field=data&download=true&filename=inventory_valuation_report.xls',
+            'url': '/web/content/inventory.valuation.report/%s/data/%s?download=true' % (self.id, filename),
             'target': 'self',
         }
+
+    def action_export_xls(self):
+        """Backward compatible entry point (old 'Export XLS' button)."""
+        return self.action_export_xlsx()
+
+    def get_report_data(self):
+        """Backward compatible API: returns the report dataset."""
+        return self._get_report_dataset()
