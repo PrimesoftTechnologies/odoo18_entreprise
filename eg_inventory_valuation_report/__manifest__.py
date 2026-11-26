@@ -31,6 +31,7 @@ See doc/TECHNICAL.md for the methodology.
     "data": [
         "security/ir.model.access.csv",
         "reports/inventory_valuation_pdf_report.xml",
+        "reports/simple_valuation_report.xml",
         "wizard/inventory_valuation_report_views.xml",
     ],
     "images": [

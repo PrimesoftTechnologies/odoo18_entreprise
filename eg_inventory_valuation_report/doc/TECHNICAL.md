@@ -100,6 +100,16 @@ Consolidated totals eliminate transfers between the reported sections (explicit
   linked to each sheet's grand total) and the difference to the company valuation per Odoo books.
 * Figures come from the same allocation engine as the location scope (`_build_location_sheets`).
 
+## 5c. Simple report (toggle)
+
+* Wizard toggle **Simple Report** switches the form to: Start/End date, Companies, Locations (empty = all),
+  optional categories/products. Print PDF and Export Excel then use the simple layout.
+* Layout = the original report exactly: title, location, `Company: …`, `Period: …`, the 14 columns
+  (Product, Costing, Begin/In/Out/Internal/Adjust/End Qty+Value), zebra rows, GRAND TOTAL.
+* One sheet (Excel) / page (PDF) per location, sorted by name; "All Locations" first when there are
+  several (with the company value per Odoo books). Both come from `report/simple_report.py:simple_blocks`.
+* Figures = the location sheets of the engine (period report, every product with a balance or movement).
+
 ## 6. Security
 
 * Wizard and menu: `stock.group_stock_manager` (same as native valuation layers).

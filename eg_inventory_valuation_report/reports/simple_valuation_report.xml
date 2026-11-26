@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="simple_valuation_report_action" model="ir.actions.report">
+        <field name="name">Inventory Valuation Report (Simple)</field>
+        <field name="model">inventory.valuation.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">eg_inventory_valuation_report.simple_valuation_report</field>
+        <field name="report_file">eg_inventory_valuation_report.simple_valuation_report</field>
+        <field name="print_report_name">'Inventory_Valuation_Simple_%s' % (object.end_date)</field>
+        <field name="paperformat_id" ref="paperformat_inventory_valuation_landscape"/>
+        <field name="attachment" eval="False"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- One page per location, same layout as the simple Excel sheet -->
+    <template id="simple_valuation_report">
+        <t t-call="web.html_container">
+            <div class="header">
+                <div style="font-family:Arial,sans-serif; font-size:9px; color:#555; border-bottom:1px solid #999; padding-bottom:3px;">
+                    <span t-out="company_names"/>
+                    <span style="float:right;">Inventory Valuation Report · Period: <t t-out="period"/></span>
+                </div>
+            </div>
+            <div class="article">
+                <style>
+                    .ivs { font-family: Arial, sans-serif; color: #000; }
+                    .ivs h1 { font-size: 20px; font-weight: bold; text-align: center; margin: 0 0 6px 0; }
+                    .ivs table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+                    .ivs td, .ivs th { border: 1px solid #000; padding: 3px 3px; font-size: 8px; }
+                    .ivs .info td { font-size: 10px; padding: 3px 5px; }
+                    .ivs thead { display: table-header-group; }
+                    .ivs tr { page-break-inside: avoid; }
+                    .ivs th { background: #FFCC99; color: #FFFFFF; font-weight: bold; text-align: center; }
+                    .ivs td.n { text-align: right; white-space: nowrap; }
+                    .ivs tr.z td { background: #C0C0C0; }
+                    .ivs tr.t td { background: #99CCFF; font-weight: bold; }
+                    .ivs .note { font-size: 8px; color: #555; font-style: italic; margin-top: 5px; }
+                    .ivs .pb { page-break-before: always; }
+                </style>
+                <div class="ivs">
+                    <p t-if="not blocks" style="text-align:center;">No stock or movement for the selected parameters.</p>
+                    <t t-foreach="blocks" t-as="b">
+                        <div t-if="not b_first" class="pb"/>
+                        <h1>INVENTORY VALUATION REPORT</h1>
+                        <table class="info" style="margin-bottom:6px;">
+                            <tr><td t-out="b['location_name']"/></tr>
+                            <tr><td>Company: <t t-out="b['company_name']"/></td></tr>
+                            <tr><td>Period: <t t-out="period"/></td></tr>
+                        </table>
+                        <table>
+                            <colgroup>
+                                <col style="width:17%"/><col style="width:6%"/>
+                                <t t-foreach="keys" t-as="k"><col/></t>
+                            </colgroup>
+                            <thead>
+                                <tr><th t-foreach="headers" t-as="h" t-out="h"/></tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="b['lines']" t-as="ln" t-att-class="'z' if ln_index % 2 else ''">
+                                    <td t-out="ln['name']"/>
+                                    <td t-out="ln.get('cost_method_key') or ''"/>
+                                    <td t-foreach="keys" t-as="k" class="n" t-out="fmt(ln[k])"/>
+                                </tr>
+                                <tr class="t">
+                                    <td colspan="2">GRAND TOTAL</td>
+                                    <td t-foreach="keys" t-as="k" class="n" t-out="fmt(b['totals'].get(k))"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p t-if="b['books_close_value'] is not None" class="note">
+                            Inventory value per Odoo books (company): <t t-out="fmt(b['books_close_value'])"/>
+                            <t t-out="b['currency']['name']"/>
+                        </p>
+                        <p class="note">Location values are allocated at company average cost. Internal = net transfers
+                            between locations. End = Begin + In - Out + Internal + Adjust.</p>
+                    </t>
+                </div>
+            </div>
+            <div class="footer">
+                <div style="font-family:Arial,sans-serif; font-size:8px; color:#555; text-align:right; border-top:1px solid #999; padding-top:3px;">
+                    Generated <t t-out="meta['generated_at']"/> by <t t-out="meta['generated_by']"/> · Page <span class="page"/> of <span class="topage"/>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

@@ -508,6 +508,54 @@ class TestInventoryValuationReport(ValuationReconciliationTestCommon):
         self.assertIn(110, values)
         self.assertIn(-30, values)
 
+    def test_19_simple_report_layout(self):
+        """Simple report = the classic layout, one sheet/page per location, all locations by default."""
+        import openpyxl
+        p = self._product('SMP', self.cat_avco)
+        self._in(p, 10, 10.0, '2026-09-20 10:00:00')
+        self._in(p, 6, 10.0, '2026-10-01 10:00:00')
+        self._move(p, 3, self.stock, self.wh2.lot_stock_id, '2026-10-03 10:00:00')
+        self._out(p, 1, '2026-10-04 10:00:00', src=self.wh2.lot_stock_id)
+        wiz = self._wizard(product_ids=p, simple_report=True)
+        wiz.action_export_xlsx()
+        self.assertTrue(wiz.file_name.startswith('Inventory_Valuation_Simple_'))
+        wb = openpyxl.load_workbook(io.BytesIO(base64.b64decode(wiz.data)))
+        self.assertEqual(wb.sheetnames, ['All Locations', self.stock.complete_name.replace('/', ''),
+                                         self.wh2.lot_stock_id.complete_name.replace('/', '')])
+        headers = ['Product', 'Costing', 'Begin Qty', 'Begin Value', 'In Qty', 'In Value', 'Out Qty', 'Out Value',
+                   'Internal Qty', 'Internal Value', 'Adjust Qty', 'Adjust Value', 'End Qty', 'End Value']
+        expected = {
+            self.stock.complete_name: [10, 100, 6, 60, 0, 0, -3, -30, 0, 0, 13, 130],
+            self.wh2.lot_stock_id.complete_name: [0, 0, 0, 0, 1, 10, 3, 30, 0, 0, 2, 20],
+            'All Locations': [10, 100, 6, 60, 1, 10, 0, 0, 0, 0, 15, 150],
+        }
+        for ws in wb.worksheets:
+            col_a = [ws.cell(r, 1).value for r in range(1, 5)]
+            self.assertEqual(col_a[0], 'INVENTORY VALUATION REPORT')
+            self.assertIn(col_a[1], expected)
+            self.assertEqual(col_a[2], 'Company: %s' % self.company.name)
+            self.assertEqual(col_a[3], 'Period: 2026-10-01 to 2026-10-31')
+            self.assertEqual([ws.cell(5, c).value for c in range(1, 15)], headers)
+            self.assertEqual([ws.cell(6, 1).value, ws.cell(6, 2).value], ['[SMP] Product SMP', 'average'])
+            self.assertEqual([ws.cell(6, c).value for c in range(3, 15)], expected[col_a[1]])
+            self.assertEqual(ws.cell(7, 1).value, 'GRAND TOTAL')
+            self.assertEqual([ws.cell(7, c).value for c in range(3, 15)], expected[col_a[1]])
+            self.assertEqual(ws.cell(6, 4).number_format, '#,##0.00')
+        # selected location only: just that sheet
+        one = self._wizard(product_ids=p, simple_report=True, location_ids=self.wh2.lot_stock_id)
+        one.action_export_xlsx()
+        wb = openpyxl.load_workbook(io.BytesIO(base64.b64decode(one.data)))
+        self.assertEqual(len(wb.sheetnames), 1)
+        # PDF: one page block per sheet, same figures
+        html = self.env['ir.actions.report']._render_qweb_html(
+            'eg_inventory_valuation_report.simple_valuation_report_action', wiz.ids)[0].decode()
+        self.assertEqual(html.count('INVENTORY VALUATION REPORT'), 3)
+        self.assertIn('All Locations', html)
+        self.assertIn('150.00', html)
+        action = wiz.action_print_pdf()
+        self.assertIn('eg_inventory_valuation_report.simple_valuation_report', str(action))
+        self.assertNotIn('stock_inventory_pdf_report', str(action))
+
     # ------------------------------------------------------------------
     # Accounting
     # ------------------------------------------------------------------

@@ -5,6 +5,7 @@ import re
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError, ValidationError
 
+from ..report.simple_report import SimpleValuationXlsx
 from ..report.valuation_xlsx import InventoryValuationXlsx
 
 
@@ -22,6 +23,11 @@ class InventoryValuationReport(models.TransientModel):
     # applies an x2many field's domain when *reading* it, which would silently
     # drop a forbidden or non-matching selection instead of refusing it.
     # Domains live in the view; the server validates the stored selection.
+    simple_report = fields.Boolean(
+        string='Simple Report', default=False,
+        help="Classic layout: one sheet (Excel) / page (PDF) per location with Product, Costing, Begin, In, Out, "
+             "Internal, Adjust and End quantities and values, plus an 'All Locations' sheet when several "
+             "locations are reported. Leave Locations empty for all locations.")
     company_ids = fields.Many2many(
         'res.company', 'inventory_valuation_report_company_rel', 'wizard_id', 'company_id',
         string='Companies', default=lambda self: self.env.company,
@@ -108,6 +114,13 @@ class InventoryValuationReport(models.TransientModel):
         companies = raw.company_ids or raw.company_id
         return self.env['res.company'].browse(companies.ids)
 
+    @api.onchange('simple_report')
+    def _onchange_simple_report(self):
+        if self.simple_report:
+            self.report_type = 'period'
+            if not self.start_date:
+                self.start_date = fields.Date.context_today(self).replace(day=1)
+
     @api.onchange('company_ids')
     def _onchange_company_ids(self):
         self.location_ids = self.location_ids.filtered(lambda l: l.company_id in self.company_ids)
@@ -138,6 +151,20 @@ class InventoryValuationReport(models.TransientModel):
         if self.scope == 'warehouse' and self.warehouse_ids.filtered(lambda w: w.company_id not in companies):
             raise UserError(_("Every selected warehouse must belong to one of the selected companies."))
         sel = self.with_context(active_test=False)
+        if self.simple_report:
+            # Simple report: a period movement report per location, every product
+            # with a balance or a movement, no grouping.
+            if not self.start_date:
+                raise UserError(_("Please set a start date."))
+            return {
+                'company_ids': companies.ids, 'report_type': 'period',
+                'date_from': self.start_date, 'date_to': self.end_date, 'date_basis': 'valuation',
+                'tz': self.env.context.get('tz') or self.env.user.tz or 'UTC', 'scope': 'company',
+                'warehouse_ids': [], 'location_ids': sel.location_ids.ids, 'location_sheets': True,
+                'category_ids': sel.category_ids.ids, 'product_ids': sel.product_ids.ids,
+                'cost_method': 'all', 'valuation_type': 'all', 'stock_filter': 'active',
+                'include_archived': True, 'detail_level': 'detailed', 'group_by': 'none',
+            }
         return {
             'company_ids': companies.ids,
             'report_type': self.report_type,
@@ -178,7 +205,8 @@ class InventoryValuationReport(models.TransientModel):
             period = '%s_%s' % (self.start_date, self.end_date)
         else:
             period = 'as_of_%s' % self.end_date
-        return 'Inventory_Valuation_%s_%s.%s' % (slug, period, ext)
+        prefix = 'Inventory_Valuation_Simple' if self.simple_report else 'Inventory_Valuation'
+        return '%s_%s_%s.%s' % (prefix, slug, period, ext)
 
     # ------------------------------------------------------------------
     # Actions
@@ -186,12 +214,15 @@ class InventoryValuationReport(models.TransientModel):
     def action_print_pdf(self):
         self.ensure_one()
         self._get_engine_params()  # validate before rendering
-        return self.env.ref('eg_inventory_valuation_report.stock_inventory_pdf_report_report').report_action(self)
+        xmlid = 'eg_inventory_valuation_report.simple_valuation_report_action' if self.simple_report \
+            else 'eg_inventory_valuation_report.stock_inventory_pdf_report_report'
+        return self.env.ref(xmlid).report_action(self)
 
     def action_export_xlsx(self):
         self.ensure_one()
         dataset = self._get_report_dataset()
-        content = InventoryValuationXlsx(self.env, dataset).render()
+        renderer = SimpleValuationXlsx if self.simple_report else InventoryValuationXlsx
+        content = renderer(self.env, dataset).render()
         filename = self._report_filename('xlsx')
         self.write({'file_name': filename, 'data': base64.b64encode(content)})
         return {

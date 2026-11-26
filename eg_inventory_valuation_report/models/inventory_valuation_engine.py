@@ -189,7 +189,8 @@ class InventoryValuationEngine(models.AbstractModel):
                 line = {
                     'product_id': r['product_id'], 'code': r['code'], 'categ_name': r['categ_name'],
                     'name': ('[%s] %s' % (r['code'], r['name'])) if r['code'] else r['name'],
-                    'cost_method': r['cost_method'], 'uom': r['uom'], 'uom_id': r['uom_id'],
+                    'cost_method': r['cost_method'], 'cost_method_key': r.get('cost_method_key', ''),
+                    'uom': r['uom'], 'uom_id': r['uom_id'],
                     'flags': r['flags'],
                     'begin_qty': r['open_qty'], 'begin_value': r['open_value'],
                     'in_qty': rq(r['in_qty'] - float(tin_q + gain_q)),
@@ -633,7 +634,7 @@ class InventoryValuationEngine(models.AbstractModel):
         p['loc_to_section'] = loc_to_section
         # sort: by company order then label
         order = {c.id: i for i, c in enumerate(companies)}
-        sections.sort(key=lambda s: (order[s['key'][0]], s['key'][1] in (0, -1), s['label']))
+        sections.sort(key=lambda s: (order[s['key'][0]], s['key'][1] in (0, -1), s['label'].lower()))
         return sections
 
     def _unvalued_location_domain(self):
@@ -953,6 +954,7 @@ class InventoryValuationEngine(models.AbstractModel):
                 'uom': info['uom'],
                 'active': info['active'],
                 'cost_method': COST_METHOD_LABELS.get(cinfo.get('cost_method'), cinfo.get('cost_method') or ''),
+                'cost_method_key': cinfo.get('cost_method') or '',
                 'valuation': VALUATION_LABELS.get(cinfo.get('valuation'), ''),
                 'valuation_key': cinfo.get('valuation'),
                 'account_id': cinfo.get('account_id'),

@@ -6,56 +6,91 @@
         <field name="arch" type="xml">
             <form string="Inventory Valuation Report">
                 <sheet>
-                    <div class="alert alert-info mb-3" role="status" invisible="scope != 'company'">
-                        Figures come from Odoo's stock valuation layers — the same source as the native
-                        Inventory Valuation report and the stock journal entries.
+                    <div class="d-flex align-items-center mb-3">
+                        <field name="simple_report" widget="boolean_toggle" class="me-2"/>
+                        <label for="simple_report" class="fw-bold mb-0"/>
+                        <span class="text-muted ms-2">— one sheet / page per location, classic layout</span>
                     </div>
-                    <div class="alert alert-warning mb-3" role="alert" invisible="scope == 'company'">
-                        <strong>Estimated values.</strong> Odoo values inventory per company. Per-warehouse and
-                        per-location values are allocated at company average cost; quantities are exact.
+
+                    <!-- ============ SIMPLE REPORT ============ -->
+                    <div class="alert alert-info mb-3" role="status" invisible="not simple_report">
+                        One sheet (Excel) / page (PDF) per location with Begin, In, Out, Internal, Adjust and End
+                        quantities and values, plus an <strong>All Locations</strong> sheet when several locations
+                        are reported. Leave <em>Locations</em> empty to report every location.
                     </div>
-                    <group>
+                    <group invisible="not simple_report">
                         <group string="Period">
-                            <field name="report_type" widget="radio"/>
-                            <field name="start_date" invisible="report_type != 'period'"
-                                   required="report_type == 'period'"/>
-                            <field name="end_date" string="End Date"
-                                   invisible="report_type != 'period'"/>
-                            <field name="end_date" string="Valuation Date"
-                                   invisible="report_type != 'as_of'"/>
-                            <field name="date_basis" invisible="scope != 'company'"/>
+                            <field name="start_date" required="simple_report or report_type == 'period'"/>
+                            <field name="end_date"/>
                         </group>
-                        <group string="Scope">
+                        <group string="Locations">
                             <field name="company_ids" widget="many2many_tags" options="{'no_create': True}"
                                    groups="base.group_multi_company"/>
-                            <field name="company_id" invisible="1"/>
-                            <field name="scope" widget="radio"/>
-                            <field name="warehouse_ids" widget="many2many_tags" options="{'no_create': True}"
-                                   invisible="scope != 'warehouse'" placeholder="All warehouses"
-                                   domain="[('company_id', 'in', company_ids)]"/>
                             <field name="location_ids" widget="many2many_tags" options="{'no_create': True}"
-                                   invisible="scope == 'warehouse'"
                                    placeholder="All locations"
                                    domain="[('usage', 'in', ('internal', 'transit')), ('company_id', 'in', company_ids)]"/>
-                            <field name="location_sheets"/>
                         </group>
-                    </group>
-                    <group>
-                        <group string="Products">
+                        <group string="Products (optional)">
                             <field name="category_ids" widget="many2many_tags" options="{'no_create': True}"
                                    placeholder="All categories"/>
                             <field name="product_ids" widget="many2many_tags" options="{'no_create': True}"
                                    placeholder="All products" domain="[('type', '=', 'consu')]"/>
-                            <field name="cost_method"/>
-                            <field name="valuation_type"/>
-                        </group>
-                        <group string="Presentation">
-                            <field name="stock_filter"/>
-                            <field name="include_archived"/>
-                            <field name="detail_level" widget="radio"/>
-                            <field name="filter_by" widget="radio"/>
                         </group>
                     </group>
+
+                    <!-- ============ FULL REPORT ============ -->
+                    <div invisible="simple_report">
+                        <div class="alert alert-info mb-3" role="status" invisible="scope != 'company'">
+                            Figures come from Odoo's stock valuation layers — the same source as the native
+                            Inventory Valuation report and the stock journal entries.
+                        </div>
+                        <div class="alert alert-warning mb-3" role="alert" invisible="scope == 'company'">
+                            <strong>Estimated values.</strong> Odoo values inventory per company. Per-warehouse and
+                            per-location values are allocated at company average cost; quantities are exact.
+                        </div>
+                        <group>
+                            <group string="Period">
+                                <field name="report_type" widget="radio"/>
+                                <field name="start_date" invisible="report_type != 'period'"
+                                       required="report_type == 'period'"/>
+                                <field name="end_date" string="End Date"
+                                       invisible="report_type != 'period'"/>
+                                <field name="end_date" string="Valuation Date"
+                                       invisible="report_type != 'as_of'"/>
+                                <field name="date_basis" invisible="scope != 'company'"/>
+                            </group>
+                            <group string="Scope">
+                                <field name="company_ids" widget="many2many_tags" options="{'no_create': True}"
+                                       groups="base.group_multi_company"/>
+                                <field name="company_id" invisible="1"/>
+                                <field name="scope" widget="radio"/>
+                                <field name="warehouse_ids" widget="many2many_tags" options="{'no_create': True}"
+                                       invisible="scope != 'warehouse'" placeholder="All warehouses"
+                                       domain="[('company_id', 'in', company_ids)]"/>
+                                <field name="location_ids" widget="many2many_tags" options="{'no_create': True}"
+                                       invisible="scope == 'warehouse'"
+                                       placeholder="All locations"
+                                       domain="[('usage', 'in', ('internal', 'transit')), ('company_id', 'in', company_ids)]"/>
+                                <field name="location_sheets"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group string="Products">
+                                <field name="category_ids" widget="many2many_tags" options="{'no_create': True}"
+                                       placeholder="All categories"/>
+                                <field name="product_ids" widget="many2many_tags" options="{'no_create': True}"
+                                       placeholder="All products" domain="[('type', '=', 'consu')]"/>
+                                <field name="cost_method"/>
+                                <field name="valuation_type"/>
+                            </group>
+                            <group string="Presentation">
+                                <field name="stock_filter"/>
+                                <field name="include_archived"/>
+                                <field name="detail_level" widget="radio"/>
+                                <field name="filter_by" widget="radio"/>
+                            </group>
+                        </group>
+                    </div>
                 </sheet>
                 <footer>
                     <button name="action_print_pdf" type="object" string="Print PDF" class="btn-primary"
