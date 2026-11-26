@@ -8,7 +8,7 @@ class AccountAccount(models.Model):
     analytic_account_required = fields.Boolean(
         string="Require Analytic Account on Invoice",
         default=False,
-        help="If checked, invoices using this account cannot be confirmed/posted without an Analytic Account.",
+        help="If checked, invoices/entries using this account cannot be confirmed/posted without an Analytic Account.",
     )
 
 
@@ -107,33 +107,34 @@ class AccountMove(models.Model):
                 ))
 
     def _check_analytic_required_on_invoices(self):
-        """ Inazuia kuthibitisha/ku-post Invoice kama Chart of Account ina analytic_account_required na Analytic haijajazwa """
-        invoice_moves = self.filtered(
-            lambda m: m.move_type in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund')
+        """ Inazuia kuthibitisha/ku-post Invoice au Journal Entry kama Account ina analytic_account_required na Analytic haijajazwa """
+        target_moves = self.filtered(
+            lambda m: m.move_type in ('entry', 'out_invoice', 'out_refund', 'in_invoice', 'in_refund')
         )
-        for move in invoice_moves:
-            missing_lines = move.invoice_line_ids.filtered(
+        for move in target_moves:
+            lines = move.line_ids if move.move_type == 'entry' else move.invoice_line_ids
+            missing_lines = lines.filtered(
                 lambda line: (
-                    line.display_type == 'product'
+                    line.display_type not in ('line_section', 'line_subsection', 'line_note')
                     and getattr(line.account_id, 'analytic_account_required', False)
                     and not line.analytic_distribution
                 )
             )
             if missing_lines:
                 line_labels = ", ".join(
-                    missing_lines.mapped('product_id.display_name')
+                    missing_lines.mapped('account_id.display_name')
+                    or missing_lines.mapped('product_id.display_name')
                     or missing_lines.mapped('name')
-                    or missing_lines.mapped('account_id.display_name')
                 )
                 raise UserError(_(
-                    "Cannot confirm/post this invoice because Analytic Account is required for the selected account(s) on:\n%s"
+                    "Cannot confirm/post because Analytic Account is required for the selected account(s) on:\n%s"
                 ) % line_labels)
 
     def _post(self, soft=True):
         # Kagua attachment kwenye Credit Note (out_refund) wakati wa ku-post
         self._check_credit_note_attachments()
 
-        # Kagua Analytic Account kwenye mistari ya Invoice kulingana na mipangilio ya Chart of Account
+        # Kagua Analytic Account kwenye mistari ya Invoice na Journal Entry kulingana na mipangilio ya Chart of Account
         self._check_analytic_required_on_invoices()
 
         for move in self.filtered(lambda m: m.move_type in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund')):
