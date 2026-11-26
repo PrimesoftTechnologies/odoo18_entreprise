@@ -87,6 +87,19 @@ Odoo values stock per company. For location views:
 Consolidated totals eliminate transfers between the reported sections (explicit
 "Less: transfers between reported sections" line in Excel).
 
+## 5b. Location sheets (classic layout, Excel)
+
+* Option "Excel: One Sheet per Location" (default on). Locations empty = **all** stock locations.
+* One sheet per location: each selected location, or every top-level stock location when none is
+  selected; sub-locations roll into their nearest selected/top-level ancestor (counted once).
+* Columns as the original report: Product, Costing, Begin, In, Out, Internal, Adjust, End (Qty/Value).
+  In/Out = external (suppliers, customers, production, other companies); Internal = net transfers with
+  other company locations; Adjust = inventory counts and scrap (qty) + value-only effects; End is an
+  Excel formula `Begin + In - Out + Internal + Adjust` (cached = engine value).
+* "All Locations" sheet: products summed over all location sheets, a summary by location (formulas
+  linked to each sheet's grand total) and the difference to the company valuation per Odoo books.
+* Figures come from the same allocation engine as the location scope (`_build_location_sheets`).
+
 ## 6. Security
 
 * Wizard and menu: `stock.group_stock_manager` (same as native valuation layers).

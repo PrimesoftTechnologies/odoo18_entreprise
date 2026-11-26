@@ -34,9 +34,10 @@
                                    invisible="scope != 'warehouse'" placeholder="All warehouses"
                                    domain="[('company_id', 'in', company_ids)]"/>
                             <field name="location_ids" widget="many2many_tags" options="{'no_create': True}"
-                                   invisible="scope != 'location'" required="scope == 'location'"
-                                   placeholder="Select locations"
+                                   invisible="scope == 'warehouse'"
+                                   placeholder="All locations"
                                    domain="[('usage', 'in', ('internal', 'transit')), ('company_id', 'in', company_ids)]"/>
+                            <field name="location_sheets"/>
                         </group>
                     </group>
                     <group>

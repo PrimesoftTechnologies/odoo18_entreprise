@@ -464,6 +464,50 @@ class TestInventoryValuationReport(ValuationReconciliationTestCommon):
         content = InventoryValuationXlsx(self.env, ds).render()
         self.assertTrue(content)
 
+    def test_18_location_sheets_classic_layout(self):
+        """No location selected = every stock location (sub-locations rolled up, counted once);
+        In/Out external, Internal = net transfers, Adjust = counts/scrap; compiled = sum = books."""
+        p = self._product('LOCS', self.cat_avco)
+        self._in(p, 10, 10.0, '2026-09-20 10:00:00')                                   # opening WH1 10
+        self._in(p, 6, 10.0, '2026-10-01 10:00:00')                                    # WH1 in 6
+        self._move(p, 4, self.stock, self.shelf, '2026-10-02 10:00:00')               # inside WH1/Stock: not shown
+        self._move(p, 3, self.stock, self.wh2.lot_stock_id, '2026-10-03 10:00:00')    # WH1 -> WH2
+        self._out(p, 1, '2026-10-04 10:00:00', src=self.wh2.lot_stock_id)            # WH2 delivery
+        self._move(p, 2, self.shelf, self.inventory_loss, '2026-10-05 10:00:00')      # WH1 count loss
+        ds = self._report(product_ids=p, location_sheets=True)
+        loc = ds['location_sheets']
+        by_name = {sh['location_name']: sh['groups'][0]['lines'][0] for sh in loc['sheets']}
+        self.assertEqual(set(by_name), {self.stock.complete_name, self.wh2.lot_stock_id.complete_name})
+        w1 = by_name[self.stock.complete_name]
+        w2 = by_name[self.wh2.lot_stock_id.complete_name]
+        self._assert_row(w1, {'begin_qty': 10, 'begin_value': 100, 'in_qty': 6, 'out_qty': 0, 'int_qty': -3,
+                              'int_value': -30, 'adj_qty': -2, 'adj_value': -20, 'end_qty': 11, 'end_value': 110})
+        self._assert_row(w2, {'begin_qty': 0, 'in_qty': 0, 'out_qty': 1, 'out_value': 10, 'int_qty': 3,
+                              'int_value': 30, 'adj_qty': 0, 'end_qty': 2, 'end_value': 20})
+        for ln in (w1, w2):
+            self.assertAlmostEqual(ln['begin_value'] + ln['in_value'] - ln['out_value'] + ln['int_value']
+                                   + ln['adj_value'], ln['end_value'], places=2)
+        comp = loc['compiled'][0]
+        allx = comp['groups'][0]['lines'][0]
+        self._assert_row(allx, {'begin_qty': 10, 'in_qty': 6, 'out_qty': 1, 'int_qty': 0, 'int_value': 0,
+                                'adj_qty': -2, 'end_qty': 13, 'end_value': 130})
+        self.assertEqual((comp['books_close_value'], comp['difference']), (130, 0))
+        # a selected location only: one sheet, the shelf (sub-location of WH1/Stock)
+        sel = self._report(product_ids=p, location_sheets=True, location_ids=self.shelf)
+        self.assertEqual([sh['location_name'] for sh in sel['location_sheets']['sheets']], [self.shelf.complete_name])
+        # location scope with no selection = all locations, one section each
+        scope = self._report(product_ids=p, scope='location')
+        self.assertEqual(len(scope['sections']), 2)
+        # workbook: All Locations + one sheet per location, numeric cells, cached End values
+        import openpyxl
+        wb = openpyxl.load_workbook(io.BytesIO(InventoryValuationXlsx(self.env, ds).render()), data_only=True)
+        self.assertEqual(wb.sheetnames[:2], ['Summary', 'All Locations'])
+        self.assertEqual(len(wb.sheetnames), 2 + 2 + 4)
+        wb1 = wb[self.stock.complete_name.replace('/', '-')[:31]]
+        values = [c.value for row in wb1.iter_rows() for c in row if isinstance(c.value, (int, float))]
+        self.assertIn(110, values)
+        self.assertIn(-30, values)
+
     # ------------------------------------------------------------------
     # Accounting
     # ------------------------------------------------------------------
@@ -590,8 +634,13 @@ class TestInventoryValuationReport(ValuationReconciliationTestCommon):
     def test_42_parameter_validation(self):
         with self.assertRaises(Exception):
             self._wizard(start_date='2026-11-01', end_date='2026-10-01')
-        with self.assertRaises(UserError):
-            self._wizard(scope='location')._get_report_dataset()
+        # no location selected = all locations (no error)
+        self.assertTrue(self._wizard(scope='location')._get_report_dataset())
+        other = self.env['res.company'].create({'name': 'IVR other co'})
+        other_loc = self.env['stock.location'].search([('company_id', '=', other.id), ('usage', '=', 'internal')], limit=1)
+        if other_loc:
+            with self.assertRaises(UserError):
+                self._wizard(location_ids=other_loc)._get_report_dataset()
 
     # ------------------------------------------------------------------
     # Filters & edge cases

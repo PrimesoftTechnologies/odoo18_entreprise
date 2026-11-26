@@ -71,6 +71,9 @@ NUM_KEYS = ('open_qty', 'open_value', 'in_qty', 'in_value', 'out_qty', 'out_valu
 QTY_KEYS = ('open_qty', 'in_qty', 'out_qty', 'adj_qty', 'close_qty')
 VALUE_KEYS = ('open_value', 'in_value', 'out_value', 'adj_value', 'close_value')
 
+CLASSIC_KEYS = ('begin_qty', 'begin_value', 'in_qty', 'in_value', 'out_qty', 'out_value',
+                'int_qty', 'int_value', 'adj_qty', 'adj_value', 'end_qty', 'end_value')
+
 COST_METHOD_LABELS = {'standard': 'Standard', 'average': 'AVCO', 'fifo': 'FIFO'}
 VALUATION_LABELS = {'real_time': 'Automated', 'manual_periodic': 'Manual'}
 
@@ -133,7 +136,136 @@ class InventoryValuationEngine(models.AbstractModel):
         dataset['reconciliation'] = self._build_reconciliation(p, product_info, company_rows, cat_info, sections)
         dataset['exceptions'] = self._build_exceptions(sections)
         self._physical_vs_valued(p, product_info, company_rows, cat_info, dataset)
+        dataset['location_sheets'] = self._build_location_sheets(
+            p, products, product_info, cat_info, dataset,
+            rows_by_section if p['scope'] == 'location' else None,
+            sections_def if p['scope'] == 'location' else None,
+            breakdown if p['scope'] == 'location' else None)
         return dataset
+
+    # ------------------------------------------------------------------
+    # Location sheets (classic layout: Begin / In / Out / Internal / Adjust / End)
+    # ------------------------------------------------------------------
+    def _build_location_sheets(self, p, products, product_info, cat_info, dataset,
+                               rows_by=None, sdefs=None, brk=None):
+        """Per-location figures in the classic column layout, plus a compiled
+        "All locations" view per company.
+
+        Same allocation engine as the warehouse/location scope.  Columns:
+        In / Out = movements with the outside world (suppliers, customers,
+        production, other companies); Internal = net transfers with other
+        stock locations of the company; Adjust = inventory counts and scrap
+        (quantity) plus value-only effects (landed costs, revaluations,
+        cost allocation); End = Begin + In - Out + Internal + Adjust.
+        """
+        if not p.get('location_sheets'):
+            return None
+        if rows_by is None:
+            p2 = {k: v for k, v in p.items() if k != 'loc_to_section'}
+            p2['scope'] = 'location'
+            sdefs = self._get_allocated_sections(p2)
+            raw, brk = self._compute_allocated_valuation(p2, products, sdefs)
+            rows_by = self._finalise_rows(p2, raw, product_info, cat_info, sdefs, products)
+        digits = self.env['decimal.precision'].precision_get('Product Unit of Measure')
+        rq = lambda v: float_round(float(v), precision_digits=digits)  # noqa: E731
+        books = {r['company_name']: r['authoritative_close_value'] for r in dataset['reconciliation']}
+        sheets, by_company = [], defaultdict(list)
+        for sdef in sdefs:
+            rows = rows_by.get(sdef['key'], [])
+            if not rows:
+                continue
+            cur = sdef['company'].currency_id
+            lines = []
+            for r in rows:
+                t = brk.get((sdef['key'][0], sdef['key'][1], r['product_id']), {})
+
+                def qv(*types):
+                    return (sum((t[x][0] for x in types if x in t), D0),
+                            sum((t[x][1] for x in types if x in t), D0))
+                tin_q, tin_v = qv('transfer_in')
+                tout_q, tout_v = qv('transfer_out')                 # negative
+                gain_q, gain_v = qv('inventory_gain')
+                loss_q, loss_v = qv('inventory_loss', 'scrap')      # negative
+                line = {
+                    'product_id': r['product_id'], 'code': r['code'], 'categ_name': r['categ_name'],
+                    'name': ('[%s] %s' % (r['code'], r['name'])) if r['code'] else r['name'],
+                    'cost_method': r['cost_method'], 'uom': r['uom'], 'uom_id': r['uom_id'],
+                    'flags': r['flags'],
+                    'begin_qty': r['open_qty'], 'begin_value': r['open_value'],
+                    'in_qty': rq(r['in_qty'] - float(tin_q + gain_q)),
+                    'in_value': cur.round(r['in_value'] - float(tin_v + gain_v)),
+                    'out_qty': rq(r['out_qty'] + float(tout_q + loss_q)),
+                    'out_value': cur.round(r['out_value'] + float(tout_v + loss_v)),
+                    'int_qty': rq(tin_q + tout_q), 'int_value': cur.round(float(tin_v + tout_v)),
+                    'adj_qty': rq(gain_q + loss_q),
+                    'end_qty': r['close_qty'], 'end_value': r['close_value'],
+                }
+                # value adjustment = everything else, so the row always reconciles
+                line['adj_value'] = cur.round(line['end_value'] - line['begin_value'] - line['in_value']
+                                              + line['out_value'] - line['int_value'])
+                lines.append(line)
+            sheet = {
+                'company_id': sdef['company'].id, 'company_name': sdef['company'].name,
+                'currency': self._currency_info(cur),
+                'location_id': sdef.get('location_id'), 'location_name': sdef.get('location_name') or sdef['label'],
+                'groups': self._classic_groups(p, lines, cur), 'totals': self._classic_totals(lines, cur),
+            }
+            sheets.append(sheet)
+            by_company[sdef['company'].id].append(sheet)
+        compiled = []
+        for company in p['companies']:
+            csheets = by_company.get(company.id)
+            if not csheets:
+                continue
+            cur = company.currency_id
+            merged = {}
+            for sh in csheets:
+                for g in sh['groups']:
+                    for ln in g['lines']:
+                        m = merged.setdefault(ln['product_id'], dict(ln, flags=[], **{k: 0.0 for k in CLASSIC_KEYS}))
+                        for k in CLASSIC_KEYS:
+                            m[k] += ln[k]
+            lines = []
+            for m in merged.values():
+                for k in CLASSIC_KEYS:
+                    m[k] = cur.round(m[k]) if k.endswith('_value') else rq(m[k])
+                lines.append(m)
+            lines.sort(key=lambda x: (x['categ_name'].lower(), x['code'].lower(), x['name'].lower()))
+            totals = self._classic_totals(lines, cur)
+            book = books.get(company.name)
+            compiled.append({
+                'company_id': company.id, 'company_name': company.name, 'currency': self._currency_info(cur),
+                'groups': self._classic_groups(p, lines, cur), 'totals': totals,
+                'by_location': [{'location_name': sh['location_name'], 'totals': sh['totals']} for sh in csheets],
+                'books_close_value': book,
+                'difference': cur.round(totals['end_value'] - book) if book is not None else None,
+                'all_locations': not p.get('location_ids'),
+            })
+        return {'sheets': sheets, 'compiled': compiled}
+
+    def _classic_groups(self, p, lines, cur):
+        lines = sorted(lines, key=lambda x: (x['categ_name'].lower(), x['code'].lower(), x['name'].lower()))
+        if p['group_by'] != 'category':
+            return [{'label': '', 'lines': lines, 'totals': self._classic_totals(lines, cur)}]
+        groups = defaultdict(list)
+        for ln in lines:
+            groups[ln['categ_name']].append(ln)
+        return [{'label': name or _('Undefined category'), 'lines': g, 'totals': self._classic_totals(g, cur)}
+                for name, g in sorted(groups.items(), key=lambda kv: kv[0].lower())]
+
+    def _classic_totals(self, lines, cur):
+        digits = self.env['decimal.precision'].precision_get('Product Unit of Measure')
+        uniform = len({ln['uom_id'] for ln in lines}) <= 1
+        tot = {}
+        for k in CLASSIC_KEYS:
+            s = sum(ln[k] for ln in lines)
+            if k.endswith('_value'):
+                tot[k] = cur.round(s)
+            else:
+                tot[k] = float_round(s, precision_digits=digits) if uniform else None
+        tot['uom'] = lines[0]['uom'] if (uniform and lines) else ''
+        tot['count'] = len(lines)
+        return tot
 
     def _physical_vs_valued(self, p, product_info, company_rows, cat_info, dataset):
         """Control: physical quantity (done stock moves in valued locations,
@@ -254,8 +386,6 @@ class InventoryValuationEngine(models.AbstractModel):
         if p['scope'] != 'company':
             # Physical quantities per location only exist at stock move dates.
             p['date_basis'] = 'valuation'
-        if p['scope'] == 'location' and not p.get('location_ids'):
-            raise UserError(_("Select at least one location for a location-level report."))
         p.setdefault('stock_filter', 'active')
         p.setdefault('cost_method', 'all')
         p.setdefault('valuation_type', 'all')
@@ -468,22 +598,38 @@ class InventoryValuationEngine(models.AbstractModel):
                                          'label': _('Locations outside warehouses (transit, etc.)'),
                                          'allocated': True, 'warehouse_id': False})
         else:
-            selected = Location.search([('id', 'in', p['location_ids']),
-                                        ('company_id', 'in', companies.ids)])
-            if not selected:
-                raise UserError(_("None of the selected locations belongs to the selected companies."))
-            children = Location.with_context(active_test=False).search([
-                ('id', 'child_of', selected.ids),
-                '|', ('usage', '=', 'internal'), ('usage', '=', 'transit')] + self._unvalued_location_domain())
-            for loc in children:
-                if loc.company_id in companies:
-                    loc_to_section[loc.id] = (loc.company_id.id, -1)
-            names = ", ".join(selected.mapped('complete_name'))
-            for company in companies:
-                if (company.id, -1) in loc_to_section.values():
-                    sections.append({'key': (company.id, -1), 'company': company,
-                                     'label': _('Locations: %s', names), 'allocated': True,
-                                     'warehouse_id': False})
+            # One section per location.  Selected locations (or, when none is
+            # selected, every top-level stock location) each include their
+            # sub-locations; a location is counted in exactly one section (its
+            # nearest selected ancestor), so nothing is counted twice.
+            valued_domain = [('company_id', 'in', companies.ids),
+                             '|', ('usage', '=', 'internal'), ('usage', '=', 'transit')] \
+                + self._unvalued_location_domain()
+            AllLoc = Location.with_context(active_test=False)
+            if p.get('location_ids'):
+                selected = AllLoc.search([('id', 'in', p['location_ids']), ('company_id', 'in', companies.ids)])
+                if not selected:
+                    raise UserError(_("None of the selected locations belongs to the selected companies."))
+                candidates = AllLoc.search([('id', 'child_of', selected.ids)] + valued_domain)
+                roots = set(selected.ids)
+                deepest = True
+            else:
+                candidates = AllLoc.search(valued_domain)
+                roots = set(candidates.ids)
+                deepest = False
+            for loc in candidates:
+                path = [int(x) for x in (loc.parent_path or '').split('/') if x]
+                if deepest:
+                    root = next((i for i in reversed(path) if i in roots), None)
+                else:
+                    root = next((i for i in path if i in roots), None)
+                if root:
+                    loc_to_section[loc.id] = (loc.company_id.id, root)
+            for root in AllLoc.browse(sorted({r for _c, r in loc_to_section.values()})):
+                sections.append({'key': (root.company_id.id, root.id), 'company': root.company_id,
+                                 'label': _('Location: %s', root.complete_name), 'allocated': True,
+                                 'warehouse_id': False, 'location_id': root.id,
+                                 'location_name': root.complete_name})
         p['loc_to_section'] = loc_to_section
         # sort: by company order then label
         order = {c.id: i for i, c in enumerate(companies)}
@@ -1139,8 +1285,9 @@ class InventoryValuationEngine(models.AbstractModel):
         filters.append((_('Scope'), scope_labels[p['scope']]))
         if p.get('warehouse_ids'):
             filters.append((_('Warehouses'), ', '.join(self.env['stock.warehouse'].browse(p['warehouse_ids']).mapped('name'))))
-        if p.get('location_ids') and p['scope'] == 'location':
-            filters.append((_('Locations'), ', '.join(self.env['stock.location'].browse(p['location_ids']).mapped('complete_name'))))
+        if p['scope'] == 'location' or p.get('location_sheets'):
+            filters.append((_('Locations'), ', '.join(self.env['stock.location'].browse(p['location_ids']).mapped(
+                'complete_name')) if p.get('location_ids') else _('All locations (each with its sub-locations)')))
         if p.get('category_ids'):
             filters.append((_('Product categories'), ', '.join(
                 self.env['product.category'].browse(p['category_ids']).mapped('complete_name')) + _(' (incl. sub-categories)')))

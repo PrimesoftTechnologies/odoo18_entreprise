@@ -62,10 +62,21 @@ class InventoryValuationXlsx:
         self.primary, self.accent = brand_colors(self.ds['companies'][0] if self.ds['companies'] else {})
         self._formats()
         summary = wb.add_worksheet(_('Summary'))
-        detail = wb.add_worksheet(_('Valuation Detail'))
-        breakdown = wb.add_worksheet(_('Movement Breakdown'))
-        recon = wb.add_worksheet(_('Reconciliation'))
-        notes = wb.add_worksheet(_('Methodology'))
+        loc = self.ds.get('location_sheets') or {}
+        self._sheet_names = {_('Summary').lower()}
+        compiled_ws = loc_ws = None
+        if loc.get('sheets'):
+            compiled_ws = wb.add_worksheet(self._sheet_name(_('All Locations')))
+            loc_ws = [wb.add_worksheet(self._sheet_name(sh['location_name'] if len(loc['compiled']) == 1
+                                                        else '%s %s' % (sh['company_name'][:10], sh['location_name'])))
+                      for sh in loc['sheets']]
+        detail = wb.add_worksheet(self._sheet_name(_('Valuation Detail')))
+        breakdown = wb.add_worksheet(self._sheet_name(_('Movement Breakdown')))
+        recon = wb.add_worksheet(self._sheet_name(_('Reconciliation')))
+        notes = wb.add_worksheet(self._sheet_name(_('Methodology')))
+        if loc_ws:
+            totals_refs = [self._write_location_sheet(ws, sh) for ws, sh in zip(loc_ws, loc['sheets'])]
+            self._write_compiled_sheet(compiled_ws, loc, totals_refs)
         self.detail_refs = self._write_detail(detail)
         self.breakdown_ref = self._write_breakdown(breakdown)
         self._write_summary(summary)
@@ -733,6 +744,205 @@ class InventoryValuationXlsx:
         ws.set_paper(9)
         ws.fit_to_pages(1, 0)
         ws.hide_gridlines(2)
+
+    # ------------------------------------------------------------------
+    # Classic location sheets (layout of the original report)
+    # ------------------------------------------------------------------
+    CLASSIC_COLS = [
+        ('name', 'Product', 46), ('cost_method', 'Costing', 10),
+        ('begin_qty', 'Begin Qty', 11), ('begin_value', 'Begin Value', 15),
+        ('in_qty', 'In Qty', 11), ('in_value', 'In Value', 15),
+        ('out_qty', 'Out Qty', 11), ('out_value', 'Out Value', 15),
+        ('int_qty', 'Internal Qty', 11), ('int_value', 'Internal Value', 15),
+        ('adj_qty', 'Adjust Qty', 11), ('adj_value', 'Adjust Value', 15),
+        ('end_qty', 'End Qty', 11), ('end_value', 'End Value', 16),
+        ('uom', 'UoM', 9), ('line', 'Line', 8),
+    ]
+    CLASSIC_GROUPS = [('begin_qty', 'begin_value', 'BEGINNING'), ('in_qty', 'in_value', 'RECEIVED (IN)'),
+                      ('out_qty', 'out_value', 'ISSUED (OUT)'), ('int_qty', 'int_value', 'INTERNAL TRANSFERS'),
+                      ('adj_qty', 'adj_value', 'ADJUSTMENTS'), ('end_qty', 'end_value', 'ENDING')]
+
+    def _sheet_name(self, name):
+        """Valid, unique Excel sheet name (max 31 chars, no []:*?/\\)."""
+        base = re.sub(r'[/\\]', '-', name or '')
+        base = re.sub(r'[\[\]:*?]', '', base).strip("' ") or 'Sheet'
+        base = base[:31]
+        candidate, i = base, 2
+        while candidate.lower() in self._sheet_names or candidate.lower() == 'history':
+            suffix = ' (%d)' % i
+            candidate = base[:31 - len(suffix)] + suffix
+            i += 1
+        self._sheet_names.add(candidate.lower())
+        return candidate
+
+    def _classic_setup(self, ws, title_line, note):
+        cols = self.CLASSIC_COLS
+        ci = {k: i for i, (k, _l, _w) in enumerate(cols)}
+        for i, (_k, _l, w) in enumerate(cols):
+            ws.set_column(i, i, w)
+        ws.set_column(ci['line'], ci['line'], None, None, {'hidden': True})
+        last = ci['uom']
+        row = self._header(ws, last)
+        ws.merge_range(row, 0, row, last, title_line, self.f['band'])
+        row += 1
+        ws.merge_range(row, 0, row, last, note, self.f['note'])
+        ws.set_row(row, 26)
+        row += 2
+        for c1, c2, label in self.CLASSIC_GROUPS:
+            ws.merge_range(row, ci[c1], row, ci[c2], label, self.f['hdr_grp'])
+        row += 1
+        ws.set_row(row, 24)
+        for i, (_k, label, _w) in enumerate(cols):
+            ws.write(row, i, label, self.f['hdr'])
+        ws.freeze_panes(row + 1, 1)
+        ws.set_landscape()
+        ws.set_paper(9)
+        ws.fit_to_pages(1, 0)
+        ws.repeat_rows(row - 1, row)
+        ws.hide_gridlines(2)
+        return row, ci
+
+    def _classic_table(self, ws, row, ci, block, digits):
+        """Write groups of lines + subtotals + a grand total. Returns (next row, total row, header row)."""
+        qd = self.meta['qty_digits']
+        first = row
+        line_col = xl_col_to_name(ci['line'])
+        L = lambda k: xl_col_to_name(ci[k])  # noqa: E731
+        for grp in block['groups']:
+            if grp['label']:
+                ws.merge_range(row, 0, row, ci['uom'], grp['label'], self.tf('group'))
+                ws.write(row, ci['line'], 'Group')
+                row += 1
+            g_first = row
+            for i, ln in enumerate(grp['lines']):
+                z = bool(i % 2)
+                ws.write_string(row, ci['name'], ln['name'], self.tf('row', z))
+                ws.write_string(row, ci['cost_method'], ln['cost_method'] or '', self.tf('row', z))
+                for k in ('begin', 'in', 'out', 'int', 'adj'):
+                    ws.write_number(row, ci[k + '_qty'], ln[k + '_qty'], self.nf('qty', qd, 'row', z))
+                    ws.write_number(row, ci[k + '_value'], ln[k + '_value'], self.nf('value', digits, 'row', z))
+                r1 = row + 1
+                ws.write_formula(row, ci['end_qty'], '=ROUND(%s%d+%s%d-%s%d+%s%d+%s%d,%d)' % (
+                    L('begin_qty'), r1, L('in_qty'), r1, L('out_qty'), r1, L('int_qty'), r1, L('adj_qty'), r1, qd),
+                    self.nf('qty', qd, 'row', z), ln['end_qty'])
+                ws.write_formula(row, ci['end_value'], '=ROUND(%s%d+%s%d-%s%d+%s%d+%s%d,%d)' % (
+                    L('begin_value'), r1, L('in_value'), r1, L('out_value'), r1, L('int_value'), r1,
+                    L('adj_value'), r1, digits), self.nf('value', digits, 'row', z), ln['end_value'])
+                ws.write_string(row, ci['uom'], ln['uom'] or '', self.tf('row', z))
+                ws.write_string(row, ci['line'], 'Product')
+                row += 1
+            if grp['label'] and grp['lines']:
+                self._classic_total_row(ws, row, ci, grp['totals'], digits, 'sub', _('Subtotal %s', grp['label']),
+                                        lambda col: '=SUM(%s%d:%s%d)' % (col, g_first + 1, col, row))
+                ws.write(row, ci['line'], 'Subtotal')
+                row += 1
+        last_data = max(row - 1, first)
+        total_row = row
+        self._classic_total_row(
+            ws, row, ci, block['totals'], digits, 'total', _('GRAND TOTAL'),
+            lambda col: '=SUMIFS(%s%d:%s%d,$%s$%d:$%s$%d,"Product")' % (
+                col, first + 1, col, last_data + 1, line_col, first + 1, line_col, last_data + 1))
+        return row + 1, total_row, first
+
+    def _classic_total_row(self, ws, row, ci, totals, digits, style, label, formula_for):
+        qd = self.meta['qty_digits']
+        for i in range(ci['uom'] + 1):
+            ws.write_blank(row, i, None, self.tf(style))
+        ws.write(row, ci['name'], label, self.tf(style))
+        for k in ('begin', 'in', 'out', 'int', 'adj', 'end'):
+            for kind, key in (('qty', k + '_qty'), ('value', k + '_value')):
+                if totals.get(key) is None:
+                    continue  # quantities in different units are never added
+                col = xl_col_to_name(ci[key])
+                ws.write_formula(row, ci[key], formula_for(col),
+                                 self.nf(kind, qd if kind == 'qty' else digits, style), totals[key])
+        ws.write(row, ci['uom'], totals.get('uom') or (_('mixed') if totals.get('end_qty') is None else ''),
+                 self.tf(style))
+
+    def _classic_note(self):
+        return _('In/Out = receipts from and issues to suppliers, customers, production and other companies. '
+                 'Internal = net transfers with other stock locations. Adjust = inventory counts and scrap '
+                 '(quantity) and value-only effects. End = Begin + In - Out + Internal + Adjust. '
+                 'Location values are allocated at company average cost; company totals per Odoo books are on '
+                 'the "All Locations" sheet.')
+
+    def _write_location_sheet(self, ws, sheet):
+        digits = sheet['currency']['digits']
+        row, ci = self._classic_setup(ws, '%s   ·   %s   ·   %s' % (
+            sheet['location_name'], sheet['company_name'], self.meta['period_label']), self._classic_note())
+        hdr = row
+        row, total_row, _first = self._classic_table(ws, row + 1, ci, sheet, digits)
+        ws.autofilter(hdr, 0, total_row - 1 if total_row > hdr + 1 else hdr, ci['uom'])
+        refs = {k: "'%s'!%s" % (ws.name.replace("'", "''"), xl_rowcol_to_cell(total_row, ci[k], True, True))
+                for k in ('begin_value', 'in_value', 'out_value', 'int_value', 'adj_value', 'end_value')}
+        return {'sheet': sheet, 'refs': refs}
+
+    def _write_compiled_sheet(self, ws, loc, totals_refs):
+        row, ci = self._classic_setup(ws, '%s   ·   %s' % (_('ALL LOCATIONS (COMPILED)'), self.meta['period_label']),
+                                      self._classic_note())
+        hdr = row
+        row += 1
+        refs_by_company = {}
+        for tr in totals_refs:
+            refs_by_company.setdefault(tr['sheet']['company_id'], []).append(tr)
+        for comp in loc['compiled']:
+            digits = comp['currency']['digits']
+            if len(loc['compiled']) > 1:
+                ws.merge_range(row, 0, row, ci['uom'], '%s (%s)' % (comp['company_name'], comp['currency']['name']),
+                               self.f['band'])
+                row += 1
+            row, total_row, _first = self._classic_table(ws, row, ci, comp, digits)
+            row += 1
+            # summary by location, linked to each location sheet's grand total
+            ws.merge_range(row, 0, row, ci['uom'], _('SUMMARY BY LOCATION — %s (%s)', comp['company_name'],
+                                                     comp['currency']['name']), self.f['band'])
+            row += 1
+            vcols = [('begin_value', 'Begin Value'), ('in_value', 'In Value'), ('out_value', 'Out Value'),
+                     ('int_value', 'Internal Value'), ('adj_value', 'Adjust Value'), ('end_value', 'End Value')]
+            ws.write(row, 0, _('Location'), self.f['hdr'])
+            ws.write(row, 1, '', self.f['hdr'])
+            for j, (_k, label) in enumerate(vcols):
+                ws.write(row, 2 + 2 * j, label, self.f['hdr'])
+                ws.write(row, 3 + 2 * j, '', self.f['hdr'])
+            row += 1
+            loc_first = row
+            for i, tr in enumerate(refs_by_company.get(comp['company_id'], [])):
+                z = bool(i % 2)
+                ws.write(row, 0, tr['sheet']['location_name'], self.tf('row', z))
+                ws.write_blank(row, 1, None, self.tf('row', z))
+                for j, (k, _l) in enumerate(vcols):
+                    ws.write_formula(row, 2 + 2 * j, '=' + tr['refs'][k], self.nf('value', digits, 'row', z),
+                                     tr['sheet']['totals'][k])
+                    ws.write_blank(row, 3 + 2 * j, None, self.tf('row', z))
+                row += 1
+            ws.write(row, 0, _('Total all locations'), self.tf('total'))
+            ws.write_blank(row, 1, None, self.tf('total'))
+            for j, (k, _l) in enumerate(vcols):
+                col = xl_col_to_name(2 + 2 * j)
+                ws.write_formula(row, 2 + 2 * j, '=SUM(%s%d:%s%d)' % (col, loc_first + 1, col, row),
+                                 self.nf('value', digits, 'total'), comp['totals'][k])
+                ws.write_blank(row, 3 + 2 * j, None, self.tf('total'))
+            sum_row = row
+            row += 2
+            if comp.get('books_close_value') is not None:
+                end_col = 2 + 2 * 5
+                ws.write(row, 0, _('Inventory value per Odoo books (company valuation)'), self.f['label'])
+                ws.write_number(row, end_col, comp['books_close_value'], self.nf('value', digits, 'kpi'))
+                row += 1
+                ws.write(row, 0, _('Difference: locations total − books'), self.f['label'])
+                ws.write_formula(row, end_col, '=ROUND(%s-%s,%d)' % (
+                    xl_rowcol_to_cell(sum_row, end_col), xl_rowcol_to_cell(row - 1, end_col), digits),
+                    self.nf('value', digits, 'kpi'), comp['difference'])
+                row += 1
+                ws.merge_range(row, 0, row, ci['uom'], _(
+                    'A difference comes from the location allocation at average cost (FIFO layers, landed costs, '
+                    'revaluations), negative stock, or stock outside the selected locations. The books value is '
+                    'authoritative.') if comp['all_locations'] else _(
+                    'Only the selected locations are included: the difference is mainly stock held in other locations.'),
+                    self.f['note'])
+                ws.set_row(row, 28)
+                row += 1
+            row += 2
 
     @staticmethod
     def _q(text):

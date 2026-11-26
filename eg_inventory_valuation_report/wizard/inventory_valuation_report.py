@@ -54,7 +54,13 @@ class InventoryValuationReport(models.TransientModel):
     warehouse_ids = fields.Many2many('stock.warehouse', string='Warehouses',
                                      help="Leave empty for all warehouses (plus locations outside warehouses).")
     location_ids = fields.Many2many('stock.location', string='Locations',
-                                    help="Sub-locations are included automatically.")
+                                    help="Leave empty for ALL locations. Each location includes its sub-locations "
+                                         "and is counted once.")
+    location_sheets = fields.Boolean(
+        string='Excel: One Sheet per Location', default=True,
+        help="Adds an 'All Locations' sheet and one sheet per location to the Excel workbook, in the classic "
+             "layout (Begin / In / Out / Internal / Adjust / End). Leave Locations empty for all locations. "
+             "Location values are allocated at company average cost.")
     category_ids = fields.Many2many('product.category', string='Product Categories',
                                     help="Sub-categories are included automatically.")
     product_ids = fields.Many2many('product.product', string='Products')
@@ -127,11 +133,8 @@ class InventoryValuationReport(models.TransientModel):
         user_companies = self.env.user.company_ids
         if companies - user_companies:
             raise AccessError(_("You are not allowed to access the selected companies."))
-        if self.scope == 'location':
-            if not self.location_ids:
-                raise UserError(_("Select at least one location."))
-            if self.with_context(active_test=False).location_ids.filtered(lambda l: l.company_id not in companies):
-                raise UserError(_("Every selected location must belong to one of the selected companies."))
+        if self.with_context(active_test=False).location_ids.filtered(lambda l: l.company_id not in companies):
+            raise UserError(_("Every selected location must belong to one of the selected companies."))
         if self.scope == 'warehouse' and self.warehouse_ids.filtered(lambda w: w.company_id not in companies):
             raise UserError(_("Every selected warehouse must belong to one of the selected companies."))
         sel = self.with_context(active_test=False)
@@ -146,7 +149,8 @@ class InventoryValuationReport(models.TransientModel):
             # active_test=False: an archived product/location explicitly
             # selected by the user must not silently disappear from the report.
             'warehouse_ids': sel.warehouse_ids.ids if self.scope == 'warehouse' else [],
-            'location_ids': sel.location_ids.ids if self.scope == 'location' else [],
+            'location_ids': sel.location_ids.ids,   # empty = all locations
+            'location_sheets': self.location_sheets,
             'category_ids': sel.category_ids.ids,
             'product_ids': sel.product_ids.ids,
             'cost_method': self.cost_method,
