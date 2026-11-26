@@ -18,6 +18,12 @@
             <xpath expr="//button[@id='draft_confirm']" position="before">
                 <field name="can_approve" invisible="1"/>
                 <field name="can_submit" invisible="1"/>
+                <field name="can_reset_approval" invisible="1"/>
+                <field name="oscon_locked" invisible="1"/>
+                <button name="action_reset_approval" type="object"
+                        string="Set to Draft"
+                        confirm="The approval will be cancelled and the order must be submitted again. Continue?"
+                        invisible="not can_reset_approval"/>
                 <button name="action_submit_for_approval" type="object"
                         string="Submit for Approval" class="oe_highlight"
                         invisible="not can_submit"/>

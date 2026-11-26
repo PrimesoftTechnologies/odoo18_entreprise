@@ -5,6 +5,20 @@ from odoo.exceptions import UserError
 
 TODO = 'mail.mail_activity_data_todo'
 
+# business fields that cannot be changed while the order is locked
+LOCKED_FIELDS = {
+    'partner_id', 'partner_ref', 'currency_id', 'date_order', 'date_planned',
+    'payment_term_id', 'fiscal_position_id', 'picking_type_id', 'notes', 'origin',
+    'user_id', 'incoterm_id', 'incoterm_location', 'order_line', 'dest_address_id',
+    'company_id', 'priority', 'receipt_reminder_email', 'reminder_date_before_receipt',
+}
+# fields that stay editable in the form (our own approval information)
+FORM_SKIP_READONLY = {
+    'approval_state', 'approval_line_ids', 'approver_ids', 'approval_mode',
+    'submitted_by_id', 'rejected_by_id', 'rejection_reason', 'oscon_locked',
+    'oscon_status', 'can_approve', 'can_submit', 'can_reset_approval',
+}
+
 
 class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
@@ -34,6 +48,8 @@ class PurchaseOrder(models.Model):
         'res.users', string='Rejected By', copy=False, readonly=True)
     can_approve = fields.Boolean(compute='_compute_can_approve')
     can_submit = fields.Boolean(compute='_compute_can_submit')
+    can_reset_approval = fields.Boolean(compute='_compute_can_reset_approval')
+    oscon_locked = fields.Boolean(compute='_compute_oscon_locked')
     oscon_status = fields.Selection(
         [('draft', 'RFQ'),
          ('sent', 'RFQ Sent'),
@@ -64,6 +80,15 @@ class PurchaseOrder(models.Model):
                 "//field[@widget='statusbar'][@name!='oscon_status'][not(ancestor::field)]"
             ):
                 node.set('invisible', '1')
+            # lock every field of the form while the order is locked
+            for node in arch.xpath("//sheet//field[not(ancestor::field)]"):
+                if node.get('name') in FORM_SKIP_READONLY:
+                    continue
+                ro = (node.get('readonly') or '').strip()
+                if ro in ('1', 'True', 'true'):
+                    continue
+                node.set('readonly', 'oscon_locked' if ro in ('', '0', 'False', 'false')
+                         else '(%s) or oscon_locked' % ro)
         elif view_type == 'list':
             # show the approval-aware status (Waiting Approval / Approved / Rejected / ...)
             for node in arch.xpath("//field[@name='state'][not(ancestor::field)]"):
@@ -82,6 +107,64 @@ class PurchaseOrder(models.Model):
                 node.set('column_invisible', '1')
                 node.attrib.pop('optional', None)
         return arch, view
+
+    def _oscon_is_locked(self):
+        """An order is locked once it is submitted/approved (for everybody), and
+        after a rejection for everybody except the person who submitted it."""
+        self.ensure_one()
+        if self.state not in ('draft', 'sent'):
+            return False
+        if self.approval_state in ('submitted', 'approved'):
+            return True
+        if (self.approval_state == 'rejected' and self.submitted_by_id
+                and self.submitted_by_id != self.env.user):
+            return True
+        return False
+
+    @api.depends('state', 'approval_state', 'submitted_by_id')
+    @api.depends_context('uid')
+    def _compute_oscon_locked(self):
+        for order in self:
+            order.oscon_locked = order._oscon_is_locked()
+
+    @api.depends('state', 'approval_state', 'submitted_by_id')
+    @api.depends_context('uid')
+    def _compute_can_reset_approval(self):
+        for order in self:
+            order.can_reset_approval = (
+                order.state in ('draft', 'sent')
+                and order.approval_state in ('submitted', 'approved')
+                and order.submitted_by_id == self.env.user)
+
+    def write(self, vals):
+        if (LOCKED_FIELDS & set(vals) and not self.env.su
+                and not self.env.context.get('oscon_bypass_lock')):
+            for order in self:
+                if order._oscon_is_locked():
+                    raise UserError(_(
+                        'Order %s is locked because it was submitted for approval. '
+                        'Use "Set to Draft" first if you need to change it.', order.name))
+        return super().write(vals)
+
+    def action_reset_approval(self):
+        for order in self:
+            if not order.can_reset_approval:
+                raise UserError(_('Only the person who submitted this order can set it back to draft.'))
+            approvers = order.approval_line_ids.user_id
+            order._clear_approver_activities()
+            order.approval_line_ids.unlink()
+            order.write({
+                'approval_state': 'draft',
+                'submitted_by_id': False,
+                'rejection_reason': False,
+                'rejected_by_id': False,
+            })
+            order.message_post(
+                body=_('%s set the order back to draft. It must be submitted for approval again.',
+                       self.env.user.name),
+                partner_ids=approvers.partner_id.ids,
+                subtype_xmlid='mail.mt_comment')
+        return True
 
     @api.depends('state', 'approval_state')
     def _compute_oscon_status(self):
@@ -248,7 +331,7 @@ class PurchaseOrder(models.Model):
                     'Only %(submitter)s, who submitted it for approval, can confirm it. '
                     'Approvers can only Approve or Reject.',
                     submitter=order.submitted_by_id.name))
-        return super().button_confirm()
+        return super(PurchaseOrder, self.with_context(oscon_bypass_lock=True)).button_confirm()
 
     def button_draft(self):
         res = super().button_draft()
