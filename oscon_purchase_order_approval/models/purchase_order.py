@@ -133,7 +133,7 @@ class PurchaseOrder(models.Model):
         for order in self:
             order.can_reset_approval = (
                 order.state in ('draft', 'sent')
-                and order.approval_state in ('submitted', 'approved')
+                and order.approval_state == 'submitted'
                 and order.submitted_by_id == self.env.user)
 
     def write(self, vals):
