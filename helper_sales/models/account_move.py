@@ -1,6 +1,8 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
+NON_ACCOUNTING_DISPLAY_TYPES = ('line_section', 'line_subsection', 'line_note')
+
 
 class AccountAccount(models.Model):
     _inherit = "account.account"
@@ -106,28 +108,28 @@ class AccountMove(models.Model):
                     "Return Documents from the Inventory person before posting this Credit Note."
                 ))
 
+    @api.model
     def _check_analytic_required_on_lines(self, lines, context_label=""):
         """ Inakagua mistari ya ledger/move na kuzuia kama akaunti yenye analytic_account_required haina analytic """
         missing_lines = lines.filtered(
             lambda line: (
-                line.display_type not in ('line_section', 'line_subsection', 'line_note')
+                line.display_type not in NON_ACCOUNTING_DISPLAY_TYPES
                 and getattr(line.account_id, 'analytic_account_required', False)
                 and not line.analytic_distribution
             )
         )
         if missing_lines:
-            line_labels = ", ".join(
-                missing_lines.mapped('account_id.display_name')
-                or missing_lines.mapped('product_id.display_name')
-                or missing_lines.mapped('name')
-            )
+            names = []
+            for acc in missing_lines.mapped('account_id'):
+                if acc.display_name not in names:
+                    names.append(acc.display_name)
             prefix = f"{context_label} " if context_label else ""
             raise UserError(_(
-                "%sAnalytic Account is required for the selected account(s) on:\n%s"
-            ) % (prefix, line_labels))
+                "%sAnalytic Account is required for the selected account(s):\n%s"
+            ) % (prefix, ", ".join(names)))
 
     def _check_analytic_required_on_moves(self):
-        """ Inazuia kuthibitisha/ku-post muamala wowote (Journal Entry, Invoice, Reconciliation, n.k.) bila Analytic """
+        """ Inazuia ku-post muamala wowote (Journal Entry, Invoice, n.k.) bila Analytic """
         target_moves = self.filtered(
             lambda m: m.move_type in (
                 'entry', 'out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt'
@@ -160,9 +162,30 @@ class AccountMoveLine(models.Model):
             elif line.account_id and not line.analytic_distribution:
                 line.analytic_distribution = False
 
+    @api.constrains('account_id', 'analytic_distribution')
+    def _check_analytic_required_bank_statement_lines(self):
+        """
+        Ngazi ya chini kabisa: inashika mistari ya Manual Operations kwenye Bank Reconciliation
+        (mistari ya move ya bank statement line), bila kujali inapitia button gani.
+        """
+        for line in self:
+            move = line.move_id
+            if move.state == 'draft':
+                continue
+            is_statement_move = bool(
+                getattr(move, 'statement_line_id', False)
+                or getattr(move, 'statement_line_ids', False)
+            )
+            if not is_statement_move:
+                continue
+            move._check_analytic_required_on_lines(
+                line,
+                context_label=_("Bank Reconciliation:"),
+            )
+
     def reconcile(self):
         """ Inakagua pia wakati wa ku-reconcile mistari """
-        self.move_id._check_analytic_required_on_lines(
+        self.env['account.move']._check_analytic_required_on_lines(
             self,
             context_label=_("Cannot reconcile because"),
         )
@@ -174,9 +197,9 @@ class AccountBankStatementLine(models.Model):
 
     def _check_analytic_on_statement_lines(self):
         for st_line in self:
-            if st_line.line_ids:
+            if st_line.move_id:
                 st_line.move_id._check_analytic_required_on_lines(
-                    st_line.line_ids,
+                    st_line.move_id.line_ids,
                     context_label=_("Bank Reconciliation:"),
                 )
 
@@ -190,22 +213,41 @@ class AccountBankStatementLine(models.Model):
 class BankRecWidget(models.Model):
     _inherit = "bank.rec.widget"
 
-    def button_validate(self, *args, **kwargs):
-        """ Inakagua Analytic Account kwenye Manual Operations kabla ya Validate kwenye Bank Reconciliation """
+    # Flags za mistari ambazo hazihitaji analytic (zinatengenezwa na system)
+    _ANALYTIC_SKIP_FLAGS = (
+        'liquidity', 'auto_balance', 'tax_line', 'exchange_diff', 'early_payment',
+    )
+
+    def _check_analytic_manual_lines(self):
+        """ Inakagua mistari ya Manual Operations kwenye widget kabla ya Validate """
         for widget in self:
             missing_accounts = []
-            rec_lines = getattr(widget, 'line_ids', self.env['bank.rec.widget.line'])
-            for rec_line in rec_lines:
-                flag = getattr(rec_line, 'flag', False)
-                if flag in ('liquidity', 'auto_balance', 'tax_line'):
+            for rec_line in widget.line_ids:
+                if rec_line.flag in self._ANALYTIC_SKIP_FLAGS:
                     continue
-                account = getattr(rec_line, 'account_id', False)
-                analytic_dist = getattr(rec_line, 'analytic_distribution', False)
-                if account and getattr(account, 'analytic_account_required', False) and not analytic_dist:
-                    if account.display_name not in missing_accounts:
-                        missing_accounts.append(account.display_name)
+                account = rec_line.account_id
+                if (
+                    account
+                    and getattr(account, 'analytic_account_required', False)
+                    and not rec_line.analytic_distribution
+                    and account.display_name not in missing_accounts
+                ):
+                    missing_accounts.append(account.display_name)
             if missing_accounts:
                 raise UserError(_(
                     "Cannot validate reconciliation because Analytic Account is required for:\n%s"
                 ) % ", ".join(missing_accounts))
+
+    def button_validate(self, *args, **kwargs):
+        self._check_analytic_manual_lines()
         return super().button_validate(*args, **kwargs)
+
+    # Methods zifuatazo zitaitwa tu kama zipo kwenye version yako ya Odoo
+    # (kama hazipo kwenye parent, hazitaitwa kamwe, kwa hiyo ni salama).
+    def js_action_validate(self, *args, **kwargs):
+        self._check_analytic_manual_lines()
+        return super().js_action_validate(*args, **kwargs)
+
+    def _action_validate(self, *args, **kwargs):
+        self._check_analytic_manual_lines()
+        return super()._action_validate(*args, **kwargs)
