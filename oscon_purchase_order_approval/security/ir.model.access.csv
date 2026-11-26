@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_po_approval_line_user,purchase.order.approval.line.user,model_purchase_order_approval_line,purchase.group_purchase_user,1,1,1,1
+access_po_approval_line_manager,purchase.order.approval.line.manager,model_purchase_order_approval_line,purchase.group_purchase_manager,1,1,1,1
+access_po_reject_wizard_user,purchase.order.reject.wizard.user,model_purchase_order_reject_wizard,base.group_user,1,1,1,1
