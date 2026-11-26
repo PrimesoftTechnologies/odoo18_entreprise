@@ -106,6 +106,17 @@ class PurchaseOrder(models.Model):
                 # keep the original field in the view (other expressions may use it) but hide it
                 node.set('column_invisible', '1')
                 node.attrib.pop('optional', None)
+            # any other column also labelled "Status" (added by other modules) would look like
+            # a duplicate: hide it by default (the user can still turn it on from the column menu)
+            for node in arch.xpath("//field[not(ancestor::field)]"):
+                name = node.get('name')
+                if name in ('oscon_status', 'state') or name not in self._fields:
+                    continue
+                if node.get('column_invisible') or node.get('widget') == 'handle':
+                    continue
+                label = node.get('string') or self._fields[name].string
+                if label == 'Status':
+                    node.set('optional', 'hide')
         return arch, view
 
     def _oscon_is_locked(self):
