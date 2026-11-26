@@ -213,7 +213,6 @@ class AccountBankStatementLine(models.Model):
 class BankRecWidget(models.Model):
     _inherit = "bank.rec.widget"
 
-    # Flags za mistari ambazo hazihitaji analytic (zinatengenezwa na system)
     _ANALYTIC_SKIP_FLAGS = (
         'liquidity', 'auto_balance', 'tax_line', 'exchange_diff', 'early_payment',
     )
