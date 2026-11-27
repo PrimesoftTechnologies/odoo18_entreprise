@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_reorder_alert_user,reorder.alert user,model_reorder_alert,stock.group_stock_user,1,1,0,0
+access_reorder_alert_manager,reorder.alert manager,model_reorder_alert,stock.group_stock_manager,1,1,1,1

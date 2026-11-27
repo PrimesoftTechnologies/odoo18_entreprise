@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_reorder_alert_list" model="ir.ui.view">
+        <field name="name">reorder.alert.list</field>
+        <field name="model">reorder.alert</field>
+        <field name="arch" type="xml">
+            <list string="Reorder Alerts" create="0"
+                  decoration-danger="state == 'open'" decoration-muted="state == 'resolved'">
+                <field name="date_triggered"/>
+                <field name="product_id"/>
+                <field name="location_id"/>
+                <field name="warehouse_id" optional="hide"/>
+                <field name="qty_on_hand"/>
+                <field name="min_qty"/>
+                <field name="shortage"/>
+                <field name="state" widget="badge"
+                       decoration-danger="state == 'open'" decoration-success="state == 'resolved'"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_reorder_alert_form" model="ir.ui.view">
+        <field name="name">reorder.alert.form</field>
+        <field name="model">reorder.alert</field>
+        <field name="arch" type="xml">
+            <form string="Reorder Alert" create="0">
+                <header>
+                    <button name="action_open_orderpoint" type="object" string="Open Reorder Rule"/>
+                    <button name="action_resolve" type="object" string="Mark as Resolved"
+                            invisible="state == 'resolved'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="open,resolved"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="product_id"/>
+                            <field name="location_id"/>
+                            <field name="warehouse_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="qty_on_hand"/>
+                            <field name="min_qty"/>
+                            <field name="shortage"/>
+                            <field name="date_triggered"/>
+                            <field name="date_resolved"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_reorder_alert_search" model="ir.ui.view">
+        <field name="name">reorder.alert.search</field>
+        <field name="model">reorder.alert</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="product_id"/>
+                <field name="location_id"/>
+                <filter name="open" string="Open" domain="[('state', '=', 'open')]"/>
+                <filter name="resolved" string="Resolved" domain="[('state', '=', 'resolved')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_product" string="Product" context="{'group_by': 'product_id'}"/>
+                    <filter name="group_location" string="Location" context="{'group_by': 'location_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_reorder_alert" model="ir.actions.act_window">
+        <field name="name">Reorder Alerts</field>
+        <field name="res_model">reorder.alert</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_open': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No reorder alerts</p>
+            <p>An alert is created when a product's On Hand quantity falls below the Minimum of its Reorder Rule.</p>
+        </field>
+    </record>
+
+    <record id="action_reorder_alert_check_now" model="ir.actions.server">
+        <field name="name">Check Reorder Rules Now</field>
+        <field name="model_id" ref="model_reorder_alert"/>
+        <field name="binding_model_id" ref="model_reorder_alert"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">model._cron_check_all()</field>
+    </record>
+
+    <menuitem id="menu_reorder_alert" name="Reorder Alerts"
+              parent="stock.menu_stock_root" action="action_reorder_alert"
+              sequence="90" groups="stock.group_stock_user"/>
+</odoo>

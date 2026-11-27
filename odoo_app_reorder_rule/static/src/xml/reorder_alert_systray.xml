@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="odoo_app_reorder_rule.ReorderAlertSystray">
+        <div t-if="state.allowed" class="o_nav_entry o_reorder_alert_systray"
+             role="button" title="Reorder alerts" t-on-click="onClick">
+            <i class="fa fa-bell" t-att-class="{'o_reorder_alert_active': state.count > 0}"/>
+            <span t-if="state.count > 0" class="o_reorder_alert_badge" t-esc="state.count > 99 ? '99+' : state.count"/>
+        </div>
+    </t>
+</templates>
