@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="meals_report_wizard_form" model="ir.ui.view">
+        <field name="name">meals.report.wizard.form</field>
+        <field name="model">meals.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Customer Meals Statement">
+                <group>
+                    <group>
+                        <field name="customer_id" options="{'no_create': True}"/>
+                        <field name="meal_type_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                    </group>
+                    <group>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_print" string="Print PDF" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_meals_report_wizard" model="ir.actions.act_window">
+        <field name="name">Customer Meals Statement</field>
+        <field name="res_model">meals.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

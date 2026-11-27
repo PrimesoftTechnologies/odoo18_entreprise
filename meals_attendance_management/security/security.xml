@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="module_category_meals" model="ir.module.category">
+        <field name="name">Meals Attendance</field>
+        <field name="sequence">55</field>
+    </record>
+
+    <record id="group_meals_user" model="res.groups">
+        <field name="name">User (record attendance)</field>
+        <field name="category_id" ref="module_category_meals"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="group_meals_manager" model="res.groups">
+        <field name="name">Manager (setup, import, invoicing)</field>
+        <field name="category_id" ref="module_category_meals"/>
+        <field name="implied_ids" eval="[(4, ref('group_meals_user')), (4, ref('hr.group_hr_user')), (4, ref('account.group_account_invoice'))]"/>
+        <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+
+    <!-- Multi-company rules -->
+    <record id="rule_meals_type_company" model="ir.rule">
+        <field name="name">Meal Type: multi-company</field>
+        <field name="model_id" ref="model_meals_type"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_meals_attendance_company" model="ir.rule">
+        <field name="name">Meals Attendance: multi-company</field>
+        <field name="model_id" ref="model_meals_attendance"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_meals_attendance_line_company" model="ir.rule">
+        <field name="name">Meals Attendance Line: multi-company</field>
+        <field name="model_id" ref="model_meals_attendance_line"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

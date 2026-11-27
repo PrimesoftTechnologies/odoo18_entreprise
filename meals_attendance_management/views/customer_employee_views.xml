@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ======== Customer (res.partner) inherit ======== -->
+    <record id="res_partner_view_form_meals" model="ir.ui.view">
+        <field name="name">res.partner.form.meals</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_meal_employees" type="object" class="oe_stat_button"
+                        icon="fa-users" invisible="not is_meal_customer">
+                    <field name="meal_employee_count" widget="statinfo" string="Employees"/>
+                </button>
+                <button name="action_view_meal_types" type="object" class="oe_stat_button"
+                        icon="fa-cutlery" invisible="not is_meal_customer">
+                    <field name="meal_type_count" widget="statinfo" string="Meal Types"/>
+                </button>
+                <button name="action_view_meal_attendances" type="object" class="oe_stat_button"
+                        icon="fa-check-square-o" invisible="not is_meal_customer">
+                    <field name="meal_attendance_count" widget="statinfo" string="Attendance"/>
+                </button>
+            </xpath>
+            <xpath expr="//field[@name='vat']" position="after">
+                <field name="is_meal_customer"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_meals_customer" model="ir.actions.act_window">
+        <field name="name">Meals Customers</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('is_meal_customer', '=', True)]</field>
+        <field name="context">{'default_is_meal_customer': True, 'default_is_company': True}</field>
+    </record>
+
+    <!-- ======== Departments (hr.department) ======== -->
+    <record id="meals_department_view_list" model="ir.ui.view">
+        <field name="name">meals.department.list</field>
+        <field name="model">hr.department</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="meal_customer_id"/>
+                <field name="name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="meals_department_view_form" model="ir.ui.view">
+        <field name="name">meals.department.form</field>
+        <field name="model">hr.department</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="meal_customer_id" required="1" options="{'no_create': True}"/>
+                        <field name="name"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_meals_department" model="ir.actions.act_window">
+        <field name="name">Customer Departments</field>
+        <field name="res_model">hr.department</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('meal_customer_id', '!=', False)]</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('meals_department_view_list')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('meals_department_view_form')})]"/>
+    </record>
+
+    <!-- ======== Employees (hr.employee) ======== -->
+    <record id="meals_employee_view_list" model="ir.ui.view">
+        <field name="name">meals.employee.list</field>
+        <field name="model">hr.employee</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="meal_customer_id"/>
+                <field name="meal_employee_no"/>
+                <field name="name"/>
+                <field name="department_id"/>
+                <field name="job_title" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="meals_employee_view_form" model="ir.ui.view">
+        <field name="name">meals.employee.form</field>
+        <field name="model">hr.employee</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <field name="active" invisible="1"/>
+                    <field name="is_meal_employee" invisible="1"/>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Employee name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="meal_customer_id" required="1" options="{'no_create': True}"/>
+                            <field name="meal_employee_no" required="1"/>
+                            <field name="department_id"
+                                   domain="[('meal_customer_id', '=', meal_customer_id)]"
+                                   options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="job_title"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="meals_employee_view_search" model="ir.ui.view">
+        <field name="name">meals.employee.search</field>
+        <field name="model">hr.employee</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="meal_employee_no"/>
+                <field name="meal_customer_id"/>
+                <field name="department_id"/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_customer" string="Customer" context="{'group_by': 'meal_customer_id'}"/>
+                    <filter name="group_department" string="Department" context="{'group_by': 'department_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_meals_employee" model="ir.actions.act_window">
+        <field name="name">Customer Employees</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('is_meal_employee', '=', True)]</field>
+        <field name="context">{'default_is_meal_employee': True}</field>
+        <field name="search_view_id" ref="meals_employee_view_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('meals_employee_view_list')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('meals_employee_view_form')})]"/>
+    </record>
+</odoo>

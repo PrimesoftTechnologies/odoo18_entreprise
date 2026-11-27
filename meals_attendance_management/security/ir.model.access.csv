@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_meals_type_user,meals.type user,model_meals_type,group_meals_user,1,0,0,0
+access_meals_type_manager,meals.type manager,model_meals_type,group_meals_manager,1,1,1,1
+access_meals_attendance_user,meals.attendance user,model_meals_attendance,group_meals_user,1,1,1,1
+access_meals_attendance_line_user,meals.attendance.line user,model_meals_attendance_line,group_meals_user,1,1,1,1
+access_hr_employee_meals_user,hr.employee meals user,hr.model_hr_employee,group_meals_user,1,0,0,0
+access_hr_department_meals_user,hr.department meals user,hr.model_hr_department,group_meals_user,1,0,0,0

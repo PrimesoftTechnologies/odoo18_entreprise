@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ======== Attendance sheet ======== -->
+    <record id="meals_attendance_view_list" model="ir.ui.view">
+        <field name="name">meals.attendance.list</field>
+        <field name="model">meals.attendance</field>
+        <field name="arch" type="xml">
+            <list create="0" decoration-info="state == 'draft'" decoration-success="invoiced">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="customer_id"/>
+                <field name="meal_type_id"/>
+                <field name="attended_count" sum="Attended"/>
+                <field name="total_count"/>
+                <field name="amount_total" sum="Amount"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="invoiced" column_invisible="1"/>
+                <field name="user_id" optional="show"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'confirmed'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="meals_attendance_view_form" model="ir.ui.view">
+        <field name="name">meals.attendance.form</field>
+        <field name="model">meals.attendance</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0">
+                <header>
+                    <button name="action_confirm" string="Confirm" type="object" class="btn-primary"
+                            invisible="state != 'draft' or not line_ids"/>
+                    <button name="action_draft" string="Set to Draft" type="object"
+                            invisible="state != 'confirmed' or invoiced"
+                            groups="meals_attendance_management.group_meals_manager"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Invoiced" invisible="not invoiced"/>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="customer_id" readonly="state != 'draft'" options="{'no_create': True}"/>
+                            <field name="meal_type_id" readonly="state != 'draft'" options="{'no_create': True}"/>
+                            <field name="date" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="attended_count"/>
+                            <field name="total_count"/>
+                            <field name="amount_total"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="invoiced" invisible="1"/>
+                            <field name="user_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Employees" name="employees">
+                            <field name="line_ids" readonly="state != 'draft'">
+                                <list editable="bottom" create="0" decoration-success="attended"
+                                      decoration-muted="not attended">
+                                    <field name="department_id" readonly="1"/>
+                                    <field name="employee_no" readonly="1"/>
+                                    <field name="employee_id" readonly="1" force_save="1"/>
+                                    <field name="attended"/>
+                                    <field name="scan_time" widget="float_time" readonly="1"/>
+                                    <field name="source" readonly="1" optional="hide"/>
+                                    <field name="remark"/>
+                                    <field name="unit_price" readonly="1" optional="hide"/>
+                                    <field name="amount" sum="Total" readonly="1"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="invoice_id" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note" placeholder="Internal notes..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="meals_attendance_view_search" model="ir.ui.view">
+        <field name="name">meals.attendance.search</field>
+        <field name="model">meals.attendance</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="customer_id"/>
+                <field name="meal_type_id"/>
+                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="confirmed" string="Confirmed" domain="[('state', '=', 'confirmed')]"/>
+                <separator/>
+                <filter name="today" string="Today" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_date" string="Date" date="date"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_customer" string="Customer" context="{'group_by': 'customer_id'}"/>
+                    <filter name="group_meal" string="Meal Type" context="{'group_by': 'meal_type_id'}"/>
+                    <filter name="group_date" string="Date" context="{'group_by': 'date:day'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_meals_attendance" model="ir.actions.act_window">
+        <field name="name">Attendance Sheets</field>
+        <field name="res_model">meals.attendance</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="meals_attendance_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No attendance sheets yet</p>
+            <p>Sheets are created automatically when you import the attendance machine file:
+               Operations → Import Machine Logs.</p>
+        </field>
+    </record>
+
+    <!-- ======== Analysis (lines) ======== -->
+    <record id="meals_attendance_line_view_list" model="ir.ui.view">
+        <field name="name">meals.attendance.line.list</field>
+        <field name="model">meals.attendance.line</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0">
+                <field name="date"/>
+                <field name="customer_id"/>
+                <field name="department_id"/>
+                <field name="employee_no"/>
+                <field name="employee_id"/>
+                <field name="meal_type_id"/>
+                <field name="scan_time" widget="float_time" optional="show"/>
+                <field name="source" optional="hide"/>
+                <field name="qty" sum="Meals"/>
+                <field name="amount" sum="Amount"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="invoice_id" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="meals_attendance_line_view_pivot" model="ir.ui.view">
+        <field name="name">meals.attendance.line.pivot</field>
+        <field name="model">meals.attendance.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Meals Analysis" sample="1">
+                <field name="customer_id" type="row"/>
+                <field name="department_id" type="row"/>
+                <field name="meal_type_id" type="col"/>
+                <field name="qty" type="measure"/>
+                <field name="amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="meals_attendance_line_view_graph" model="ir.ui.view">
+        <field name="name">meals.attendance.line.graph</field>
+        <field name="model">meals.attendance.line</field>
+        <field name="arch" type="xml">
+            <graph string="Meals Analysis" type="bar" sample="1">
+                <field name="customer_id"/>
+                <field name="meal_type_id"/>
+                <field name="qty" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="meals_attendance_line_view_search" model="ir.ui.view">
+        <field name="name">meals.attendance.line.search</field>
+        <field name="model">meals.attendance.line</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <field name="employee_no"/>
+                <field name="customer_id"/>
+                <field name="department_id"/>
+                <field name="meal_type_id"/>
+                <filter name="attended" string="Attended" domain="[('attended', '=', True)]"/>
+                <filter name="confirmed" string="Confirmed Sheets" domain="[('state', '=', 'confirmed')]"/>
+                <separator/>
+                <filter name="not_invoiced" string="Not Invoiced" domain="[('invoice_id', '=', False)]"/>
+                <filter name="invoiced" string="Invoiced" domain="[('invoice_id', '!=', False)]"/>
+                <separator/>
+                <filter name="filter_date" string="Date" date="date"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_customer" string="Customer" context="{'group_by': 'customer_id'}"/>
+                    <filter name="group_department" string="Department" context="{'group_by': 'department_id'}"/>
+                    <filter name="group_meal" string="Meal Type" context="{'group_by': 'meal_type_id'}"/>
+                    <filter name="group_employee" string="Employee" context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_month" string="Month" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_meals_attendance_line" model="ir.actions.act_window">
+        <field name="name">Attendance Analysis</field>
+        <field name="res_model">meals.attendance.line</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="search_view_id" ref="meals_attendance_line_view_search"/>
+        <field name="context">{'search_default_attended': 1, 'search_default_confirmed': 1}</field>
+    </record>
+</odoo>

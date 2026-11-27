@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_customer_statement" model="ir.actions.report">
+        <field name="name">Customer Meals Statement</field>
+        <field name="model">meals.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">meals_attendance_management.report_customer_statement</field>
+        <field name="report_file">meals_attendance_management.report_customer_statement</field>
+        <field name="print_report_name">'Meals Statement'</field>
+    </record>
+
+    <!-- Reusable matrix table: rows x meal types -->
+    <template id="meals_matrix_table">
+        <table class="table table-sm table-bordered">
+            <thead>
+                <tr>
+                    <th><t t-out="label_title"/></th>
+                    <th t-if="show_sub"><t t-out="sub_title"/></th>
+                    <th t-foreach="meal_types" t-as="mt" t-key="mt.id" class="text-end"><t t-out="mt.name"/></th>
+                    <th class="text-end">Total Meals</th>
+                    <th class="text-end">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr t-foreach="rows" t-as="row" t-key="row_index">
+                    <td><t t-out="row['label']"/></td>
+                    <td t-if="show_sub"><t t-out="row['sub']"/></td>
+                    <td t-foreach="meal_types" t-as="mt" t-key="mt.id" class="text-end">
+                        <t t-out="row['counts'][mt.id]"/>
+                    </td>
+                    <td class="text-end"><t t-out="row['qty']"/></td>
+                    <td class="text-end">
+                        <span t-out="row['amount']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                    </td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr class="fw-bold">
+                    <td t-att-colspan="2 if show_sub else 1">TOTAL</td>
+                    <td t-foreach="meal_types" t-as="mt" t-key="mt.id" class="text-end">
+                        <t t-out="meal_totals[mt.id]"/>
+                    </td>
+                    <td class="text-end"><t t-out="total_qty"/></td>
+                    <td class="text-end">
+                        <span t-out="total_amount" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </template>
+
+    <template id="report_customer_statement">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <h2>Customer Meals Statement</h2>
+                    <div class="row mt-3 mb-3">
+                        <div class="col-6"><strong>Customer:</strong> <span t-out="customer.name"/></div>
+                        <div class="col-6"><strong>Period:</strong>
+                            <span t-out="date_from"/> - <span t-out="date_to"/></div>
+                    </div>
+
+                    <h4>1. Summary by Meal Type</h4>
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Meal Type</th>
+                                <th class="text-end">Meals Served</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="meal_summary" t-as="m" t-key="m_index">
+                                <td><t t-out="m['name']"/></td>
+                                <td class="text-end"><t t-out="m['qty']"/></td>
+                                <td class="text-end">
+                                    <span t-out="m['amount']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="fw-bold">
+                                <td>TOTAL</td>
+                                <td class="text-end"><t t-out="total_qty"/></td>
+                                <td class="text-end">
+                                    <span t-out="total_amount" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <h4 class="mt-4">2. Summary by Department</h4>
+                    <t t-call="meals_attendance_management.meals_matrix_table">
+                        <t t-set="rows" t-value="dept_rows"/>
+                        <t t-set="label_title">Department</t>
+                        <t t-set="show_sub" t-value="False"/>
+                    </t>
+
+                    <h4 class="mt-4" style="page-break-before: always;">3. Detail by Employee</h4>
+                    <t t-call="meals_attendance_management.meals_matrix_table">
+                        <t t-set="rows" t-value="employee_rows"/>
+                        <t t-set="label_title">Employee</t>
+                        <t t-set="sub_title">Department</t>
+                        <t t-set="show_sub" t-value="True"/>
+                    </t>
+
+                    <p t-if="not total_qty" class="text-muted">
+                        No confirmed attendance found for this period.
+                    </p>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

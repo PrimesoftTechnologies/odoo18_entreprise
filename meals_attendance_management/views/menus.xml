@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_meals_root" name="Meals Attendance" sequence="45"
+              web_icon="meals_attendance_management,static/description/icon.png"
+              groups="group_meals_user"/>
+
+    <menuitem id="menu_meals_operations" name="Operations" parent="menu_meals_root" sequence="10"/>
+    <menuitem id="menu_meals_log_import" name="Import Machine Logs" parent="menu_meals_operations"
+              action="action_meals_log_import" sequence="5"/>
+    <menuitem id="menu_meals_attendance" name="Attendance Sheets" parent="menu_meals_operations"
+              action="action_meals_attendance" sequence="10"/>
+
+    <menuitem id="menu_meals_invoicing" name="Invoicing" parent="menu_meals_root" sequence="20"
+              groups="group_meals_manager"/>
+    <menuitem id="menu_meals_invoice_wizard" name="Generate Invoice" parent="menu_meals_invoicing"
+              action="action_meals_invoice_wizard" sequence="10"/>
+
+    <menuitem id="menu_meals_reporting" name="Reporting" parent="menu_meals_root" sequence="30"/>
+    <menuitem id="menu_meals_analysis" name="Attendance Analysis" parent="menu_meals_reporting"
+              action="action_meals_attendance_line" sequence="10"/>
+    <menuitem id="menu_meals_statement" name="Customer Statement (PDF)" parent="menu_meals_reporting"
+              action="action_meals_report_wizard" sequence="20"/>
+
+    <menuitem id="menu_meals_config" name="Configuration" parent="menu_meals_root" sequence="90"
+              groups="group_meals_manager"/>
+    <menuitem id="menu_meals_customers" name="Customers" parent="menu_meals_config"
+              action="action_meals_customer" sequence="10"/>
+    <menuitem id="menu_meals_departments" name="Departments" parent="menu_meals_config"
+              action="action_meals_department" sequence="20"/>
+    <menuitem id="menu_meals_employees" name="Employees" parent="menu_meals_config"
+              action="action_meals_employee" sequence="30"/>
+    <menuitem id="menu_meals_types" name="Meal Types" parent="menu_meals_config"
+              action="action_meals_type" sequence="40"/>
+    <menuitem id="menu_meals_import" name="Import Employees" parent="menu_meals_config"
+              action="action_meals_employee_import" sequence="50"/>
+</odoo>

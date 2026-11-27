@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="meals_invoice_wizard_form" model="ir.ui.view">
+        <field name="name">meals.invoice.wizard.form</field>
+        <field name="model">meals.invoice.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Generate Meals Invoice">
+                <group>
+                    <group>
+                        <field name="customer_id" options="{'no_create': True}"/>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                    <group>
+                        <field name="invoice_date"/>
+                        <field name="group_by_department"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="currency_id" invisible="1"/>
+                    </group>
+                </group>
+                <group string="Preview (confirmed &amp; not yet invoiced)">
+                    <field name="billable_count"/>
+                    <field name="billable_amount"/>
+                </group>
+                <footer>
+                    <button name="action_create_invoice" string="Create Invoice" type="object"
+                            class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_meals_invoice_wizard" model="ir.actions.act_window">
+        <field name="name">Generate Invoice</field>
+        <field name="res_model">meals.invoice.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>
