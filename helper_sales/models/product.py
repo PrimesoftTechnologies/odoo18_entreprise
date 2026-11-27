@@ -76,20 +76,24 @@ class ProductCategory(models.Model):
         return True, short_code, padding or 5, source_cat or self
 
     def generate_next_product_reference(self):
-        """Hupandisha sequence ya kategoria hii pekee na kurejesha code kama RM00001 au CM000001."""
+        """Hupandisha sequence ya kategoria kwa atomic UPDATE ... RETURNING na kurejesha code kama RM00001."""
         self.ensure_one()
         auto_gen, code_prefix, padding, target_cat = self._get_effective_ref_config()
         if not auto_gen or not code_prefix:
             return False
 
-        # Lock record ya kategoria ili kuzuia namba mbili kujirudia kwa wakati mmoja
         self.env.cr.execute(
-            "SELECT id, last_sequence FROM product_category WHERE id = %s FOR UPDATE",
-            [target_cat.id]
+            """
+            UPDATE product_category
+               SET last_sequence = COALESCE(last_sequence, 0) + 1
+             WHERE id = %s
+         RETURNING last_sequence
+            """,
+            [target_cat.id],
         )
         row = self.env.cr.fetchone()
-        current_seq = (row[1] if row and row[1] else 0) + 1
-        target_cat.sudo().write({'last_sequence': current_seq})
+        current_seq = row[0] if row and row[0] else 1
+        target_cat.invalidate_recordset(['last_sequence'])
 
         number_part = str(current_seq).zfill(padding)
         return f"{code_prefix}{number_part}"

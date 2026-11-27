@@ -2,7 +2,6 @@
 
 from datetime import timedelta
 from odoo import api, models, fields, _
-from odoo.exceptions import UserError
 
 
 class ResCompany(models.Model):
@@ -51,7 +50,7 @@ class ResConfigSettings(models.TransientModel):
     def action_generate_product_references(self):
         """Inazalisha Internal Reference kwa bidhaa zisizo na code kwa mfululizo tofauti wa kila kategoria."""
         products = self.env['product.template'].search(
-            [('default_code', '=', False), ('categ_id', '!=', False)],
+            ['|', ('default_code', '=', False), ('default_code', '=', ''), ('categ_id', '!=', False)],
             order='categ_id, id',
         )
 
