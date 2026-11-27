@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_stock_aging_report_form" model="ir.ui.view">
+        <field name="name">stock.aging.report.form</field>
+        <field name="model">stock.aging.report</field>
+        <field name="arch" type="xml">
+            <form string="Stock Aging Report">
+                <sheet>
+                    <div class="d-flex align-items-center mb-3">
+                        <field name="simple_report" widget="boolean_toggle" class="me-2"/>
+                        <label for="simple_report" class="fw-bold mb-0"/>
+                        <span class="text-muted ms-2" invisible="not simple_report">— classic layout, aged from the last receipt date</span>
+                        <span class="text-muted ms-2" invisible="simple_report">— off: Detailed receipt-layer aging with management analytics</span>
+                    </div>
+                    <div class="alert alert-info mb-3" role="status" invisible="not simple_report">
+                        One row per product and warehouse: quantity, unit cost, value, last receipt date, age and the
+                        0–30 / 31–60 / 61–90 / 91–180 / over 180 days buckets, plus an Aging Summary.
+                    </div>
+                    <div class="alert alert-info mb-3" role="status" invisible="simple_report">
+                        Each remaining receipt layer is aged separately (FIFO / lot level; internal transfers keep the
+                        original age), with KPIs, warehouse heatmap, categories, slow-moving and dead stock, capital
+                        exposure, replenishment risk, expiry and a full reconciliation.
+                    </div>
+                    <group>
+                        <group string="Snapshot">
+                            <field name="as_of"/>
+                            <field name="company_ids" widget="many2many_tags" options="{'no_create': True}"
+                                   groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Where">
+                            <field name="warehouse_ids" widget="many2many_tags" options="{'no_create': True}"
+                                   placeholder="All warehouses" domain="[('company_id', 'in', company_ids)]"/>
+                            <field name="location_ids" widget="many2many_tags" options="{'no_create': True}"
+                                   placeholder="All locations"
+                                   domain="[('usage', 'in', ('internal', 'transit')), ('company_id', 'in', company_ids)]"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Products">
+                            <field name="category_ids" widget="many2many_tags" options="{'no_create': True}"
+                                   placeholder="All categories"/>
+                            <field name="product_ids" widget="many2many_tags" options="{'no_create': True}"
+                                   placeholder="All products" domain="[('is_storable', '=', True)]"/>
+                            <field name="lot_ids" widget="many2many_tags" options="{'no_create': True}"
+                                   placeholder="All lots / serials" groups="stock.group_production_lot"/>
+                            <field name="cost_method"/>
+                        </group>
+                        <group string="Include">
+                            <field name="include_zero" invisible="not simple_report"/>
+                            <field name="include_archived"/>
+                            <field name="include_negative"/>
+                        </group>
+                    </group>
+                    <group invisible="simple_report">
+                        <group string="Aging buckets (days)">
+                            <label for="bucket_1" string="Buckets up to"/>
+                            <div class="d-flex gap-1 align-items-center">
+                                <field name="bucket_1" class="oe_inline" style="max-width:4rem;"/> /
+                                <field name="bucket_2" class="oe_inline" style="max-width:4rem;"/> /
+                                <field name="bucket_3" class="oe_inline" style="max-width:4rem;"/> /
+                                <field name="bucket_4" class="oe_inline" style="max-width:4rem;"/> /
+                                <field name="bucket_5" class="oe_inline" style="max-width:4rem;"/>
+                                <span class="text-muted">then over</span>
+                            </div>
+                            <field name="min_age_days"/>
+                            <field name="top_n"/>
+                        </group>
+                        <group string="Movement &amp; risk">
+                            <field name="slow_days"/>
+                            <field name="nonmoving_days"/>
+                            <field name="analysis_days"/>
+                            <field name="overstock_months"/>
+                            <field name="expiry_days"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_print_pdf" type="object" string="Print PDF" class="btn-primary"
+                            icon="fa-file-pdf-o" data-hotkey="q"/>
+                    <button name="action_export_xlsx" type="object" string="Export Excel" class="btn-primary"
+                            icon="fa-file-excel-o" data-hotkey="w"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_stock_aging_report" model="ir.actions.act_window">
+        <field name="name">Stock Aging Report</field>
+        <field name="res_model">stock.aging.report</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_stock_aging_report_form"/>
+        <field name="target">new</field>
+    </record>
+
+    <!-- immediately below "Inventory Valuation Report" (sequence 120) -->
+    <menuitem name="Stock Aging Report" id="menu_stock_aging_report"
+              action="action_stock_aging_report"
+              parent="stock.menu_warehouse_report"
+              groups="stock.group_stock_manager"
+              sequence="121"/>
+</odoo>

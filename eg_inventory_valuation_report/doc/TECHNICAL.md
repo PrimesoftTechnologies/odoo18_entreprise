@@ -137,3 +137,66 @@ Consolidated totals eliminate transfers between the reported sections (explicit
 * New movement type: add it to `MOVEMENT_TYPES` and to `_bucket_case_sql`.
 * Additional unvalued location types: extend `_unvalued_location_domain`.
 * Run tests: `odoo -d <test_db> -u eg_inventory_valuation_report --test-enable --test-tags /eg_inventory_valuation_report --stop-after-init --http-port=<free port>`
+
+---
+
+# Stock Aging Report
+
+Menu: Inventory › Reporting › **Stock Aging Report** (sequence 121, directly below Inventory Valuation Report),
+Inventory Administrators only (same ACL and company rules as the valuation report).
+
+## Architecture
+
+```
+wizard  stock.aging.report ──► eg.stock.aging.engine._build_dataset(params) ──► dataset
+                                   │ reuses eg.inventory.valuation.engine: access check, products,
+                                   │ categories, company unit cost, valuation cross-check
+            ┌──────────────────────┴────────────────────────┐
+   Simple:  report/aging_xlsx.SimpleAgingXlsx  +  QWeb aging_simple       (reference workbook layout)
+   Detailed: report/aging_xlsx.DetailedAgingXlsx + QWeb aging_detailed   (management workbook / report)
+```
+Files: `models/stock_aging_engine.py`, `wizard/stock_aging_report.py`, `wizard/stock_aging_report_views.xml`,
+`report/aging_xlsx.py`, `report/aging_pdf.py`, `reports/stock_aging_reports.xml`, `tests/test_stock_aging_report.py`.
+
+## Receipt-layer reconstruction (both modes share it)
+
+Done move lines of the selected products touching a valued location (internal + company transit; subcontractor
+locations and consignment excluded) are replayed per product in date order:
+
+| Event | Effect |
+|---|---|
+| Receipt from outside the company (supplier, production, inventory gain, customer return, other company) | new layer: receipt date, receipt line, lot, kind; arrival date = receipt date |
+| Issue (customer, production, scrap, loss, vendor return, other company) | consumes the location's layers: the line's lot first, then untracked layers, FIFO |
+| Internal transfer | consumed layers move to the destination **with their receipt date**; arrival date resets only when the warehouse changes |
+| Issue larger than available | negative stock at that location (no age); the next receipts into it fill it first |
+| Transfer out of a negative location | destination gets a layer of unknown age |
+
+Value per layer = quantity × company unit cost at the report date (valuation layers: value ÷ valued quantity,
+fallback last layer cost). Aging never revalues: FIFO allocation of *age* ≠ FIFO *cost*.
+
+## Simple mode
+Row = product × warehouse. Quantity = sum of the layers (identical to Detailed). Last receipt = latest receipt into
+that warehouse ≤ report date; stock received only by internal transfer uses the company's last receipt before that
+transfer (remark). Count-dated receipts (inventory adjustments) are remarked. No receipt date → no bucket, remark,
+"Unknown age" line on the summary. Workbook formulas mirror the reference: `G=E*F`, `I=IF(H="","",MAX(0,$B$2-H))`,
+one bucket per row.
+
+## Detailed mode
+Buckets configurable (default 30/60/90/180/365). Per product × warehouse: buckets, weighted age, oldest receipt,
+holding period (arrival), demand (customer deliveries net of returns + production consumption; transfers, scrap,
+vendor returns excluded), monthly use (history window, min 30 days, max holding period), months of cover,
+movement status, risk score (age 40 / movement 40 / cover 20; High ≥ 70, Medium 40–69, Low 20–39), potential
+dead stock (non-moving AND older than bucket 4). Plus warehouses (heatmap), categories (review flag), capital
+exposure, overstock, replenishment despite aged stock, expiry (lots with expiration date), insights.
+
+## Reconciliation (every report)
+Book value (layers) − stock outside the selected scope − valuation without physical quantity = aged value.
+Checks: Simple total = scope value; Detailed = Simple; book value = Inventory Valuation engine (independent code
+path); reconstructed quantity = `stock.quant` (when the report date is today); unallocated = 0 for full scope.
+Exceptions: quantity discrepancy, unallocated valuation, no unit cost, negative stock, unknown age, estimated age,
+missing receipt date (Simple), valuation date ≠ move date (> 1 day).
+
+## Performance (2,000 products, 100k move lines, 66k valuation layers)
+Dataset ≈ 4 s (77–148 queries, peak ≈ 100 MB). Simple Excel ≈ 6 s; Detailed Excel ≈ 17 s (46,000 receipt layers
+listed); PDF HTML ≈ 4 s. Main move-line query ≈ 0.1 s per 500 products (hash joins, no sequential scan on
+move lines). No index added.

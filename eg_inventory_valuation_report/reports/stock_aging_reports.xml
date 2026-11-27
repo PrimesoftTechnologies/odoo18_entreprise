@@ -1,0 +1,481 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_aging_simple" model="ir.actions.report">
+        <field name="name">Stock Aging Report (Simple)</field>
+        <field name="model">stock.aging.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">eg_inventory_valuation_report.aging_simple</field>
+        <field name="report_file">eg_inventory_valuation_report.aging_simple</field>
+        <field name="print_report_name">'Stock_Aging_Simple_%s' % (object.as_of)</field>
+        <field name="paperformat_id" ref="paperformat_inventory_valuation_landscape"/>
+        <field name="attachment" eval="False"/>
+        <field name="binding_type">report</field>
+    </record>
+    <record id="action_aging_detailed" model="ir.actions.report">
+        <field name="name">Stock Aging Report (Detailed)</field>
+        <field name="model">stock.aging.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">eg_inventory_valuation_report.aging_detailed</field>
+        <field name="report_file">eg_inventory_valuation_report.aging_detailed</field>
+        <field name="print_report_name">'Stock_Aging_Detailed_%s' % (object.as_of)</field>
+        <field name="paperformat_id" ref="paperformat_inventory_valuation_landscape"/>
+        <field name="attachment" eval="False"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- ===== shared header / footer ===== -->
+    <template id="aging_header_footer">
+        <div class="header">
+            <table t-attf-style="width:100%; border-collapse:collapse; font-family:'Helvetica Neue',Arial,sans-serif; border-bottom:3px solid {{primary}};">
+                <tr>
+                    <td style="width:16%; vertical-align:middle; padding:0 0 6px 0;">
+                        <img t-if="cm.get('logo')" t-att-src="image_data_uri(cm['logo'])" style="max-height:52px; max-width:150px;" alt="Logo"/>
+                    </td>
+                    <td style="width:44%; vertical-align:middle; padding:0 0 6px 6px; font-size:9px; color:#4A5A6A; line-height:1.35;">
+                        <div t-attf-style="font-size:14px; font-weight:bold; color:{{primary}};" t-out="' | '.join(c['name'] for c in ds['company_infos'])"/>
+                        <t t-if="len(ds['company_infos']) == 1">
+                            <div t-out="', '.join(cm.get('address') or [])"/>
+                            <div t-out="' · '.join(x for x in (cm.get('phone'), cm.get('email'), cm.get('website')) if x)"/>
+                        </t>
+                    </td>
+                    <td style="width:40%; vertical-align:middle; text-align:right; padding:0 0 6px 0;">
+                        <div t-attf-style="font-size:15px; font-weight:bold; color:{{primary}};" t-out="report_title"/>
+                        <div style="font-size:10px; color:#33475B;">As at <t t-out="fd(meta['as_of'])"/></div>
+                        <div style="font-size:9px; color:#6B7C8D;">Currency: <t t-out="', '.join(sorted({c['currency']['name'] for c in ds['company_infos']}))"/></div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="footer">
+            <table style="width:100%; border-top:1px solid #C9D3DD; font-family:'Helvetica Neue',Arial,sans-serif; font-size:8px; color:#6B7C8D;">
+                <tr>
+                    <td style="width:45%; padding-top:4px;">Generated <t t-out="meta['generated_at']"/> (<t t-out="meta['tz']"/>) by <t t-out="meta['generated_by']"/></td>
+                    <td style="width:25%; text-align:center; padding-top:4px;">Confidential — for internal use</td>
+                    <td style="width:30%; text-align:right; padding-top:4px;"><t t-out="report_title"/> · Page <span class="page"/> of <span class="topage"/></td>
+                </tr>
+            </table>
+        </div>
+    </template>
+
+    <!-- ===== SIMPLE: replica of the reference workbook ===== -->
+    <template id="aging_simple">
+        <t t-call="web.html_container">
+            <t t-set="report_title" t-value="'STOCK AGING REPORT'"/>
+            <t t-call="eg_inventory_valuation_report.aging_header_footer"/>
+            <div class="article">
+                <style>
+                    .sa { font-family: Calibri, Arial, sans-serif; font-size: 8.5px; color: #000; }
+                    .sa table { width: 100%; border-collapse: collapse; }
+                    .sa .title { background: #7030A0; color: #fff; font-weight: bold; font-size: 15px; text-align: center; padding: 5px; }
+                    .sa th { background: #4472C4; color: #fff; font-weight: bold; text-align: center; padding: 4px 3px; border: 1px solid #fff; font-size: 8px; }
+                    .sa td { padding: 3px; border-bottom: 1px solid #E1E5EA; vertical-align: top; }
+                    .sa td.n { text-align: right; white-space: nowrap; }
+                    .sa thead { display: table-header-group; }
+                    .sa tr { page-break-inside: avoid; }
+                    .sa tr.tot td { background: #D9EAD3; font-weight: bold; border-top: 1px solid #93C47D; }
+                    .sa .date { background: #FFF2CC; padding: 2px 6px; font-weight: bold; }
+                    .sa .rm { color: #B42318; font-style: italic; font-size: 7.5px; }
+                    .sa .hint { color: #666; font-style: italic; }
+                    .sa .pb { page-break-before: always; }
+                </style>
+                <div class="sa">
+                    <t t-foreach="ds['companies']" t-as="comp">
+                        <div t-if="not comp_first" class="pb"/>
+                        <t t-set="cur" t-value="comp['currency']['name']"/>
+                        <t t-set="tot" t-value="comp['simple_totals']"/>
+                        <div class="title">STOCK AGING REPORT — <t t-out="comp['company_name'].upper()"/></div>
+                        <p style="margin:6px 0;"><b>As at Date:</b> <span class="date" t-out="fd(meta['as_of'])"/>
+                            <span class="hint"> Odoo snapshot: quantities and values as at this date.</span></p>
+                        <table>
+                            <colgroup>
+                                <col style="width:7%"/><col style="width:16%"/><col style="width:9%"/><col style="width:8%"/>
+                                <col style="width:6%"/><col style="width:7%"/><col style="width:8%"/><col style="width:7%"/>
+                                <col style="width:4%"/><col/><col/><col/><col/><col/>
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>Item Code</th><th>Item Description</th><th>Category</th><th>Warehouse</th>
+                                    <th>Quantity on Hand</th><th>Unit Cost (<t t-out="cur"/>)</th><th>Stock Value (<t t-out="cur"/>)</th>
+                                    <th>Last Receipt Date</th><th>Age (Days)</th><th>0–30 Days</th><th>31–60 Days</th>
+                                    <th>61–90 Days</th><th>91–180 Days</th><th>Over 180 Days</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="comp['simple_rows']" t-as="r">
+                                    <td t-out="r['code']"/>
+                                    <td><t t-out="r['name']"/><div t-if="r['remarks']" class="rm" t-out="r['remarks']"/></td>
+                                    <td t-out="r['categ']"/>
+                                    <td t-out="r['warehouse']"/>
+                                    <td class="n" t-out="fq(r['qty'])"/>
+                                    <td class="n" t-out="fv(r['unit_cost'])"/>
+                                    <td class="n" t-out="fv(r['value'])"/>
+                                    <td class="n" t-out="fd(r['last_receipt'])"/>
+                                    <td class="n" t-out="r['age'] if r['age'] is not None else ''"/>
+                                    <t t-foreach="range(5)" t-as="b">
+                                        <td class="n" t-out="fv(r['value'] if r['bucket'] == b else 0)"/>
+                                    </t>
+                                </tr>
+                                <tr class="tot">
+                                    <td/><td>TOTAL</td><td/><td/>
+                                    <td class="n" t-out="fq(tot['qty']) if tot['qty'] is not None else 'mixed units'"/>
+                                    <td/>
+                                    <td class="n" t-out="fv(tot['value'])"/>
+                                    <td/><td/>
+                                    <td t-foreach="range(5)" t-as="b" class="n" t-out="fv(tot['buckets'][b])"/>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="title" style="margin-top:14px; width:45%; text-align:left;">STOCK AGING SUMMARY</div>
+                        <table style="width:45%; margin-top:4px;">
+                            <thead><tr><th style="text-align:left;">Aging Bucket</th><th>Stock Value (<t t-out="cur"/>)</th><th>% of Total</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="ds['simple_buckets']" t-as="lbl">
+                                    <td t-out="lbl"/>
+                                    <td class="n" t-out="fz(tot['buckets'][lbl_index])"/>
+                                    <td class="n" t-out="fp(tot['buckets'][lbl_index] / tot['value'] if tot['value'] else 0)"/>
+                                </tr>
+                                <tr t-if="abs(tot['unknown']) &gt; 0.005">
+                                    <td class="rm">Unknown age (no receipt date)</td>
+                                    <td class="n" t-out="fz(tot['unknown'])"/>
+                                    <td class="n" t-out="fp(tot['unknown'] / tot['value'] if tot['value'] else 0)"/>
+                                </tr>
+                                <tr class="tot"><td>Total Stock Value</td><td class="n" t-out="fz(tot['value'])"/><td class="n">100.0%</td></tr>
+                            </tbody>
+                        </table>
+                        <p style="margin-top:6px; width:60%;"><b>Note:</b> This report ages the full on-hand quantity of each item
+                            and warehouse from its last receipt date. For receipt-level (FIFO/batch) aging, run the
+                            Detailed Stock Aging Report.</p>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- ===== DETAILED: management report ===== -->
+    <template id="aging_detailed">
+        <t t-call="web.html_container">
+            <t t-set="report_title" t-value="'STOCK AGING &amp; INVENTORY INTELLIGENCE'"/>
+            <t t-set="top_n" t-value="meta['top_n']"/>
+            <t t-set="th" t-value="meta['thresholds']"/>
+            <t t-call="eg_inventory_valuation_report.aging_header_footer"/>
+            <div class="article">
+                <style>
+                    .ag { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1F2D3D; font-size: 8.5px; }
+                    .ag h2 { font-size: 13px; font-weight: bold; margin: 12px 0 6px 0; padding-bottom: 3px; }
+                    .ag .band { color: #fff; font-weight: bold; font-size: 10px; padding: 5px 8px; margin-top: 8px; }
+                    .ag table { width: 100%; border-collapse: collapse; }
+                    .ag table.grid { table-layout: fixed; }
+                    .ag table.grid thead { display: table-header-group; }
+                    .ag table.grid tr { page-break-inside: avoid; }
+                    .ag table.grid th { color: #fff; font-weight: bold; font-size: 7.5px; padding: 4px 3px; border: 1px solid #fff; text-align: center; }
+                    .ag table.grid td { padding: 2.5px 3px; border-bottom: 1px solid #E6EBF0; font-size: 7.8px; overflow: hidden; }
+                    .ag td.n { text-align: right; white-space: nowrap; }
+                    .ag td.c { text-align: center; }
+                    .ag tr.z td { background: #F7F9FC; }
+                    .ag tr.tot td { color: #fff; font-weight: bold; }
+                    .ag .params td { padding: 3px 6px; border-bottom: 1px solid #E3E8EE; font-size: 8.5px; vertical-align: top; }
+                    .ag .params td.k { color: #5A6B7D; font-weight: bold; width: 18%; background: #F4F7FA; }
+                    .ag .kpi td { padding: 6px 6px; border: 1px solid #DCE3EA; background: #F7F9FC; vertical-align: top; width: 20%; }
+                    .ag .kpi .lbl { font-size: 7.3px; color: #5A6B7D; text-transform: uppercase; letter-spacing: 0.5px; }
+                    .ag .kpi .num { font-size: 13px; font-weight: bold; margin: 2px 0; }
+                    .ag .kpi .def { font-size: 6.8px; color: #7A8A99; line-height: 1.25; }
+                    .ag .ins { padding: 4px 8px; margin: 3px 0; border-left: 4px solid; background: #F7F9FC; font-size: 8.5px; }
+                    .ag .ins.danger { border-color: #B42318; } .ag .ins.warning { border-color: #F0B357; }
+                    .ag .ins.info { border-color: #5B9BD5; } .ag .ins.success { border-color: #1E7B34; }
+                    .ag .tag { font-weight: bold; padding: 1px 5px; border-radius: 3px; font-size: 7.3px; }
+                    .ag .muted { color: #6B7C8D; }
+                    .ag .ok { color: #1E7B34; font-weight: bold; } .ag .bad { color: #B42318; font-weight: bold; }
+                    .ag .notes p { margin: 0 0 5px 0; font-size: 8px; line-height: 1.4; }
+                    .ag .pb { page-break-before: always; }
+                    .ag .legend span { display: inline-block; margin-right: 10px; font-size: 8px; white-space: nowrap; }
+                    .ag .sw { display: inline-block; width: 9px; height: 9px; margin-right: 3px; vertical-align: middle; }
+                </style>
+                <div class="ag">
+                    <h2 t-attf-style="color:{{primary}}; border-bottom:2px solid {{primary}};">Report parameters</h2>
+                    <table class="params">
+                        <t t-foreach="[meta['filters'][i:i + 2] for i in range(0, len(meta['filters']), 2)]" t-as="pair">
+                            <tr>
+                                <t t-foreach="pair" t-as="f"><td class="k" t-out="f[0]"/><td t-out="f[1]" style="width:32%;"/></t>
+                                <t t-if="len(pair) == 1"><td class="k"/><td/></t>
+                            </tr>
+                        </t>
+                    </table>
+
+                    <t t-foreach="ds['companies']" t-as="comp">
+                        <t t-set="d" t-value="comp['currency']['digits']"/>
+                        <t t-set="cur" t-value="comp['currency']['name']"/>
+                        <t t-set="k" t-value="comp['kpis']"/>
+                        <div t-if="not comp_first" class="pb"/>
+                        <!-- ===== Executive summary ===== -->
+                        <h2 t-attf-style="color:{{primary}}; border-bottom:2px solid {{primary}};">Executive summary — <t t-out="comp['company_name']"/> (<t t-out="cur"/>)</h2>
+                        <table class="kpi">
+                            <tr>
+                                <td t-attf-style="background:{{primary}};"><div class="lbl" style="color:#DCE6F1;">Total inventory value</div><div class="num" style="color:#fff;" t-out="fz(k['total_value'], d)"/><div class="def" style="color:#DCE6F1;">Book value in scope (valuation layers)</div></td>
+                                <td><div class="lbl">Older than <t t-out="th[2]"/> days</div><div class="num" style="color:#FB8C00;" t-out="fz(k['over_90'], d)"/><div class="def"><t t-out="fp(k['aged_pct'])"/> of dated value</div></td>
+                                <td><div class="lbl">Older than <t t-out="th[3]"/> days</div><div class="num" style="color:#E53935;" t-out="fz(k['over_180'], d)"/><div class="def">Older than <t t-out="th[4]"/> days: <t t-out="fz(k['over_365'], d)"/></div></td>
+                                <td><div class="lbl">Potential dead stock</div><div class="num" style="color:#8E0000;" t-out="fz(k['dead'], d)"/><div class="def">No demand &gt; <t t-out="meta['nonmoving_days']"/> d and stock &gt; <t t-out="th[3]"/> d</div></td>
+                                <td><div class="lbl">Slow- &amp; non-moving</div><div class="num" style="color:#8A5300;" t-out="fz(k['slow'], d)"/><div class="def">No demand &gt; <t t-out="meta['slow_days']"/> d or &gt; <t t-out="meta['overstock_months']"/> months cover</div></td>
+                            </tr>
+                            <tr>
+                                <td><div class="lbl">Fresh (0–<t t-out="th[0]"/> days)</div><div class="num" style="color:#2E7D32;" t-out="fz(k['fresh'], d)"/><div class="def">Received in the last <t t-out="th[0]"/> days</div></td>
+                                <td><div class="lbl">Aging (<t t-out="th[0] + 1"/>–<t t-out="th[2]"/> days)</div><div class="num" style="color:#F9A825;" t-out="fz(k['aging'], d)"/><div class="def">Between <t t-out="th[0] + 1"/> and <t t-out="th[2]"/> days old</div></td>
+                                <td><div class="lbl">Weighted average age</div><div class="num" t-attf-style="color:{{primary}};"><t t-out="fi(k['wavg_age'])"/> days</div><div class="def">Value-weighted, dated stock</div></td>
+                                <td><div class="lbl">Oldest stock</div><div class="num" t-attf-style="color:{{primary}};"><t t-out="fi(k['oldest_age'])"/> days</div><div class="def" t-out="'%s (%s)' % (k['oldest_product'] or '-', fd(k['oldest_date']))"/></td>
+                                <td><div class="lbl">Products in stock</div><div class="num" t-attf-style="color:{{primary}};" t-out="fi(k['products'])"/><div class="def"><t t-out="fi(k['attention'])"/> need attention · <t t-out="fi(k['aged_warehouses'])"/> warehouse(s) with stock &gt; <t t-out="th[3]"/> d</div></td>
+                            </tr>
+                        </table>
+                        <p class="muted" style="margin:3px 0 0 0;" t-if="abs(k['unreliable']) &gt; 0.005 or abs(k['negative']) &gt; 0.005">
+                            Estimated/unknown age: <b t-out="fz(k['unreliable'], d)"/> · Negative stock: <b t-out="fz(k['negative'], d)"/> (see Reconciliation &amp; exceptions)
+                        </p>
+
+                        <table style="margin-top:8px;">
+                            <tr>
+                                <td style="width:58%; vertical-align:top; padding-right:10px;">
+                                    <div class="band" t-attf-style="background:{{accent}};">Management insights</div>
+                                    <div t-foreach="comp['insights']" t-as="ins" t-attf-class="ins {{ins['level']}}" t-out="ins['text']"/>
+                                </td>
+                                <td style="width:42%; vertical-align:top;">
+                                    <div class="band" t-attf-style="background:{{accent}};">Inventory value by age (receipt layers)</div>
+                                    <table style="margin-top:4px;">
+                                        <tr>
+                                            <td style="width:45%; text-align:center; vertical-align:middle;"><t t-out="donut(comp['buckets_value'], bucket_colors, 150)"/></td>
+                                            <td style="vertical-align:middle;">
+                                                <table>
+                                                    <tr t-foreach="ds['buckets']" t-as="lbl">
+                                                        <td style="padding:2px;"><span class="sw" t-attf-style="background:{{bucket_colors[lbl_index]}};"/><t t-out="lbl"/></td>
+                                                        <td class="n" style="padding:2px;" t-out="fv(comp['buckets_value'][lbl_index], d)"/>
+                                                        <td class="n muted" style="padding:2px;" t-out="fp(comp['buckets_value'][lbl_index] / sum(comp['buckets_value']) if sum(comp['buckets_value']) else 0)"/>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- ===== Warehouses ===== -->
+                        <div class="pb"/>
+                        <h2 t-attf-style="color:{{primary}}; border-bottom:2px solid {{primary}};">Warehouse aging analysis</h2>
+                        <div class="legend"><span t-foreach="ds['buckets']" t-as="lbl"><span class="sw" t-attf-style="background:{{bucket_colors[lbl_index]}};"/><t t-out="lbl"/></span></div>
+                        <t t-out="stacked([(w['warehouse'], w['buckets']) for w in comp['warehouses'][:top_n]], bucket_colors)"/>
+                        <table class="grid" style="margin-top:6px;">
+                            <thead><tr t-attf-style="background:{{primary}};">
+                                <th style="width:16%; text-align:left;">Warehouse</th><th>Stock value</th><th>Share</th>
+                                <th t-foreach="ds['buckets']" t-as="lbl" t-attf-style="background:{{bucket_colors[lbl_index]}};" t-out="lbl"/>
+                                <th>Aged % (&gt;<t t-out="th[2]"/> d)</th><th>Avg age</th><th>Dead stock</th>
+                            </tr></thead>
+                            <tbody>
+                                <tr t-foreach="comp['warehouses']" t-as="w" t-att-class="'z' if w_index % 2 else ''">
+                                    <td t-out="w['warehouse']"/>
+                                    <td class="n"><b t-out="fv(w['value'], d)"/></td>
+                                    <td class="n" t-out="fp(w['share'])"/>
+                                    <t t-foreach="range(len(ds['buckets']))" t-as="b">
+                                        <td class="n" t-attf-style="background:{{heat(w['shares'][b]) if b &gt;= 3 else '#FFFFFF'}};" t-out="fv(w['buckets'][b], d)"/>
+                                    </t>
+                                    <td class="n" t-out="fp(w['aged_pct'])"/>
+                                    <td class="n" t-out="fi(w['wavg_age'])"/>
+                                    <td class="n" t-out="fv(w['dead'], d)"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p class="muted">Heatmap: older buckets shaded by their share of each warehouse's value (amber → red).</p>
+
+                        <!-- ===== Categories ===== -->
+                        <h2 t-attf-style="color:{{primary}}; border-bottom:2px solid {{primary}};">Product category analysis</h2>
+                        <table class="grid">
+                            <thead><tr t-attf-style="background:{{primary}};">
+                                <th style="width:18%; text-align:left;">Category</th><th>Stock value</th><th>Share</th>
+                                <th>Aged value (&gt;<t t-out="th[2]"/> d)</th><th>Aged %</th><th>Slow-moving value</th><th>Slow %</th>
+                                <th>Dead stock</th><th>Avg age</th><th>Products</th><th>Review</th>
+                            </tr></thead>
+                            <tbody>
+                                <tr t-foreach="comp['categories'][:top_n]" t-as="c" t-att-class="'z' if c_index % 2 else ''">
+                                    <td t-out="c['categ']"/><td class="n"><b t-out="fv(c['value'], d)"/></td><td class="n" t-out="fp(c['share'])"/>
+                                    <td class="n" t-out="fv(c['aged'], d)"/><td class="n" t-out="fp(c['aged_pct'])"/>
+                                    <td class="n" t-out="fv(c['slow'], d)"/><td class="n" t-out="fp(c['slow_pct'])"/>
+                                    <td class="n" t-out="fv(c['dead'], d)"/><td class="n" t-out="fi(c['wavg_age'])"/>
+                                    <td class="n" t-out="c['products']"/>
+                                    <td class="c"><span t-if="c['review']" class="tag" style="background:#FFF4E0; color:#8A5300;">Review</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- ===== Attention ===== -->
+                        <div class="pb"/>
+                        <h2 t-attf-style="color:{{primary}}; border-bottom:2px solid {{primary}};">Stock requiring management attention (risk High / Medium)</h2>
+                        <t t-set="rows" t-value="comp['attention_rows'][:top_n]"/>
+                        <p t-if="not rows" class="muted">No product scores High or Medium risk.</p>
+                        <table t-if="rows" class="grid">
+                            <thead><tr t-attf-style="background:{{primary}};">
+                                <th style="width:7%;">Code</th><th style="width:18%; text-align:left;">Product</th><th style="width:10%;">Warehouse</th>
+                                <th>Qty</th><th>Value</th><th>Oldest receipt</th><th>Last sale / use</th><th>Days idle</th>
+                                <th>Monthly use</th><th>Months cover</th><th>Status</th><th>Risk</th><th>Score (age/move/cover)</th>
+                            </tr></thead>
+                            <tbody>
+                                <tr t-foreach="rows" t-as="r" t-att-class="'z' if r_index % 2 else ''">
+                                    <td t-out="r['code']"/><td t-out="r['name']"/><td t-out="r['warehouse']"/>
+                                    <td class="n"><t t-out="fq(r['qty'])"/> <t t-out="r['uom']"/></td><td class="n"><b t-out="fv(r['value'], d)"/></td>
+                                    <td class="c" t-out="fd(r['oldest'])"/><td class="c" t-out="fd(r['last_out']) or 'Never'"/>
+                                    <td class="n" t-out="fi(r['days_since_out'])"/><td class="n" t-out="fq(r['monthly'])"/>
+                                    <td class="n" t-out="fv(r['coverage'], 1) if r['coverage'] is not None else 'No demand'"/>
+                                    <td class="c" t-out="r['status_label']"/>
+                                    <td class="c"><span class="tag" t-attf-style="background:{{risk_colors[r['risk']][0]}}; color:{{risk_colors[r['risk']][1]}};" t-out="r['risk']"/></td>
+                                    <td class="c"><b t-out="r['risk_score']"/> (<t t-out="'%s/%s/%s' % r['risk_parts']"/>)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h2 t-attf-style="color:{{primary}}; border-bottom:2px solid {{primary}};">Potential dead stock</h2>
+                        <t t-set="rows" t-value="comp['dead_rows'][:top_n]"/>
+                        <p class="muted">No customer sale or production use for more than <t t-out="meta['nonmoving_days']"/> days and stock older than <t t-out="th[3]"/> days. Management indicators, not accounting write-offs.</p>
+                        <p t-if="not rows" class="muted">No potential dead stock.</p>
+                        <table t-if="rows" class="grid">
+                            <thead><tr t-attf-style="background:{{primary}};">
+                                <th style="width:8%;">Code</th><th style="width:22%; text-align:left;">Product</th><th>Warehouse</th>
+                                <th>Qty</th><th>Value</th><th>Original receipt</th><th>Last outbound</th><th>Days without movement</th><th>Value &gt;<t t-out="th[3]"/> d</th><th>Risk</th>
+                            </tr></thead>
+                            <tbody>
+                                <tr t-foreach="rows" t-as="r" t-att-class="'z' if r_index % 2 else ''">
+                                    <td t-out="r['code']"/><td t-out="r['name']"/><td t-out="r['warehouse']"/>
+                                    <td class="n"><t t-out="fq(r['qty'])"/> <t t-out="r['uom']"/></td><td class="n"><b t-out="fv(r['value'], d)"/></td>
+                                    <td class="c" t-out="fd(r['oldest'])"/><td class="c" t-out="fd(r['last_out']) or 'Never'"/>
+                                    <td class="n" t-out="fi(r['days_since_out']) if r['days_since_out'] is not None else 'Never'"/>
+                                    <td class="n" t-out="fv(sum(r['buckets'][4:]), d)"/>
+                                    <td class="c"><span class="tag" t-attf-style="background:{{risk_colors[r['risk']][0]}}; color:{{risk_colors[r['risk']][1]}};" t-out="r['risk']"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- ===== Capital exposure & replenishment ===== -->
+                        <div class="pb"/>
+                        <h2 t-attf-style="color:{{primary}}; border-bottom:2px solid {{primary}};">Capital exposure</h2>
+                        <table class="kpi">
+                            <tr>
+                                <td><div class="lbl">&gt; <t t-out="th[2]"/> days</div><div class="num" style="color:#FB8C00;" t-out="fz(k['over_90'], d)"/><div class="def" t-out="fp(k['over_90'] / k['total_value'] if k['total_value'] else 0) + ' of total'"/></td>
+                                <td><div class="lbl">&gt; <t t-out="th[3]"/> days</div><div class="num" style="color:#E53935;" t-out="fz(k['over_180'], d)"/><div class="def" t-out="fp(k['over_180'] / k['total_value'] if k['total_value'] else 0) + ' of total'"/></td>
+                                <td><div class="lbl">&gt; <t t-out="th[4]"/> days</div><div class="num" style="color:#8E0000;" t-out="fz(k['over_365'], d)"/><div class="def" t-out="fp(k['over_365'] / k['total_value'] if k['total_value'] else 0) + ' of total'"/></td>
+                                <td><div class="lbl">Top 10 products</div><div class="num" t-attf-style="color:{{primary}};" t-out="fp(comp['concentration']['top10_share'])"/><div class="def" t-out="fz(comp['concentration']['top10_value'], d) + ' ' + cur"/></td>
+                                <td><div class="lbl">Overstock (excess value)</div><div class="num" style="color:#8A5300;" t-out="fz(sum(o['excess_value'] for o in comp['overstock']), d)"/><div class="def">Cover above <t t-out="meta['overstock_months']"/> months of use</div></td>
+                            </tr>
+                        </table>
+                        <t t-set="rows" t-value="comp['top_aged'][:top_n]"/>
+                        <table t-if="rows" class="grid" style="margin-top:6px;">
+                            <thead><tr t-attf-style="background:{{primary}};">
+                                <th style="width:8%;">Code</th><th style="width:24%; text-align:left;">Product</th><th>Category</th><th>Stock value</th>
+                                <th>&gt;<t t-out="th[2]"/> d</th><th>&gt;<t t-out="th[3]"/> d</th><th>&gt;<t t-out="th[4]"/> d</th><th>Months cover</th><th style="width:15%;">Aged stock at</th>
+                            </tr></thead>
+                            <tbody>
+                                <tr t-foreach="rows" t-as="p" t-att-class="'z' if p_index % 2 else ''">
+                                    <td t-out="p['code']"/><td t-out="p['name']"/><td t-out="p['categ']"/>
+                                    <td class="n" t-out="fv(p['value'], d)"/><td class="n"><b t-out="fv(p['aged'], d)"/></td>
+                                    <td class="n" t-out="fv(p['over_180'], d)"/><td class="n" t-out="fv(p['over_365'], d)"/>
+                                    <td class="n" t-out="fv(p['coverage'], 1) if p['coverage'] is not None else 'No demand'"/>
+                                    <td t-out="', '.join(p['warehouses'])"/>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h2 t-attf-style="color:{{primary}}; border-bottom:2px solid {{primary}};">Replenishment despite aged stock</h2>
+                        <t t-set="rows" t-value="comp['replenishment'][:top_n]"/>
+                        <p class="muted">Received in the last <t t-out="th[0]"/> days while stock older than <t t-out="th[2]"/> days is still on hand.</p>
+                        <p t-if="not rows" class="muted">None found.</p>
+                        <table t-if="rows" class="grid">
+                            <thead><tr t-attf-style="background:{{primary}};">
+                                <th style="width:8%;">Code</th><th style="width:22%; text-align:left;">Product</th><th>Last receipt</th><th>Recent qty</th><th>Recent value</th>
+                                <th>Aged qty</th><th>Aged value</th><th>Months cover</th><th style="width:15%;">Aged stock at</th>
+                            </tr></thead>
+                            <tbody>
+                                <tr t-foreach="rows" t-as="p" t-att-class="'z' if p_index % 2 else ''">
+                                    <td t-out="p['code']"/><td t-out="p['name']"/><td class="c" t-out="fd(p['recent_date'])"/>
+                                    <td class="n"><t t-out="fq(p['recent_qty'])"/> <t t-out="p['uom']"/></td><td class="n" t-out="fv(p['recent_value'], d)"/>
+                                    <td class="n" t-out="fq(p['aged_qty'])"/><td class="n"><b t-out="fv(p['aged'], d)"/></td>
+                                    <td class="n" t-out="fv(p['coverage'], 1) if p['coverage'] is not None else 'No demand'"/>
+                                    <td t-out="', '.join(p['warehouses'])"/>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- ===== Expiry ===== -->
+                        <t t-set="ex" t-value="comp.get('expiry')"/>
+                        <t t-if="ex and ex['rows']">
+                            <h2 t-attf-style="color:{{primary}}; border-bottom:2px solid {{primary}};">Expiry &amp; shelf life</h2>
+                            <p>Expired: <b class="bad" t-out="fz(ex['expired_value'], d)"/> · Expiring within <t t-out="meta['expiry_days']"/> days: <b t-out="fz(ex['expiring_value'], d)"/> · Value with expiry tracking: <t t-out="fz(ex['tracked_value'], d)"/> <t t-out="cur"/>. Expiry is not the same as inventory age.</p>
+                            <table class="grid">
+                                <thead><tr t-attf-style="background:{{primary}};">
+                                    <th style="width:8%;">Code</th><th style="width:22%; text-align:left;">Product</th><th>Lot</th><th>Warehouse</th><th>Qty</th><th>Value</th><th>Expiry</th><th>Days left</th><th>Status</th>
+                                </tr></thead>
+                                <tbody>
+                                    <tr t-foreach="ex['rows'][:top_n]" t-as="x" t-att-class="'z' if x_index % 2 else ''">
+                                        <td t-out="x['code']"/><td t-out="x['name']"/><td t-out="x['lot']"/><td t-out="x['warehouse']"/>
+                                        <td class="n"><t t-out="fq(x['qty'])"/> <t t-out="x['uom']"/></td><td class="n" t-out="fv(x['value'], d)"/>
+                                        <td class="c" t-out="fd(x['expiration_date'])"/><td class="n" t-out="x['days_left']"/>
+                                        <td class="c"><span class="tag" t-attf-style="background:{{risk_colors['High' if x['status'] == 'expired' else ('Medium' if x['status'] == 'expiring' else 'Healthy')][0]}};" t-out="{'expired': 'Expired', 'expiring': 'Expiring soon', 'ok': 'OK'}[x['status']]"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+
+                        <!-- ===== Receipt layers ===== -->
+                        <div class="pb"/>
+                        <h2 t-attf-style="color:{{primary}}; border-bottom:2px solid {{primary}};">Receipt-level breakdown — oldest layers</h2>
+                        <p class="muted">The <t t-out="min(top_n * 2, len(comp['layers']))"/> oldest of <t t-out="comp['layer_count']"/> remaining layers; the full list with Odoo move-line IDs is in the Excel workbook.</p>
+                        <t t-set="pinfo" t-value="{r['product_id']: r for r in comp['rows']}"/>
+                        <table class="grid">
+                            <thead><tr t-attf-style="background:{{primary}};">
+                                <th style="width:7%;">Code</th><th style="width:16%; text-align:left;">Product</th><th>Warehouse / location</th><th>Lot</th>
+                                <th>Receipt</th><th>Date</th><th style="width:11%;">Source</th><th>Received</th><th>Remaining</th><th>Value</th><th>Age</th><th>Confidence</th>
+                            </tr></thead>
+                            <tbody>
+                                <tr t-foreach="comp['layers'][:top_n * 2]" t-as="l" t-att-class="'z' if l_index % 2 else ''">
+                                    <t t-set="pr" t-value="pinfo.get(l['product_id'], {})"/>
+                                    <td t-out="pr.get('code', '')"/><td t-out="pr.get('name', '')"/><td t-out="l['location']"/><td t-out="l['lot']"/>
+                                    <td t-out="l['receipt_ref']"/><td class="c" t-out="fd(l['receipt_date'])"/><td t-out="l['source']"/>
+                                    <td class="n" t-out="fq(l['original_qty'])"/><td class="n" t-out="fq(l['qty'])"/><td class="n" t-out="fv(l['value'], d)"/>
+                                    <td class="n"><span t-if="l['bucket'] is not None" t-attf-style="color:{{bucket_colors[l['bucket']]}}; font-weight:bold;" t-out="l['age']"/></td>
+                                    <td t-out="l['confidence']"/>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- ===== Reconciliation ===== -->
+                        <h2 t-attf-style="color:{{primary}}; border-bottom:2px solid {{primary}};">Reconciliation &amp; exceptions</h2>
+                        <t t-set="rec" t-value="comp['reconciliation']"/>
+                        <table style="width:60%;">
+                            <tr t-foreach="rec['lines']" t-as="ln" t-attf-style="{{'font-weight:bold; border-top:1px solid #1F3A5F;' if ln['kind'] != 'adj' else ''}}">
+                                <td style="padding:2px 4px;" t-out="ln['label']"/><td class="n" style="padding:2px 4px;" t-out="fz(ln['value'], d)"/>
+                            </tr>
+                        </table>
+                        <table class="grid" style="margin-top:6px; width:80%;">
+                            <thead><tr t-attf-style="background:{{primary}};"><th style="width:50%; text-align:left;">Control</th><th>This report</th><th>Reference</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="rec['checks']" t-as="chk">
+                                    <td t-out="chk['label']"/>
+                                    <td class="n" t-out="fq(chk['a']) if chk.get('is_qty') else fz(chk['a'], d)"/>
+                                    <td class="n" t-out="fq(chk['b']) if chk.get('is_qty') else fz(chk['b'], d)"/>
+                                    <td class="c" t-att-class="'ok' if chk['ok'] else 'bad'" t-out="'OK' if chk['ok'] else 'DIFFERENCE'"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p t-if="not rec['exceptions']" class="muted">No exceptions.</p>
+                        <table t-if="rec['exceptions']" class="grid" style="margin-top:6px;">
+                            <thead><tr t-attf-style="background:{{primary}};"><th style="width:14%;">Exception</th><th style="width:8%;">Code</th><th style="width:20%; text-align:left;">Product</th><th>Warehouse</th><th>Qty</th><th>Value</th><th style="width:28%;">Detail</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="rec['exceptions'][:60]" t-as="e" t-att-class="'z' if e_index % 2 else ''">
+                                    <td class="bad" t-out="e['type']"/><td t-out="e['code']"/><td t-out="e['name']"/><td t-out="e['warehouse']"/>
+                                    <td class="n" t-out="fq(e['qty'])"/><td class="n" t-out="fv(e['value'], d)"/><td class="muted" t-out="e['detail']"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p t-if="len(rec['exceptions']) &gt; 60" class="muted">… <t t-out="len(rec['exceptions']) - 60"/> more in the Excel workbook.</p>
+                    </t>
+
+                    <div class="pb"/>
+                    <h2 t-attf-style="color:{{primary}}; border-bottom:2px solid {{primary}};">Methodology &amp; definitions</h2>
+                    <div class="notes"><p t-foreach="notes" t-as="n"><b t-out="n[0]"/>: <t t-out="n[1]"/></p></div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

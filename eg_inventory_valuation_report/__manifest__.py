@@ -1,6 +1,6 @@
 {
-    "name": "Inventory Valuation Report",
-    "version": "18.0.18.33.0",
+    "name": "Inventory Valuation & Stock Aging Reports",
+    "version": "18.0.18.34.0",
     "category": "Inventory/Inventory",
     "summary": "Audit-ready inventory valuation report (PDF & Excel) reconciled with Odoo stock valuation "
                "layers: opening, incoming, outgoing, adjustments and closing per product, category, "
@@ -33,6 +33,8 @@ See doc/TECHNICAL.md for the methodology.
         "reports/inventory_valuation_pdf_report.xml",
         "reports/simple_valuation_report.xml",
         "wizard/inventory_valuation_report_views.xml",
+        "reports/stock_aging_reports.xml",
+        "wizard/stock_aging_report_views.xml",
     ],
     "images": [
         "static/description/banner.gif"
