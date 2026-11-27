@@ -135,6 +135,12 @@ export const reorderAlertService = {
         });
 
         refresh();
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
+                refresh();
+            }
+        });
+        window.addEventListener("focus", refresh);
 
         return { state, refresh, openAlerts };
     },

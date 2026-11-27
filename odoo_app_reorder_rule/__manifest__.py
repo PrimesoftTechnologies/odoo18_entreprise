@@ -1,6 +1,6 @@
 {
     "name": "Odoo App Reorder Rule Alerts",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.1.0",
     "category": "Inventory/Inventory",
     "summary": "Alert in Odoo and outside Odoo (browser notification, tab/app badge, email) when on-hand stock falls below the Reorder Rule minimum.",
     "description": """
@@ -12,6 +12,7 @@ Reorder Rule (Inventory > Operations > Replenishment), this module:
 * shows a badge on the browser tab icon / installed app icon
 * shows a desktop (browser) notification even if you are on another tab/window
 * sends an Inbox/Email message to the Reorder Alert Receivers
+* sets the app icon badge (number) on phones/PCs when a push arrives, even if the app is closed
 * keeps a list of alerts: Inventory > Reorder Alerts
     """,
     "author": "Custom",
